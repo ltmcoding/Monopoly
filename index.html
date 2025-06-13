@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monopoly</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-board"></div>
+        <div id="controls">
+            <div id="dice-result"></div>
+            <button id="roll-dice-btn">Roll Dice</button>
+            <div id="action-menu"></div>
+            <button id="manage-properties-btn">Manage Properties</button>
+            <button id="propose-trade-btn">Propose Trade</button>
+            <button id="end-turn-btn">End Turn</button>
+        </div>
+        <div id="player-info"></div>
+    </div>
+    <script src="script.js"></script>
+
+    <div id="manage-properties-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Manage Your Properties</h2>
+            <div id="modal-properties-list"></div>
+        </div>
+    </div>
+
+    <div id="card-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="card-modal-title"></h2>
+            <p id="card-modal-text"></p>
+            <button id="card-modal-ok">OK</button>
+        </div>
+    </div>
+
+    <div id="trade-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Propose a Trade</h2>
+            <div class="trade-interface">
+                <div class="trade-player-selection">
+                    <label for="trade-partner-select">Trade with:</label>
+                    <select id="trade-partner-select"></select>
+                </div>
+                <div class="trade-offers-container">
+                    <!-- Current Player's Offer -->
+                    <div class="trade-offer-panel" id="current-player-offer">
+                        <h3 id="current-player-name">Your Offer</h3>
+                        <div class="trade-assets">
+                            <label>Money:</label>
+                            <input type="number" id="current-player-money" min="0">
+                            <div id="current-player-properties" class="trade-properties-list"></div>
+                            <div id="current-player-jail-cards" class="trade-jail-cards-list"></div>
+                        </div>
+                    </div>
+                    <!-- Trade Partner's Offer -->
+                    <div class="trade-offer-panel" id="trade-partner-offer">
+                        <h3 id="trade-partner-name">Their Offer</h3>
+                        <div class="trade-assets">
+                            <label>Money:</label>
+                            <input type="number" id="trade-partner-money" min="0">
+                            <div id="trade-partner-properties" class="trade-properties-list"></div>
+                            <div id="trade-partner-jail-cards" class="trade-jail-cards-list"></div>
+                        </div>
+                    </div>
+                </div>
+                <button id="execute-trade-btn">Propose Trade</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-trade-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Trade Proposal</h2>
+            <p><span id="proposing-player-name"></span> has proposed a trade.</p>
+            <div class="trade-offers-container">
+                 <div class="trade-offer-panel">
+                    <h3>You Give</h3>
+                    <div id="view-trade-gives"></div>
+                 </div>
+                 <div class="trade-offer-panel">
+                    <h3>You Receive</h3>
+                    <div id="view-trade-receives"></div>
+                 </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="accept-trade-btn">Accept</button>
+                <button id="reject-trade-btn">Reject</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html> 

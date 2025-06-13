@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  monopoly:
+    image: node:18-alpine
+    container_name: monopoly
+    command: >
+      sh -c "apk add --no-cache git &&
+             git clone https://github.com/ltmcoding/Monopoly . &&
+             npm install &&
+             node server.js"
+    ports:
+      - "3010:3010"
+    environment:
+      - PORT=3010
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - monopoly-network
+
+networks:
+  monopoly-network:
+    driver: bridge 
