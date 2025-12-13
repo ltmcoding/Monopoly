@@ -1,5 +1,8 @@
 version: '3.8'
 
+# Extended docker-compose with webhook for auto-deployment
+# This adds a webhook listener that auto-updates when you push to GitHub
+
 services:
   monopoly-server:
     build:
@@ -33,6 +36,21 @@ services:
       - "80:80"
     depends_on:
       - monopoly-server
+    networks:
+      - monopoly-network
+
+  webhook:
+    image: almir/webhook
+    container_name: monopoly-webhook
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./hooks.json:/etc/webhook/hooks.json:ro
+      - ./update.sh:/update.sh:ro
+      - .:/app:ro
+    command: -verbose -hooks=/etc/webhook/hooks.json -hotreload
     networks:
       - monopoly-network
 
