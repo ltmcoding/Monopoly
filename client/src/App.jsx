@@ -73,6 +73,7 @@ function App() {
     <div className="App">
       {screen === 'home' && (
         <Home
+          socket={socket}
           onGameCreated={handleGameCreated}
           onGameJoined={handleGameJoined}
         />
@@ -80,6 +81,7 @@ function App() {
 
       {screen === 'lobby' && gameInfo && gameState && (
         <Lobby
+          socket={socket}
           gameId={gameInfo.gameId}
           gameState={gameState}
           isHost={gameInfo.isHost}
@@ -90,6 +92,7 @@ function App() {
 
       {screen === 'game' && gameInfo && gameState && (
         <Game
+          socket={socket}
           gameId={gameInfo.gameId}
           playerId={gameInfo.playerId}
           initialGameState={gameState}

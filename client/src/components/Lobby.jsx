@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { useSocket } from '../hooks/useSocket';
 import { formatCurrency, copyToClipboard } from '../utils/formatters';
 
-export default function Lobby({ gameId, gameState, isHost, onGameStarted, onLeave }) {
-  const socket = useSocket();
+export default function Lobby({ socket, gameId, gameState, isHost, onGameStarted, onLeave }) {
   const [copied, setCopied] = useState(false);
   const [starting, setStarting] = useState(false);
 

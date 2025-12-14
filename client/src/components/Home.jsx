@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { useSocket } from '../hooks/useSocket';
 
-export default function Home({ onGameCreated, onGameJoined }) {
-  const socket = useSocket();
+export default function Home({ socket, onGameCreated, onGameJoined }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [joinGameId, setJoinGameId] = useState('');
   const [playerName, setPlayerName] = useState('');

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useSocket } from '../hooks/useSocket';
 import Board2D from './Board2D';
 import PlayerPanel from './PlayerPanel';
 import ActionPanel from './ActionPanel';
@@ -8,8 +7,7 @@ import TradeModal from './TradeModal';
 import AuctionModal from './AuctionModal';
 import GameLog from './GameLog';
 
-export default function Game({ gameId, playerId, initialGameState, onExit }) {
-  const socket = useSocket();
+export default function Game({ socket, gameId, playerId, initialGameState, onExit }) {
   const [gameState, setGameState] = useState(initialGameState);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [showTradeModal, setShowTradeModal] = useState(false);
@@ -201,6 +199,7 @@ export default function Game({ gameId, playerId, initialGameState, onExit }) {
 
         <div className="game-right">
           <ActionPanel
+            socket={socket}
             gameId={gameId}
             gameState={gameState}
             myPlayer={getMyPlayer()}
@@ -223,6 +222,7 @@ export default function Game({ gameId, playerId, initialGameState, onExit }) {
 
       {showTradeModal && (
         <TradeModal
+          socket={socket}
           gameId={gameId}
           gameState={gameState}
           myPlayer={getMyPlayer()}
@@ -232,6 +232,7 @@ export default function Game({ gameId, playerId, initialGameState, onExit }) {
 
       {gameState.auction && gameState.auction.active && (
         <AuctionModal
+          socket={socket}
           gameId={gameId}
           auction={gameState.auction}
           myPlayer={getMyPlayer()}

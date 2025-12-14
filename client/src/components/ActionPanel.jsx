@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { useSocket } from '../hooks/useSocket';
 import { getSpaceById } from '../utils/boardData';
 import { formatCurrency, getPhaseDisplay } from '../utils/formatters';
 
-export default function ActionPanel({ gameId, gameState, myPlayer, isMyTurn, onOpenTrade }) {
-  const socket = useSocket();
+export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyTurn, onOpenTrade }) {
   const [loading, setLoading] = useState(false);
   const [selectedPropertyForBuilding, setSelectedPropertyForBuilding] = useState(null);
 

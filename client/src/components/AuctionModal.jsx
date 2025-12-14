@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { useSocket } from '../hooks/useSocket';
 import { getSpaceById } from '../utils/boardData';
 import { formatCurrency } from '../utils/formatters';
 
-export default function AuctionModal({ gameId, auction, myPlayer }) {
-  const socket = useSocket();
+export default function AuctionModal({ socket, gameId, auction, myPlayer }) {
   const [bidAmount, setBidAmount] = useState((auction.currentBid || 0) + 10);
   const [loading, setLoading] = useState(false);
 

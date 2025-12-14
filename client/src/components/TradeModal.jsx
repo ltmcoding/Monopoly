@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { useSocket } from '../hooks/useSocket';
 import { getSpaceById } from '../utils/boardData';
 import { formatCurrency } from '../utils/formatters';
 
-export default function TradeModal({ gameId, gameState, myPlayer, onClose }) {
-  const socket = useSocket();
+export default function TradeModal({ socket, gameId, gameState, myPlayer, onClose }) {
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [offerCash, setOfferCash] = useState(0);
   const [offerProperties, setOfferProperties] = useState([]);
