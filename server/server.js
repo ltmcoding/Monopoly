@@ -77,13 +77,16 @@ function generateGameId() {
 
 // Socket.io event handlers
 io.on('connection', (socket) => {
-  console.log(`Client connected: ${socket.id}`);
+  console.log(`Client connected: ${socket.id}, total clients: ${io.engine.clientsCount}`);
 
   // Get list of available games (for room browser)
   socket.on('getGamesList', (callback) => {
     try {
+      console.log(`[getGamesList] Request from socket ${socket.id}, total games: ${games.size}`);
+
       const gamesList = [];
       games.forEach((gameRoom, gameId) => {
+        console.log(`[getGamesList] Checking game ${gameId}: isStarted=${gameRoom.isStarted}, players=${gameRoom.getPlayerCount()}`);
         // Only show games that haven't started yet
         if (!gameRoom.isStarted) {
           const hostPlayer = gameRoom.game.players[0];
@@ -97,11 +100,13 @@ io.on('connection', (socket) => {
         }
       });
 
+      console.log(`[getGamesList] Returning ${gamesList.length} games`);
+
       if (callback) {
         callback({ success: true, games: gamesList });
       }
     } catch (error) {
-      console.error('Error getting games list:', error);
+      console.error('[getGamesList] Error:', error);
       if (callback) {
         callback({ success: false, error: error.message });
       }
@@ -111,6 +116,9 @@ io.on('connection', (socket) => {
   // Find and join next available game, or create one
   socket.on('quickPlay', ({ playerName, settings }, callback) => {
     try {
+      console.log(`[quickPlay] Request from ${playerName}, socket ${socket.id}`);
+      console.log(`[quickPlay] Current games: ${games.size}`);
+
       // Find first joinable game
       let targetGameId = null;
       games.forEach((gameRoom, gameId) => {
@@ -121,6 +129,7 @@ io.on('connection', (socket) => {
 
       if (targetGameId) {
         // Join existing game
+        console.log(`[quickPlay] Joining existing game ${targetGameId}`);
         const gameRoom = games.get(targetGameId);
         const player = gameRoom.addPlayer(socket, playerName);
         socket.join(targetGameId);
@@ -144,12 +153,15 @@ io.on('connection', (socket) => {
       } else {
         // Create new game
         const gameId = generateGameId();
+        console.log(`[quickPlay] Creating new game ${gameId}`);
         const gameRoom = new GameRoom(gameId, socket.id, settings);
         games.set(gameId, gameRoom);
 
         const player = gameRoom.addPlayer(socket, playerName);
         socket.join(gameId);
         socket.gameId = gameId;
+
+        console.log(`[quickPlay] Game ${gameId} created, total games: ${games.size}`);
 
         if (callback) {
           callback({
@@ -163,7 +175,7 @@ io.on('connection', (socket) => {
         }
       }
     } catch (error) {
-      console.error('Error in quickPlay:', error);
+      console.error('[quickPlay] Error:', error);
       if (callback) {
         callback({ success: false, error: error.message });
       }
@@ -763,7 +775,7 @@ io.on('connection', (socket) => {
 
       gameRoom.processAction(socket.id, 'payJailFee', {});
 
-      gameRoom.broadcast(io, 'jailFeeP aid', {
+      gameRoom.broadcast(io, 'jailFeePaid', {
         gameState: gameRoom.getGameState()
       });
 
@@ -828,8 +840,8 @@ io.on('connection', (socket) => {
   });
 
   // Handle disconnect
-  socket.on('disconnect', () => {
-    console.log(`Client disconnected: ${socket.id}`);
+  socket.on('disconnect', (reason) => {
+    console.log(`Client disconnected: ${socket.id}, reason: ${reason}`);
 
     // Find game this socket was in
     const gameId = socket.gameId;
