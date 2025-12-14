@@ -815,7 +815,7 @@ io.on('connection', (socket) => {
             clearTimeout(pendingDeletions.get(deletionKey));
           }
 
-          // Set new timer - 30 second grace period
+          // Set new timer - 5 minute grace period
           const timer = setTimeout(() => {
             const currentGameRoom = games.get(gameId);
             if (currentGameRoom) {
@@ -824,21 +824,26 @@ io.on('connection', (socket) => {
                 currentGameRoom.removePlayer(socket.id);
                 console.log(`Player removed from game ${gameId} after grace period`);
 
-                // Notify remaining players
-                currentGameRoom.broadcast(io, 'playerLeft', {
-                  socketId: socket.id,
-                  gameState: currentGameRoom.getGameState()
-                });
-
-                // Delete game if empty and not started
+                // Check if game should be deleted
                 if (currentGameRoom.getPlayerCount() === 0 && !currentGameRoom.isStarted) {
+                  // Notify via the game room before deleting (in case anyone reconnects)
+                  currentGameRoom.broadcast(io, 'lobbyDeleted', {
+                    reason: 'inactivity',
+                    message: 'Lobby was deleted due to inactivity'
+                  });
                   games.delete(gameId);
                   console.log(`Game ${gameId} deleted (empty after grace period)`);
+                } else {
+                  // Notify remaining players
+                  currentGameRoom.broadcast(io, 'playerLeft', {
+                    socketId: socket.id,
+                    gameState: currentGameRoom.getGameState()
+                  });
                 }
               }
             }
             pendingDeletions.delete(deletionKey);
-          }, 30000); // 30 second grace period
+          }, 300000); // 5 minute grace period
 
           pendingDeletions.set(deletionKey, timer);
         }

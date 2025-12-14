@@ -10,6 +10,21 @@ function App() {
   const [screen, setScreen] = useState('home'); // home, lobby, game
   const [gameInfo, setGameInfo] = useState(null);
   const [gameState, setGameState] = useState(null);
+  const [showConnectionOverlay, setShowConnectionOverlay] = useState(false);
+  const [lobbyDeletedMessage, setLobbyDeletedMessage] = useState(null);
+
+  // Only show connection overlay after being disconnected for 3+ seconds
+  useEffect(() => {
+    let timer;
+    if (!socket.connected) {
+      timer = setTimeout(() => {
+        setShowConnectionOverlay(true);
+      }, 3000);
+    } else {
+      setShowConnectionOverlay(false);
+    }
+    return () => clearTimeout(timer);
+  }, [socket.connected]);
 
   useEffect(() => {
     // Listen for game started event
@@ -38,11 +53,20 @@ function App() {
       setGameState(data.gameState);
     };
 
+    // Listen for lobby deleted event
+    const handleLobbyDeleted = (data) => {
+      setLobbyDeletedMessage(data.message || 'Lobby was deleted due to inactivity');
+      setScreen('home');
+      setGameInfo(null);
+      setGameState(null);
+    };
+
     socket.on('gameStarted', handleGameStarted);
     socket.on('playerJoined', handlePlayerJoined);
     socket.on('playerLeft', handlePlayerLeft);
     socket.on('settingsUpdated', handleSettingsUpdated);
     socket.on('playerColorChanged', handlePlayerColorChanged);
+    socket.on('lobbyDeleted', handleLobbyDeleted);
 
     return () => {
       socket.off('gameStarted', handleGameStarted);
@@ -50,6 +74,7 @@ function App() {
       socket.off('playerLeft', handlePlayerLeft);
       socket.off('settingsUpdated', handleSettingsUpdated);
       socket.off('playerColorChanged', handlePlayerColorChanged);
+      socket.off('lobbyDeleted', handleLobbyDeleted);
     };
   }, [socket]);
 
@@ -81,6 +106,11 @@ function App() {
     setScreen('home');
     setGameInfo(null);
     setGameState(null);
+  };
+
+  // Clear lobby deleted message when user dismisses it
+  const dismissLobbyDeletedMessage = () => {
+    setLobbyDeletedMessage(null);
   };
 
   return (
@@ -115,10 +145,28 @@ function App() {
         />
       )}
 
-      {!socket.connected && (
+      {/* Only show connection overlay after 3 seconds of disconnection */}
+      {showConnectionOverlay && (
         <div className="connection-overlay">
           <div className="connection-message">
             Connecting to server...
+          </div>
+        </div>
+      )}
+
+      {/* Lobby deleted notification */}
+      {lobbyDeletedMessage && (
+        <div className="modal-overlay" onClick={dismissLobbyDeletedMessage}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <h2>Lobby Closed</h2>
+            <p style={{ textAlign: 'center', marginBottom: '24px', color: 'var(--color-text-secondary)' }}>
+              {lobbyDeletedMessage}
+            </p>
+            <div className="modal-actions" style={{ justifyContent: 'center' }}>
+              <button className="btn btn-primary" onClick={dismissLobbyDeletedMessage}>
+                OK
+              </button>
+            </div>
           </div>
         </div>
       )}
