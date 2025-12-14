@@ -34,7 +34,16 @@ const io = socketIo(server, {
     },
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  // Use websocket only to avoid polling CORS issues
+  transports: ['websocket'],
+  // Keep connections alive with ping/pong
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  // Prevent compression issues
+  perMessageDeflate: false,
+  // Allow upgrades
+  allowUpgrades: false
 });
 
 app.use(cors({
