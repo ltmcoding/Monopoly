@@ -36,7 +36,16 @@ export default function Home({ onGameCreated, onGameJoined }) {
       const gameId = response.gameId;
 
       // Join the game we just created
+      console.log('Joining game:', gameId, 'as', playerName.trim());
       const joinResponse = await socket.joinGame(gameId, playerName.trim());
+      console.log('Join response:', joinResponse);
+
+      console.log('Calling onGameCreated with:', {
+        gameId,
+        playerId: joinResponse.player.id,
+        playerName: playerName.trim(),
+        isHost: true
+      });
 
       onGameCreated({
         gameId,
