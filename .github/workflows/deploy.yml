@@ -23,7 +23,8 @@ jobs:
         port: ${{ secrets.SSH_PORT || 22 }}
         script: |
           cd /opt/monopoly || cd ~/monopoly
-          git pull origin master
+          git fetch origin
+          git reset --hard origin/master
           chmod +x update.sh
           ./update.sh
 
