@@ -26,6 +26,9 @@ app.use(express.json());
 // Store active games (in production, use Redis)
 const games = new Map();
 
+// Store pending deletions (for grace period on disconnect)
+const pendingDeletions = new Map();
+
 // Utility: Generate game ID
 function generateGameId() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -797,18 +800,47 @@ io.on('connection', (socket) => {
     if (gameId) {
       const gameRoom = games.get(gameId);
       if (gameRoom) {
-        gameRoom.removePlayer(socket.id);
+        // Mark player as disconnected but don't remove immediately
+        // Give them 30 seconds to reconnect
+        const playerId = gameRoom.playerSockets.get(socket.id);
 
-        // Notify remaining players
-        gameRoom.broadcast(io, 'playerLeft', {
-          socketId: socket.id,
-          gameState: gameRoom.getGameState()
-        });
+        if (playerId) {
+          console.log(`Player ${playerId} disconnected from game ${gameId}, starting grace period`);
 
-        // Delete game if empty and not started
-        if (gameRoom.getPlayerCount() === 0 && !gameRoom.isStarted) {
-          games.delete(gameId);
-          console.log(`Game ${gameId} deleted (empty after disconnect)`);
+          // Set up deletion timer
+          const deletionKey = `${gameId}:${socket.id}`;
+
+          // Clear any existing timer for this player
+          if (pendingDeletions.has(deletionKey)) {
+            clearTimeout(pendingDeletions.get(deletionKey));
+          }
+
+          // Set new timer - 30 second grace period
+          const timer = setTimeout(() => {
+            const currentGameRoom = games.get(gameId);
+            if (currentGameRoom) {
+              // Check if player is still disconnected (socket ID still mapped)
+              if (currentGameRoom.playerSockets.has(socket.id)) {
+                currentGameRoom.removePlayer(socket.id);
+                console.log(`Player removed from game ${gameId} after grace period`);
+
+                // Notify remaining players
+                currentGameRoom.broadcast(io, 'playerLeft', {
+                  socketId: socket.id,
+                  gameState: currentGameRoom.getGameState()
+                });
+
+                // Delete game if empty and not started
+                if (currentGameRoom.getPlayerCount() === 0 && !currentGameRoom.isStarted) {
+                  games.delete(gameId);
+                  console.log(`Game ${gameId} deleted (empty after grace period)`);
+                }
+              }
+            }
+            pendingDeletions.delete(deletionKey);
+          }, 30000); // 30 second grace period
+
+          pendingDeletions.set(deletionKey, timer);
         }
       }
     }

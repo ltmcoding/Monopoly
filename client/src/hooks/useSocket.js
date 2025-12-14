@@ -54,12 +54,25 @@ export function useSocket() {
   // Generic emit with callback
   const emit = (event, data = {}) => {
     return new Promise((resolve, reject) => {
-      if (!socketRef.current || !connected) {
+      if (!socketRef.current) {
+        reject(new Error('Socket not initialized'));
+        return;
+      }
+
+      // Allow emit even if connected state is briefly false (socket.io handles reconnection)
+      // Only reject if the socket is truly disconnected
+      if (!socketRef.current.connected && !socketRef.current.connecting) {
         reject(new Error('Socket not connected'));
         return;
       }
 
+      // Set a timeout in case the emit never gets a response
+      const timeout = setTimeout(() => {
+        reject(new Error('Request timed out'));
+      }, 10000);
+
       socketRef.current.emit(event, data, (response) => {
+        clearTimeout(timeout);
         if (response && response.success) {
           resolve(response);
         } else {

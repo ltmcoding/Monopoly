@@ -13,12 +13,12 @@ const TOKEN_COLORS = [
   '#805ad5', // Purple
   '#d53f8c', // Pink
   '#718096', // Gray
-  '#2d3748', // Dark Gray
+  '#4a5568', // Dark Gray
   '#744210', // Brown
   '#276749', // Dark Green
   '#2c5282', // Dark Blue
   '#702459', // Maroon
-  '#1a202c', // Black
+  '#553c9a', // Deep Purple
 ];
 
 export default function Lobby({ socket, gameId, playerId, gameState, isHost, onGameStarted, onLeave }) {
