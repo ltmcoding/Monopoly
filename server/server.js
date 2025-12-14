@@ -11,16 +11,43 @@ const { BOARD_SPACES } = require('./boardData');
 const app = express();
 const server = http.createServer(app);
 
-// Configure CORS
+// Configure CORS - allow multiple origins for dev and production
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://monopoly.ltmcoding.dev',
+  process.env.CLIENT_URL
+].filter(Boolean);
+
 const io = socketIo(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: function(origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log('CORS blocked origin:', origin);
+        callback(null, true); // Allow anyway for now to debug
+      }
+    },
     methods: ["GET", "POST"],
     credentials: true
   }
 });
 
-app.use(cors());
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow anyway for now
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // Store active games (in production, use Redis)
