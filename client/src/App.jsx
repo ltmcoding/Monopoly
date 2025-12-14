@@ -40,20 +40,17 @@ function App() {
   }, [socket]);
 
   const handleGameCreated = (info) => {
+    console.log('handleGameCreated called with:', info);
     setGameInfo(info);
-    // The creator also joins, so we'll get gameState from join response
-    socket.on('playerJoined', (data) => {
-      setGameState(data.gameState);
-      setScreen('lobby');
-    }, { once: true });
+    setGameState(info.gameState || null);
+    setScreen('lobby');
   };
 
   const handleGameJoined = (info) => {
+    console.log('handleGameJoined called with:', info);
     setGameInfo(info);
-    socket.on('playerJoined', (data) => {
-      setGameState(data.gameState);
-      setScreen('lobby');
-    }, { once: true });
+    setGameState(info.gameState || null);
+    setScreen('lobby');
   };
 
   const handleGameStarted = () => {

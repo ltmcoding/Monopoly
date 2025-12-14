@@ -44,14 +44,16 @@ export default function Home({ onGameCreated, onGameJoined }) {
         gameId,
         playerId: joinResponse.player.id,
         playerName: playerName.trim(),
-        isHost: true
+        isHost: true,
+        gameState: joinResponse.gameState
       });
 
       onGameCreated({
         gameId,
         playerId: joinResponse.player.id,
         playerName: playerName.trim(),
-        isHost: true
+        isHost: true,
+        gameState: joinResponse.gameState
       });
     } catch (err) {
       console.error('Game creation error:', err);
@@ -82,7 +84,8 @@ export default function Home({ onGameCreated, onGameJoined }) {
         gameId: joinGameId.trim().toUpperCase(),
         playerId: response.player.id,
         playerName: playerName.trim(),
-        isHost: response.isHost
+        isHost: response.isHost,
+        gameState: response.gameState
       });
     } catch (err) {
       setError(err.message || 'Failed to join game');
