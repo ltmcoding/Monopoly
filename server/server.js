@@ -35,15 +35,15 @@ const io = socketIo(server, {
     methods: ["GET", "POST"],
     credentials: true
   },
-  // Allow both polling and websocket - polling is more reliable through proxies
-  transports: ['polling', 'websocket'],
-  // Keep connections alive with ping/pong
-  pingTimeout: 60000,
-  pingInterval: 25000,
+  // Use websocket only - polling has CORS issues with nginx proxy
+  transports: ['websocket'],
+  // More aggressive ping to keep connection alive through proxy
+  pingTimeout: 30000,
+  pingInterval: 10000,
   // Prevent compression issues
   perMessageDeflate: false,
-  // Allow upgrade from polling to websocket
-  allowUpgrades: true
+  // No upgrades needed with websocket-only
+  allowUpgrades: false
 });
 
 app.use(cors({

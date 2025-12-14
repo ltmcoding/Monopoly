@@ -11,10 +11,10 @@ export function useSocket() {
 
   useEffect(() => {
     // Initialize socket connection
-    // Try polling first (more reliable through proxies), then upgrade to websocket
+    // Use websocket only - polling has CORS issues with nginx proxy
     socketRef.current = io(SERVER_URL, {
-      transports: ['polling', 'websocket'],
-      upgrade: true,
+      transports: ['websocket'],
+      upgrade: false,
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
