@@ -27,15 +27,15 @@ git pull origin main || git pull origin master
 
 echo ""
 echo -e "${YELLOW}Step 2: Stopping running containers...${NC}"
-docker-compose down
+docker compose down
 
 echo ""
 echo -e "${YELLOW}Step 3: Rebuilding containers...${NC}"
-docker-compose build --no-cache
+docker compose build --no-cache
 
 echo ""
 echo -e "${YELLOW}Step 4: Starting containers...${NC}"
-docker-compose up -d
+docker compose up -d
 
 echo ""
 echo -e "${YELLOW}Step 5: Cleaning up old images...${NC}"
@@ -45,11 +45,11 @@ echo ""
 echo -e "${GREEN}✅ Update complete!${NC}"
 echo ""
 echo "Checking container status..."
-docker-compose ps
+docker compose ps
 
 echo ""
 echo "To view logs, run:"
-echo "  docker-compose logs -f"
+echo "  docker compose logs -f"
 echo ""
 echo "To check game server health:"
 echo "  curl http://localhost:3005/health"

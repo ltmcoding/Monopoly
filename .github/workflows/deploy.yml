@@ -2,7 +2,7 @@ name: Deploy Monopoly Game
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
         port: ${{ secrets.SSH_PORT || 22 }}
         script: |
           cd /opt/monopoly || cd ~/monopoly
-          git pull origin main || git pull origin master
+          git pull origin master
           chmod +x update.sh
           ./update.sh
 
