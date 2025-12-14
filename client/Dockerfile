@@ -11,7 +11,7 @@ ENV REACT_APP_SERVER_URL=$REACT_APP_SERVER_URL
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
 # Copy application files
 COPY . .
