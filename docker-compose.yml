@@ -30,7 +30,7 @@ services:
     container_name: monopoly-client
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - monopoly-server
     networks:
