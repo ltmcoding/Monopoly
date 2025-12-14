@@ -40,6 +40,163 @@ function generateGameId() {
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
 
+  // Get list of available games (for room browser)
+  socket.on('getGamesList', (callback) => {
+    try {
+      const gamesList = [];
+      games.forEach((gameRoom, gameId) => {
+        // Only show games that haven't started yet
+        if (!gameRoom.isStarted) {
+          const hostPlayer = gameRoom.game.players[0];
+          gamesList.push({
+            gameId,
+            hostName: hostPlayer?.name || 'Unknown',
+            playerCount: gameRoom.getPlayerCount(),
+            maxPlayers: 6,
+            settings: gameRoom.game.settings
+          });
+        }
+      });
+
+      if (callback) {
+        callback({ success: true, games: gamesList });
+      }
+    } catch (error) {
+      console.error('Error getting games list:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
+  // Find and join next available game, or create one
+  socket.on('quickPlay', ({ playerName, settings }, callback) => {
+    try {
+      // Find first joinable game
+      let targetGameId = null;
+      games.forEach((gameRoom, gameId) => {
+        if (!gameRoom.isStarted && gameRoom.getPlayerCount() < 6 && !targetGameId) {
+          targetGameId = gameId;
+        }
+      });
+
+      if (targetGameId) {
+        // Join existing game
+        const gameRoom = games.get(targetGameId);
+        const player = gameRoom.addPlayer(socket, playerName);
+        socket.join(targetGameId);
+        socket.gameId = targetGameId;
+
+        gameRoom.broadcast(io, 'playerJoined', {
+          player,
+          gameState: gameRoom.getGameState()
+        });
+
+        if (callback) {
+          callback({
+            success: true,
+            gameId: targetGameId,
+            player,
+            gameState: gameRoom.getGameState(),
+            isHost: false,
+            created: false
+          });
+        }
+      } else {
+        // Create new game
+        const gameId = generateGameId();
+        const gameRoom = new GameRoom(gameId, socket.id, settings);
+        games.set(gameId, gameRoom);
+
+        const player = gameRoom.addPlayer(socket, playerName);
+        socket.join(gameId);
+        socket.gameId = gameId;
+
+        if (callback) {
+          callback({
+            success: true,
+            gameId,
+            player,
+            gameState: gameRoom.getGameState(),
+            isHost: true,
+            created: true
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error in quickPlay:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
+  // Update game settings (host only, before game starts)
+  socket.on('updateSettings', ({ gameId, settings }, callback) => {
+    try {
+      const gameRoom = games.get(gameId);
+      if (!gameRoom) throw new Error('Game not found');
+      if (!gameRoom.isHost(socket.id)) throw new Error('Only host can update settings');
+      if (gameRoom.isStarted) throw new Error('Cannot change settings after game started');
+
+      // Update settings
+      gameRoom.game.settings = { ...gameRoom.game.settings, ...settings };
+
+      // Notify all players
+      gameRoom.broadcast(io, 'settingsUpdated', {
+        settings: gameRoom.game.settings,
+        gameState: gameRoom.getGameState()
+      });
+
+      if (callback) {
+        callback({ success: true, gameState: gameRoom.getGameState() });
+      }
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
+  // Change player color (before game starts)
+  socket.on('changePlayerColor', ({ gameId, color }, callback) => {
+    try {
+      const gameRoom = games.get(gameId);
+      if (!gameRoom) throw new Error('Game not found');
+      if (gameRoom.isStarted) throw new Error('Cannot change color after game started');
+
+      const playerId = gameRoom.playerSockets.get(socket.id);
+      if (!playerId) throw new Error('Player not found');
+
+      // Check if color is already taken
+      const colorTaken = gameRoom.game.players.some(p => p.color === color && p.id !== playerId);
+      if (colorTaken) throw new Error('Color already taken');
+
+      // Update player color
+      const player = gameRoom.game.getPlayer(playerId);
+      if (player) {
+        player.color = color;
+      }
+
+      // Notify all players
+      gameRoom.broadcast(io, 'playerColorChanged', {
+        playerId,
+        color,
+        gameState: gameRoom.getGameState()
+      });
+
+      if (callback) {
+        callback({ success: true, gameState: gameRoom.getGameState() });
+      }
+    } catch (error) {
+      console.error('Error changing color:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
   // Create new game
   socket.on('createGame', (settings, callback) => {
     try {

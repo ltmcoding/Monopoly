@@ -28,14 +28,28 @@ function App() {
       setGameState(data.gameState);
     };
 
+    // Listen for settings updated event
+    const handleSettingsUpdated = (data) => {
+      setGameState(data.gameState);
+    };
+
+    // Listen for player color changed event
+    const handlePlayerColorChanged = (data) => {
+      setGameState(data.gameState);
+    };
+
     socket.on('gameStarted', handleGameStarted);
     socket.on('playerJoined', handlePlayerJoined);
     socket.on('playerLeft', handlePlayerLeft);
+    socket.on('settingsUpdated', handleSettingsUpdated);
+    socket.on('playerColorChanged', handlePlayerColorChanged);
 
     return () => {
       socket.off('gameStarted', handleGameStarted);
       socket.off('playerJoined', handlePlayerJoined);
       socket.off('playerLeft', handlePlayerLeft);
+      socket.off('settingsUpdated', handleSettingsUpdated);
+      socket.off('playerColorChanged', handlePlayerColorChanged);
     };
   }, [socket]);
 
@@ -83,6 +97,7 @@ function App() {
         <Lobby
           socket={socket}
           gameId={gameInfo.gameId}
+          playerId={gameInfo.playerId}
           gameState={gameState}
           isHost={gameInfo.isHost}
           onGameStarted={handleGameStarted}

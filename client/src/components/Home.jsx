@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
+import RoomBrowser from './RoomBrowser';
+
+// Default settings for new games
+const DEFAULT_SETTINGS = {
+  auctionMode: true,
+  noRentInJail: false,
+  mortgageMode: true,
+  evenBuild: true,
+  unlimitedProperties: false,
+  startingCash: 1500,
+  speedDie: false,
+  doubleGoBonus: false
+};
 
 export default function Home({ socket, onGameCreated, onGameJoined }) {
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [joinGameId, setJoinGameId] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showRoomBrowser, setShowRoomBrowser] = useState(false);
 
-  // Game settings
-  const [settings, setSettings] = useState({
-    auctionMode: true,
-    noRentInJail: false,
-    mortgageMode: true,
-    evenBuild: true,
-    unlimitedProperties: false,
-    startingCash: 1500,
-    speedDie: false
-  });
-
-  const handleCreateGame = async () => {
+  const handleQuickPlay = async () => {
     if (!playerName.trim()) {
       setError('Please enter your name');
       return;
@@ -28,47 +29,38 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
     setError('');
 
     try {
-      console.log('Creating game with settings:', settings);
-      const response = await socket.createGame(settings);
-      console.log('Game created:', response);
-      const gameId = response.gameId;
+      const response = await socket.quickPlay(playerName.trim(), DEFAULT_SETTINGS);
 
-      // Join the game we just created
-      console.log('Joining game:', gameId, 'as', playerName.trim());
-      const joinResponse = await socket.joinGame(gameId, playerName.trim());
-      console.log('Join response:', joinResponse);
-
-      console.log('Calling onGameCreated with:', {
-        gameId,
-        playerId: joinResponse.player.id,
-        playerName: playerName.trim(),
-        isHost: true,
-        gameState: joinResponse.gameState
-      });
-
-      onGameCreated({
-        gameId,
-        playerId: joinResponse.player.id,
-        playerName: playerName.trim(),
-        isHost: true,
-        gameState: joinResponse.gameState
-      });
+      if (response.created) {
+        // Created new game
+        onGameCreated({
+          gameId: response.gameId,
+          playerId: response.player.id,
+          playerName: playerName.trim(),
+          isHost: true,
+          gameState: response.gameState
+        });
+      } else {
+        // Joined existing game
+        onGameJoined({
+          gameId: response.gameId,
+          playerId: response.player.id,
+          playerName: playerName.trim(),
+          isHost: false,
+          gameState: response.gameState
+        });
+      }
     } catch (err) {
-      console.error('Game creation error:', err);
-      setError(err.message || 'Failed to create game');
+      console.error('Quick play error:', err);
+      setError(err.message || 'Failed to find or create game');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleJoinGame = async () => {
+  const handleJoinFromBrowser = async (gameId) => {
     if (!playerName.trim()) {
       setError('Please enter your name');
-      return;
-    }
-
-    if (!joinGameId.trim()) {
-      setError('Please enter a game code');
       return;
     }
 
@@ -76,10 +68,10 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
     setError('');
 
     try {
-      const response = await socket.joinGame(joinGameId.trim().toUpperCase(), playerName.trim());
+      const response = await socket.joinGame(gameId, playerName.trim());
 
       onGameJoined({
-        gameId: joinGameId.trim().toUpperCase(),
+        gameId: gameId,
         playerId: response.player.id,
         playerName: playerName.trim(),
         isHost: response.isHost,
@@ -95,171 +87,114 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
   return (
     <div className="home-container">
       <div className="home-card">
-        <h1 className="game-title">MONOPOLY</h1>
-        <p className="game-subtitle">Multiplayer Online Edition</p>
+        {/* Logo/Title Section */}
+        <div className="home-logo">
+          <div className="logo-icon">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+              <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
+              <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
+              <rect x="70" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
+              <rect x="10" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
+              <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
+              <circle cx="50" cy="50" r="12" fill="currentColor"/>
+            </svg>
+          </div>
+          <h1 className="game-title">MONOPOLY</h1>
+          <p className="game-subtitle">Multiplayer Edition</p>
+        </div>
 
         {!socket.connected && (
           <div className="connection-status error">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
             Connecting to server...
           </div>
         )}
 
-        {error && <div className="error-message">{error}</div>}
+        {error && (
+          <div className="error-message">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            {error}
+          </div>
+        )}
 
-        <div className="home-actions">
+        {/* Name Input */}
+        <div className="home-name-section">
+          <label className="input-label">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Your Name
+          </label>
           <input
             type="text"
             className="player-name-input"
-            placeholder="Enter your name"
+            placeholder="Enter your name..."
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             maxLength={20}
             disabled={loading}
           />
+        </div>
 
+        {/* Main Actions */}
+        <div className="home-actions">
+          {/* Play Button - Large and prominent */}
           <button
-            className="btn btn-primary"
-            onClick={() => setShowCreateModal(true)}
+            className="btn btn-play"
+            onClick={handleQuickPlay}
             disabled={!socket.connected || loading || !playerName.trim()}
           >
-            Create New Game
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5,3 19,12 5,21"/>
+            </svg>
+            <span className="btn-play-text">
+              {loading ? 'Finding Game...' : 'Play'}
+            </span>
+            <span className="btn-play-hint">Join or create a game</span>
           </button>
 
-          <div className="join-game-section">
-            <input
-              type="text"
-              className="game-code-input"
-              placeholder="Enter game code"
-              value={joinGameId}
-              onChange={(e) => setJoinGameId(e.target.value.toUpperCase())}
-              maxLength={6}
-              disabled={loading}
-            />
+          {/* Secondary Buttons */}
+          <div className="home-secondary-actions">
             <button
-              className="btn btn-secondary"
-              onClick={handleJoinGame}
-              disabled={!socket.connected || loading || !playerName.trim() || !joinGameId.trim()}
+              className="btn btn-secondary-action"
+              onClick={() => setShowRoomBrowser(true)}
+              disabled={!socket.connected || loading}
             >
-              Join Game
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+              </svg>
+              Room Browser
             </button>
           </div>
         </div>
+
+        {/* Footer hint */}
+        <div className="home-footer">
+          <p>2-6 Players</p>
+        </div>
       </div>
 
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Game Settings</h2>
-
-            <div className="settings-grid">
-              <div className="setting-item">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={settings.auctionMode}
-                    onChange={(e) => setSettings({ ...settings, auctionMode: e.target.checked })}
-                  />
-                  <span>Auction Mode</span>
-                </label>
-                <p className="setting-description">Auction property when declined</p>
-              </div>
-
-              <div className="setting-item">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={settings.noRentInJail}
-                    onChange={(e) => setSettings({ ...settings, noRentInJail: e.target.checked })}
-                  />
-                  <span>No Rent in Jail</span>
-                </label>
-                <p className="setting-description">Players in jail cannot collect rent</p>
-              </div>
-
-              <div className="setting-item">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={settings.mortgageMode}
-                    onChange={(e) => setSettings({ ...settings, mortgageMode: e.target.checked })}
-                  />
-                  <span>Mortgage Mode</span>
-                </label>
-                <p className="setting-description">Enable property mortgaging</p>
-              </div>
-
-              <div className="setting-item">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={settings.evenBuild}
-                    onChange={(e) => setSettings({ ...settings, evenBuild: e.target.checked })}
-                  />
-                  <span>Even Build</span>
-                </label>
-                <p className="setting-description">Must build evenly across color set</p>
-              </div>
-
-              <div className="setting-item">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={settings.unlimitedProperties}
-                    onChange={(e) => setSettings({ ...settings, unlimitedProperties: e.target.checked })}
-                  />
-                  <span>Unlimited Properties</span>
-                </label>
-                <p className="setting-description">No limit on houses/hotels</p>
-              </div>
-
-              <div className="setting-item">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={settings.speedDie}
-                    onChange={(e) => setSettings({ ...settings, speedDie: e.target.checked })}
-                  />
-                  <span>Speed Die</span>
-                </label>
-                <p className="setting-description">Use third die for faster gameplay</p>
-              </div>
-
-              <div className="setting-item full-width">
-                <label>
-                  <span>Starting Cash: ${settings.startingCash}</span>
-                </label>
-                <input
-                  type="range"
-                  min="500"
-                  max="5000"
-                  step="100"
-                  value={settings.startingCash}
-                  onChange={(e) => setSettings({ ...settings, startingCash: parseInt(e.target.value) })}
-                />
-              </div>
-            </div>
-
-            <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setShowCreateModal(false)}
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={async () => {
-                  setShowCreateModal(false);
-                  await handleCreateGame();
-                }}
-                disabled={loading}
-              >
-                Create Game
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Room Browser Modal */}
+      {showRoomBrowser && (
+        <RoomBrowser
+          socket={socket}
+          playerName={playerName}
+          onJoin={handleJoinFromBrowser}
+          onClose={() => setShowRoomBrowser(false)}
+          disabled={loading || !playerName.trim()}
+        />
       )}
     </div>
   );

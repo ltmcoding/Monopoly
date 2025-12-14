@@ -12,7 +12,8 @@ class MonopolyGame {
       evenBuild: settings.evenBuild !== undefined ? settings.evenBuild : true,
       unlimitedProperties: settings.unlimitedProperties !== undefined ? settings.unlimitedProperties : false,
       startingCash: settings.startingCash || 1500,
-      speedDie: settings.speedDie !== undefined ? settings.speedDie : false
+      speedDie: settings.speedDie !== undefined ? settings.speedDie : false,
+      doubleGoBonus: settings.doubleGoBonus !== undefined ? settings.doubleGoBonus : false
     };
 
     // Initialize game state
@@ -301,8 +302,13 @@ class MonopolyGame {
         this.phase = "rolling";
         break;
       case 'go':
-        // No extra $200 - player already collected when passing GO
-        this.logAction('landed_on_go', player.id, {}, `${player.name} landed on GO`);
+        // Bonus for landing directly on GO (if setting enabled)
+        if (this.settings.doubleGoBonus) {
+          player.cash += 100; // Extra $100 on top of the $200 from passing
+          this.logAction('landed_on_go', player.id, { bonus: 100 }, `${player.name} landed on GO and collected $300!`);
+        } else {
+          this.logAction('landed_on_go', player.id, {}, `${player.name} landed on GO`);
+        }
         this.phase = "rolling";
         break;
       default:

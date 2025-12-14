@@ -107,6 +107,22 @@ export function useSocket() {
     return emit('joinGame', { gameId, playerName });
   };
 
+  const getGamesList = async () => {
+    return emit('getGamesList');
+  };
+
+  const quickPlay = async (playerName, settings) => {
+    return emit('quickPlay', { playerName, settings });
+  };
+
+  const updateSettings = async (gameId, settings) => {
+    return emit('updateSettings', { gameId, settings });
+  };
+
+  const changePlayerColor = async (gameId, color) => {
+    return emit('changePlayerColor', { gameId, color });
+  };
+
   const leaveGame = async (gameId) => {
     return emit('leaveGame', { gameId });
   };
@@ -197,6 +213,10 @@ export function useSocket() {
     // Game methods
     createGame,
     joinGame,
+    getGamesList,
+    quickPlay,
+    updateSettings,
+    changePlayerColor,
     leaveGame,
     startGame,
     rollDice,
