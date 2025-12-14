@@ -30,7 +30,9 @@ export default function Home({ onGameCreated, onGameJoined }) {
     setError('');
 
     try {
+      console.log('Creating game with settings:', settings);
       const response = await socket.createGame(settings);
+      console.log('Game created:', response);
       const gameId = response.gameId;
 
       // Join the game we just created
@@ -43,6 +45,7 @@ export default function Home({ onGameCreated, onGameJoined }) {
         isHost: true
       });
     } catch (err) {
+      console.error('Game creation error:', err);
       setError(err.message || 'Failed to create game');
     } finally {
       setLoading(false);
@@ -236,9 +239,9 @@ export default function Home({ onGameCreated, onGameJoined }) {
               </button>
               <button
                 className="btn btn-primary"
-                onClick={() => {
+                onClick={async () => {
                   setShowCreateModal(false);
-                  handleCreateGame();
+                  await handleCreateGame();
                 }}
                 disabled={loading}
               >
