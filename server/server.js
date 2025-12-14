@@ -49,6 +49,7 @@ io.on('connection', (socket) => {
       games.set(gameId, gameRoom);
 
       console.log(`Game created: ${gameId}`);
+      console.log(`Active games: ${Array.from(games.keys()).join(', ')}`);
 
       if (callback) {
         callback({
@@ -68,11 +69,18 @@ io.on('connection', (socket) => {
   // Join game
   socket.on('joinGame', ({ gameId, playerName }, callback) => {
     try {
+      console.log(`Join attempt - gameId: "${gameId}", playerName: "${playerName}"`);
+      console.log(`Active games: ${Array.from(games.keys()).join(', ')}`);
+      console.log(`Total games: ${games.size}`);
+
       const gameRoom = games.get(gameId);
 
       if (!gameRoom) {
+        console.log(`Game not found: "${gameId}"`);
         throw new Error('Game not found');
       }
+
+      console.log(`Game found: ${gameId}`);
 
       const player = gameRoom.addPlayer(socket, playerName);
       socket.join(gameId);
