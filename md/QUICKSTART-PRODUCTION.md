@@ -11,7 +11,7 @@ Upload the entire `Monopoly` folder to your server at `/opt/monopoly` (or any lo
 Edit `docker-compose.yml` and change this line:
 
 ```yaml
-- REACT_APP_SERVER_URL=http://YOUR_SERVER_IP:3001
+- REACT_APP_SERVER_URL=http://YOUR_SERVER_IP:3005
 ```
 
 Replace `YOUR_SERVER_IP` with:
@@ -20,7 +20,7 @@ Replace `YOUR_SERVER_IP` with:
 
 Example:
 ```yaml
-- REACT_APP_SERVER_URL=http://203.0.113.45:3001
+- REACT_APP_SERVER_URL=http://203.0.113.45:3005
 ```
 
 ### 3. Deploy in Portainer
@@ -40,7 +40,7 @@ On your router, forward these ports to your server's local IP:
 | Port | Service |
 |------|---------|
 | 80 | Web Interface |
-| 3001 | Game Server |
+| 3005 | Game Server |
 
 ### 5. Play!
 
@@ -55,7 +55,7 @@ Players access the game at:
 
 **Required:**
 - **Port 80** (TCP) → Your server
-- **Port 3001** (TCP) → Your server
+- **Port 3005** (TCP) → Your server
 
 **Optional:**
 - **Port 443** (TCP) → For future SSL/HTTPS
@@ -77,9 +77,9 @@ Every router is different, but generally:
 
 **Rule 2:**
 - Service Name: `Monopoly-Game`
-- External Port: `3001`
+- External Port: `3005`
 - Internal IP: `Your server's local IP` (e.g., `192.168.1.100`)
-- Internal Port: `3001`
+- Internal Port: `3005`
 - Protocol: `TCP`
 
 ### Find Your Server's Local IP
@@ -113,7 +113,7 @@ In Portainer, both containers should show **running** status:
 ### 2. Test Locally on Server
 
 ```bash
-curl http://localhost:3001/health
+curl http://localhost:3005/health
 ```
 
 Should return: `{"status":"ok","games":0}`
@@ -158,7 +158,7 @@ docker-compose up -d --build
 **Solution:**
 ```bash
 sudo ufw allow 80/tcp
-sudo ufw allow 3001/tcp
+sudo ufw allow 3005/tcp
 sudo ufw reload
 ```
 
@@ -186,7 +186,7 @@ If you have `game.example.com` pointing to your server:
 
 1. Edit `docker-compose.yml`:
    ```yaml
-   - REACT_APP_SERVER_URL=http://game.example.com:3001
+   - REACT_APP_SERVER_URL=http://game.example.com:3005
    ```
 
 2. Rebuild:
@@ -236,7 +236,7 @@ docker-compose up -d --build
 docker ps | grep monopoly
 
 # Test health
-curl http://localhost:3001/health
+curl http://localhost:3005/health
 ```
 
 ---

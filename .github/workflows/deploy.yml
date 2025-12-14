@@ -36,7 +36,7 @@ jobs:
         port: ${{ secrets.SSH_PORT || 22 }}
         script: |
           sleep 10
-          curl -f http://localhost:3001/health || exit 1
+          curl -f http://localhost:3005/health || exit 1
           echo "✅ Deployment successful!"
 
     - name: Send notification on failure

@@ -38,7 +38,7 @@ docker-compose up -d --build
 ### 3. Configure Ports
 Forward on router:
 - Port 80 → your server
-- Port 3001 → your server
+- Port 3005 → your server
 
 ---
 
@@ -90,7 +90,7 @@ docker logs monopoly-client
 
 ### Test Health
 ```bash
-curl http://localhost:3001/health
+curl http://localhost:3005/health
 ```
 
 ### Container Stats
@@ -125,7 +125,7 @@ docker-compose up -d
 
 ### View Active Games
 ```bash
-curl http://localhost:3001/health | jq
+curl http://localhost:3005/health | jq
 ```
 
 ---
@@ -140,7 +140,7 @@ docker-compose up -d --build
 ```
 
 ### Can't Connect from Internet
-1. Check port forwarding (80, 3001)
+1. Check port forwarding (80, 3005)
 2. Check firewall: `sudo ufw status`
 3. Verify IP in docker-compose.yml
 
@@ -169,7 +169,7 @@ docker volume prune
 | Port | Service | Must Forward? |
 |------|---------|---------------|
 | 80 | Web Interface | ✅ Yes |
-| 3001 | Game Server | ✅ Yes |
+| 3005 | Game Server | ✅ Yes |
 | 9000 | Webhook (optional) | Only if using webhooks |
 | 443 | HTTPS (optional) | Only if using SSL |
 
@@ -232,7 +232,7 @@ docker system prune -a              # Clean up
 - **Local**: `http://localhost`
 - **LAN**: `http://192.168.1.XXX`
 - **Internet**: `http://YOUR_PUBLIC_IP`
-- **Health Check**: `http://YOUR_IP:3001/health`
+- **Health Check**: `http://YOUR_IP:3005/health`
 
 ---
 
@@ -255,7 +255,7 @@ After deployment/update:
 docker-compose ps
 
 # 2. Check health
-curl http://localhost:3001/health
+curl http://localhost:3005/health
 
 # 3. Open in browser
 http://YOUR_SERVER_IP
@@ -271,7 +271,7 @@ http://YOUR_SERVER_IP
 1. Check logs: `docker-compose logs`
 2. Check guides: `DEPLOYMENT.md`, `GITHUB-SETUP.md`
 3. Check container status: `docker-compose ps`
-4. Verify ports: `netstat -tlnp | grep -E '80|3001'`
+4. Verify ports: `netstat -tlnp | grep -E '80|3005'`
 
 ---
 

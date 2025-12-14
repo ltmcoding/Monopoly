@@ -11,7 +11,7 @@
 You need to forward these ports on your router/firewall:
 
 - **Port 80** (HTTP) - For the web interface
-- **Port 3001** (WebSocket) - For the game server
+- **Port 3005** (WebSocket) - For the game server
 
 **Optional but recommended:**
 - **Port 443** (HTTPS) - If you want to add SSL later
@@ -34,12 +34,12 @@ You need to forward these ports on your router/firewall:
 Edit `docker-compose.yml` and replace `YOUR_SERVER_IP` with your actual server IP or domain:
 
 ```yaml
-- REACT_APP_SERVER_URL=http://YOUR_SERVER_IP:3001
+- REACT_APP_SERVER_URL=http://YOUR_SERVER_IP:3005
 ```
 
 For example:
-- If your server IP is `192.168.1.100`: `http://192.168.1.100:3001`
-- If you have a domain `game.example.com`: `http://game.example.com:3001`
+- If your server IP is `192.168.1.100`: `http://192.168.1.100:3005`
+- If you have a domain `game.example.com`: `http://game.example.com:3005`
 
 #### Step 3: Deploy with Portainer
 
@@ -87,7 +87,7 @@ Forward these ports to your server's local IP:
 | External Port | Internal Port | Protocol | Service |
 |--------------|---------------|----------|---------|
 | 80 | 80 | TCP | Web Interface |
-| 3001 | 3001 | TCP | Game Server |
+| 3005 | 3005 | TCP | Game Server |
 
 ### On Your Server (if using ufw/iptables)
 
@@ -96,7 +96,7 @@ Forward these ports to your server's local IP:
 sudo ufw allow 80/tcp
 
 # Allow game server
-sudo ufw allow 3001/tcp
+sudo ufw allow 3005/tcp
 
 # Optional: Allow HTTPS for future
 sudo ufw allow 443/tcp
@@ -121,7 +121,7 @@ docker ps | grep monopoly
 ### Check Server Health
 
 ```bash
-curl http://localhost:3001/health
+curl http://localhost:3005/health
 ```
 
 Should return: `{"status":"ok","games":0}`
@@ -160,7 +160,7 @@ If you have a domain name pointing to your server:
 
 1. Update `docker-compose.yml`:
    ```yaml
-   - REACT_APP_SERVER_URL=http://yourdomain.com:3001
+   - REACT_APP_SERVER_URL=http://yourdomain.com:3005
    ```
 
 2. Rebuild:
@@ -211,12 +211,12 @@ docker-compose up -d --build
 2. Check firewall rules on server
 3. Verify server is listening:
    ```bash
-   netstat -tlnp | grep -E '80|3001'
+   netstat -tlnp | grep -E '80|3005'
    ```
 
 ### WebSocket connection fails
 
-1. Ensure port 3001 is accessible
+1. Ensure port 3005 is accessible
 2. Check that `REACT_APP_SERVER_URL` matches your actual server address
 3. Try using IP address instead of domain name
 
@@ -224,7 +224,7 @@ docker-compose up -d --build
 
 1. Check server logs: `docker logs monopoly-server`
 2. Verify both containers are running: `docker ps`
-3. Test health endpoint: `curl http://localhost:3001/health`
+3. Test health endpoint: `curl http://localhost:3005/health`
 
 ## Updating the Application
 
@@ -266,7 +266,7 @@ docker-compose up -d --build
 ### View Active Games
 
 ```bash
-curl http://localhost:3001/health
+curl http://localhost:3005/health
 ```
 
 Returns: `{"status":"ok","games":5}` (shows number of active games)
@@ -288,11 +288,11 @@ Game state is stored in memory, so games are lost on restart. For persistent gam
 ## Production Checklist
 
 - [ ] Port 80 forwarded
-- [ ] Port 3001 forwarded
+- [ ] Port 3005 forwarded
 - [ ] Firewall rules configured
 - [ ] `docker-compose.yml` updated with correct server IP/domain
 - [ ] Containers running (`docker ps`)
-- [ ] Health check passing (`curl http://localhost:3001/health`)
+- [ ] Health check passing (`curl http://localhost:3005/health`)
 - [ ] Accessible from external network
 - [ ] (Optional) SSL certificate installed
 - [ ] (Optional) Domain name configured
@@ -302,7 +302,7 @@ Game state is stored in memory, so games are lost on restart. For persistent gam
 If you run into issues:
 
 1. Check container logs: `docker logs monopoly-server`
-2. Verify network connectivity: `curl http://localhost:3001/health`
+2. Verify network connectivity: `curl http://localhost:3005/health`
 3. Check Docker status: `docker ps -a`
 4. Review this deployment guide
 

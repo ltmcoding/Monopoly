@@ -86,7 +86,7 @@ npm install
 cd server
 npm start
 ```
-Server will run on http://localhost:3001
+Server will run on http://localhost:3005
 
 **Terminal 2 - Start the Client:**
 ```bash
@@ -203,14 +203,14 @@ Key mechanics:
 ## Troubleshooting
 
 ### Server won't start
-- Make sure port 3001 is not in use
+- Make sure port 3005 is not in use
 - Check that you ran `npm install` in the server directory
 - Verify Node.js version is 18 or higher
 
 ### Client won't connect
 - Ensure the server is running first
 - Check browser console for errors
-- Verify server URL in `client/src/hooks/useSocket.js` (should be http://localhost:3001)
+- Verify server URL in `client/src/hooks/useSocket.js` (should be http://localhost:3005)
 
 ### Game state issues
 - Refresh the page
@@ -282,7 +282,7 @@ This project is for educational purposes only. Monopoly is a registered trademar
 ## Quick Reference
 
 ### Server Endpoints
-- Health check: http://localhost:3001/health
+- Health check: http://localhost:3005/health
 
 ### Environment Variables (Optional)
 
@@ -290,13 +290,13 @@ Create `.env` files for custom configuration:
 
 **server/.env:**
 ```
-PORT=3001
+PORT=3005
 NODE_ENV=development
 ```
 
 **client/.env:**
 ```
-REACT_APP_SERVER_URL=http://localhost:3001
+REACT_APP_SERVER_URL=http://localhost:3005
 ```
 
 ### Useful Commands

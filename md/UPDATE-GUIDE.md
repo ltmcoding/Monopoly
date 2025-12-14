@@ -125,7 +125,7 @@ docker-compose ps
 
 ### Test health endpoint
 ```bash
-curl http://localhost:3001/health
+curl http://localhost:3005/health
 ```
 
 Should return: `{"status":"ok","games":X}`

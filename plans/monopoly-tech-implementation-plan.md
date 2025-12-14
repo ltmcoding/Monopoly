@@ -40,7 +40,7 @@
 │  └──────────────┬───────────────────────────┘   │
 │                 │                                 │
 │  ┌──────────────▼───────────────────────────┐   │
-│  │  Node.js Server (Port 3001)              │   │
+│  │  Node.js Server (Port 3005)              │   │
 │  │  - Express HTTP server                   │   │
 │  │  - Socket.io WebSocket server            │   │
 │  │  - Game room management                  │   │
@@ -455,7 +455,7 @@ Directory structure on server:
 Create `.env` file:
 ```
 NODE_ENV=production
-PORT=3001
+PORT=3005
 REDIS_URL=redis://localhost:6379
 ALLOWED_ORIGINS=https://yourdomain.com
 ```
@@ -463,7 +463,7 @@ ALLOWED_ORIGINS=https://yourdomain.com
 #### 5.4 Nginx Configuration
 Configure reverse proxy:
 - Serve React static files from `/client` directory
-- Proxy `/api` to Node.js (port 3001)
+- Proxy `/api` to Node.js (port 3005)
 - Proxy `/socket.io` to Node.js with WebSocket upgrade headers
 - Force HTTPS redirect
 - Enable gzip compression
@@ -489,7 +489,7 @@ server {
     }
     
     location /socket.io {
-        proxy_pass http://localhost:3001;
+        proxy_pass http://localhost:3005;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -725,12 +725,12 @@ When you need to scale:
 ┌───────────────▼────────────────────────┐
 │  Nginx (Ports 80/443)                  │
 │  - Static files: React build           │
-│  - Reverse proxy: /socket.io → :3001   │
+│  - Reverse proxy: /socket.io → :3005   │
 │  - SSL termination                     │
 └───────────────┬────────────────────────┘
                 │
 ┌───────────────▼────────────────────────┐
-│  Node.js + Socket.io (Port 3001)       │
+│  Node.js + Socket.io (Port 3005)       │
 │  - Managed by PM2 (cluster mode)       │
 │  - Game rooms + event handlers         │
 │  - Action validation                   │

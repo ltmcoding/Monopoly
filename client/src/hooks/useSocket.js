@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 
-const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:3001';
+const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:3005';
 
 export function useSocket() {
   const socketRef = useRef(null);

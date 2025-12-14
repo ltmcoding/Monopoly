@@ -656,7 +656,7 @@ app.get('/health', (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3005;
 server.listen(PORT, () => {
   console.log(`Monopoly server running on port ${PORT}`);
 });

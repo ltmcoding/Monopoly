@@ -11,14 +11,14 @@ services:
     container_name: monopoly-server
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "3005:3005"
     environment:
       - NODE_ENV=production
-      - PORT=3001
+      - PORT=3005
     networks:
       - monopoly-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3005/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -29,7 +29,7 @@ services:
       context: ./client
       dockerfile: Dockerfile
       args:
-        - REACT_APP_SERVER_URL=http://YOUR_SERVER_IP:3001
+        - REACT_APP_SERVER_URL=http://YOUR_SERVER_IP:3005
     container_name: monopoly-client
     restart: unless-stopped
     ports:

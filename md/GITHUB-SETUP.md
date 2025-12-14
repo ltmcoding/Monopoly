@@ -125,7 +125,7 @@ docker-compose up -d --build
 
 #### 2. Forward Port 9000
 
-On your router, forward port **9000** to your server (in addition to 80 and 3001).
+On your router, forward port **9000** to your server (in addition to 80 and 3005).
 
 #### 3. Configure GitHub Webhook
 
@@ -319,7 +319,7 @@ echo "Running database migrations..."
 
 # Add after starting containers
 echo "Running smoke tests..."
-curl http://localhost:3001/health
+curl http://localhost:3005/health
 ```
 
 ---
