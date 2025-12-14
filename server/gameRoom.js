@@ -141,7 +141,7 @@ class GameRoom {
           break;
 
         case 'endAuction':
-          this.game.endAuction();
+          this.game.endAuction(playerId);
           break;
 
         case 'proposeTrade':

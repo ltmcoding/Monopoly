@@ -236,6 +236,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           gameId={gameId}
           auction={gameState.auction}
           myPlayer={getMyPlayer()}
+          gameState={gameState}
         />
       )}
     </div>

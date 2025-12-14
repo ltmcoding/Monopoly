@@ -31,6 +31,8 @@ class MonopolyGame {
     this.communityChestCards = this.shuffleCards([...COMMUNITY_CHEST_CARDS]);
     this.pendingCardAction = null;
     this.lastDiceRoll = null;
+    this.hasRolledThisTurn = false;
+    this.hostId = null; // Set when first player joins
 
     // Initialize properties
     BOARD_SPACES.forEach(space => {
@@ -75,6 +77,12 @@ class MonopolyGame {
     };
 
     this.players.push(newPlayer);
+
+    // First player becomes host
+    if (this.players.length === 1) {
+      this.hostId = newPlayer.id;
+    }
+
     this.logAction('player_joined', newPlayer.id, {}, `${newPlayer.name} joined the game`);
     return newPlayer;
   }
@@ -125,6 +133,7 @@ class MonopolyGame {
 
     this.dice = speedDieFace !== null ? [die1, die2, speedDieFace] : [die1, die2];
     this.lastDiceRoll = die1 + die2;
+    this.hasRolledThisTurn = true;
 
     // Handle jail
     if (player.inJail) {
@@ -292,8 +301,8 @@ class MonopolyGame {
         this.phase = "rolling";
         break;
       case 'go':
-        player.cash += 200;
-        this.logAction('landed_on_go', player.id, {}, `${player.name} landed on GO and collected $200`);
+        // No extra $200 - player already collected when passing GO
+        this.logAction('landed_on_go', player.id, {}, `${player.name} landed on GO`);
         this.phase = "rolling";
         break;
       default:
@@ -541,7 +550,7 @@ class MonopolyGame {
       } else if (property.houses > 0) {
         rent = space.rent[property.houses]; // House rent (1-4)
       } else if (ownsSet) {
-        rent = space.rent[1]; // Double base rent for owning set
+        rent = space.rent[0] * 2; // Double base rent for owning complete color set
       } else {
         rent = space.rent[0]; // Base rent
       }
@@ -637,9 +646,12 @@ class MonopolyGame {
     this.logAction('bid_placed', playerId, { amount }, `${player.name} bid $${amount}`);
   }
 
-  // End auction
-  endAuction() {
+  // End auction (only host or current player can end)
+  endAuction(playerId) {
     if (!this.auction || !this.auction.active) throw new Error("No active auction");
+    if (playerId !== this.hostId && playerId !== this.getCurrentPlayer().id) {
+      throw new Error("Only the host or current player can end the auction");
+    }
 
     if (this.auction.currentBidder) {
       const winner = this.getPlayer(this.auction.currentBidder);
@@ -1015,8 +1027,12 @@ class MonopolyGame {
     if (this.phase === "buying" || this.phase === "auction") {
       throw new Error("Must complete current action");
     }
+    if (!this.hasRolledThisTurn) {
+      throw new Error("Must roll dice before ending turn");
+    }
 
     this.doublesCount = 0;
+    this.hasRolledThisTurn = false;
     this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
 
     // Skip bankrupt players
@@ -1066,7 +1082,9 @@ class MonopolyGame {
       availableHotels: this.availableHotels,
       auction: this.auction,
       trades: this.trades,
-      actionLog: this.actionLog.slice(-20) // Last 20 actions
+      actionLog: this.actionLog.slice(-20), // Last 20 actions
+      hasRolledThisTurn: this.hasRolledThisTurn,
+      hostId: this.hostId
     };
   }
 

@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { getSpaceById } from '../utils/boardData';
 import { formatCurrency } from '../utils/formatters';
 
-export default function AuctionModal({ socket, gameId, auction, myPlayer }) {
+export default function AuctionModal({ socket, gameId, auction, myPlayer, gameState }) {
   const [bidAmount, setBidAmount] = useState((auction.currentBid || 0) + 10);
   const [loading, setLoading] = useState(false);
 
   const property = getSpaceById(auction.propertyId);
   const isWinning = auction.currentBidder === myPlayer.id;
   const minBid = auction.currentBid + 1;
+  const currentPlayer = gameState?.players[gameState?.currentPlayerIndex];
+  const canEndAuction = myPlayer.id === gameState?.hostId || myPlayer.id === currentPlayer?.id;
 
   const handlePlaceBid = async () => {
     if (bidAmount <= auction.currentBid) {
@@ -110,19 +112,21 @@ export default function AuctionModal({ socket, gameId, auction, myPlayer }) {
         </div>
 
         <div className="auction-info">
-          <p>The auction will continue until the host ends it.</p>
+          <p>The auction will continue until the host or current player ends it.</p>
           <p>Highest bidder wins the property.</p>
         </div>
 
-        <div className="modal-actions">
-          <button
-            className="btn btn-warning"
-            onClick={handleEndAuction}
-            disabled={loading}
-          >
-            End Auction
-          </button>
-        </div>
+        {canEndAuction && (
+          <div className="modal-actions">
+            <button
+              className="btn btn-warning"
+              onClick={handleEndAuction}
+              disabled={loading}
+            >
+              End Auction
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

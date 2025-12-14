@@ -37,7 +37,7 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
   };
 
   const canEndTurn = () => {
-    return gameState.phase === 'rolling' && isMyTurn && !loading;
+    return gameState.phase === 'rolling' && isMyTurn && !loading && gameState.hasRolledThisTurn;
   };
 
   const canPayJail = () => {
