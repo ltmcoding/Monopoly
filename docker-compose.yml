@@ -26,7 +26,7 @@ services:
       context: ./client
       dockerfile: Dockerfile
       args:
-        - REACT_APP_SERVER_URL=http://api.monopoly.ltmcoding.dev
+        - REACT_APP_SERVER_URL=https://api.monopoly.ltmcoding.dev
     container_name: monopoly-client
     restart: unless-stopped
     ports:
