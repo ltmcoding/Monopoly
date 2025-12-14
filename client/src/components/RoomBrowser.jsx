@@ -6,6 +6,13 @@ export default function RoomBrowser({ socket, playerName, onJoin, onClose, disab
   const [error, setError] = useState('');
 
   const fetchRooms = async () => {
+    // Don't fetch if socket is not connected
+    if (!socket.connected) {
+      setError('Not connected to server');
+      setLoading(false);
+      return;
+    }
+
     // Don't show loading spinner on refresh, only on initial load
     if (rooms.length === 0) {
       setLoading(true);
@@ -16,8 +23,12 @@ export default function RoomBrowser({ socket, playerName, onJoin, onClose, disab
       setRooms(response.games || []);
       setError(''); // Clear error on success
     } catch (err) {
-      // Only show error if it's not a connection issue (those are transient)
-      if (err.message !== 'Socket not connected' && err.message !== 'Request timed out') {
+      // Show appropriate error message
+      if (err.message === 'Socket not connected') {
+        setError('Not connected to server');
+      } else if (err.message === 'Request timed out') {
+        setError('Server not responding');
+      } else {
         setError('Failed to fetch rooms');
       }
       console.error('Error fetching rooms:', err);
@@ -27,16 +38,22 @@ export default function RoomBrowser({ socket, playerName, onJoin, onClose, disab
   };
 
   useEffect(() => {
-    // Initial fetch with a small delay to ensure socket is ready
-    const initialFetch = setTimeout(fetchRooms, 500);
+    // Fetch immediately when connected
+    if (socket.connected) {
+      fetchRooms();
+    }
 
-    // Refresh every 5 seconds
-    const interval = setInterval(fetchRooms, 5000);
+    // Refresh every 5 seconds only when connected
+    const interval = setInterval(() => {
+      if (socket.connected) {
+        fetchRooms();
+      }
+    }, 5000);
+
     return () => {
-      clearTimeout(initialFetch);
       clearInterval(interval);
     };
-  }, []);
+  }, [socket.connected]);
 
   const handleJoin = (gameId) => {
     if (!disabled) {
