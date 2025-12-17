@@ -158,7 +158,6 @@ const renderGoToJailCorner = (size) => (
 
 export default function Board2D({
   gameState,
-  onPropertyClick,
   onRollDice,
   isMyTurn = false,
   canRoll = false,
@@ -284,7 +283,6 @@ export default function Board2D({
   // Bottom tile (color bar top, name below color bar, price at bottom)
   const renderBottomTile = (space, pos, propertyState) => {
     const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
-    const ownerColor = propertyState?.ownerId ? getOwnerColor(propertyState.ownerId) : null;
     const isMortgaged = propertyState?.mortgaged;
     const name1 = truncate(space.name.split(' ')[0].toUpperCase(), 9);
     const name2 = space.name.split(' ').length > 1 ? truncate(space.name.split(' ').slice(1).join(' ').toUpperCase(), 9) : '';
@@ -305,8 +303,6 @@ export default function Board2D({
         {name2 && <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
         {space.price && <text x={pos.w/2} y={pos.h - fontSize * 0.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
         {renderBuildings(propertyState, pos, 'bottom')}
-        {/* Owner border rendered LAST to be on top */}
-        {ownerColor && <rect width={pos.w} height={pos.h} fill="none" stroke={ownerColor} strokeWidth="3" rx={3}/>}
       </g>
     );
   };
@@ -314,7 +310,6 @@ export default function Board2D({
   // Top tile (mirrored - price at top, name above color bar, color bar at bottom)
   const renderTopTile = (space, pos, propertyState) => {
     const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
-    const ownerColor = propertyState?.ownerId ? getOwnerColor(propertyState.ownerId) : null;
     const isMortgaged = propertyState?.mortgaged;
     const name1 = truncate(space.name.split(' ')[0].toUpperCase(), 9);
     const name2 = space.name.split(' ').length > 1 ? truncate(space.name.split(' ').slice(1).join(' ').toUpperCase(), 9) : '';
@@ -332,23 +327,23 @@ export default function Board2D({
         <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
         {name2 && <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 0.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
         {renderBuildings(propertyState, pos, 'top')}
-        {ownerColor && <rect width={pos.w} height={pos.h} fill="none" stroke={ownerColor} strokeWidth="3" rx={3}/>}
       </g>
     );
   };
 
-  // Left tile - names at top (near color bar), price at bottom (away from color bar)
-  // When rotated 90, "top" becomes right side, so names appear near color bar
+  // Left tile - text near color bar (right edge), price at outer edge (left)
+  // Mirror of bottom tile layout but rotated 90 degrees
   const renderLeftTile = (space, pos, propertyState) => {
     const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
-    const ownerColor = propertyState?.ownerId ? getOwnerColor(propertyState.ownerId) : null;
     const isMortgaged = propertyState?.mortgaged;
     const name1 = truncate(space.name.split(' ')[0].toUpperCase(), 9);
     const name2 = space.name.split(' ').length > 1 ? truncate(space.name.split(' ').slice(1).join(' ').toUpperCase(), 9) : '';
 
-    // For left side: color bar is on RIGHT edge (inside board)
-    // Text rotated 90 degrees - "up" in rotated space = toward color bar
-    // So names should be at positive y (after rotation), price at negative y
+    // Color bar on RIGHT edge (toward board center)
+    // Text should be positioned like bottom tile: name right under color bar, price at far end
+    // After rotate(90): negative y moves RIGHT, positive y moves LEFT
+    const textCenterX = pos.w - colorBarHeight - fontSize * 2.5; // Close to color bar
+
     return (
       <g>
         <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
@@ -360,29 +355,33 @@ export default function Board2D({
             <text textAnchor="middle" fontSize={colorBarHeight * 0.5} fill="#ef4444" fontWeight="bold">MORTGAGED</text>
           </g>
         )}
-        <g transform={`translate(${(pos.w - colorBarHeight)/2}, ${pos.h/2}) rotate(90)`}>
-          {/* Names near color bar (positive y in rotated space = toward right = toward color bar) */}
-          <text x={0} y={-fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
-          {name2 && <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
-          {/* Price away from color bar (negative y = toward left = away from color bar) */}
-          {space.price && <text x={0} y={fontSize * 1.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
+        <g transform={`translate(${textCenterX}, ${pos.h/2}) rotate(90)`}>
+          {/* Names - after rotation, these appear close to color bar */}
+          <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
+          {name2 && <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
+        </g>
+        {/* Price at outer edge (left side) - separate transform */}
+        <g transform={`translate(${fontSize * 1.5}, ${pos.h/2}) rotate(90)`}>
+          {space.price && <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
         </g>
         {renderBuildings(propertyState, pos, 'left')}
-        {ownerColor && <rect width={pos.w} height={pos.h} fill="none" stroke={ownerColor} strokeWidth="3" rx={3}/>}
       </g>
     );
   };
 
-  // Right tile - names at top (near color bar), price at bottom (away from color bar)
+  // Right tile - text near color bar (left edge), price at outer edge (right)
+  // Mirror of bottom tile layout but rotated -90 degrees
   const renderRightTile = (space, pos, propertyState) => {
     const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
-    const ownerColor = propertyState?.ownerId ? getOwnerColor(propertyState.ownerId) : null;
     const isMortgaged = propertyState?.mortgaged;
     const name1 = truncate(space.name.split(' ')[0].toUpperCase(), 9);
     const name2 = space.name.split(' ').length > 1 ? truncate(space.name.split(' ').slice(1).join(' ').toUpperCase(), 9) : '';
 
-    // For right side: color bar is on LEFT edge (inside board)
-    // Text rotated -90 degrees
+    // Color bar on LEFT edge (toward board center)
+    // Text should be positioned like bottom tile: name right under color bar, price at far end
+    // After rotate(-90): negative y moves LEFT, positive y moves RIGHT
+    const textCenterX = colorBarHeight + fontSize * 2.5; // Close to color bar
+
     return (
       <g>
         <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
@@ -394,15 +393,16 @@ export default function Board2D({
             <text textAnchor="middle" fontSize={colorBarHeight * 0.5} fill="#ef4444" fontWeight="bold">MORTGAGED</text>
           </g>
         )}
-        <g transform={`translate(${(pos.w + colorBarHeight)/2}, ${pos.h/2}) rotate(-90)`}>
-          {/* Names near color bar */}
-          <text x={0} y={-fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
-          {name2 && <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
-          {/* Price away from color bar */}
-          {space.price && <text x={0} y={fontSize * 1.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
+        <g transform={`translate(${textCenterX}, ${pos.h/2}) rotate(-90)`}>
+          {/* Names - after rotation, these appear close to color bar */}
+          <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
+          {name2 && <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
+        </g>
+        {/* Price at outer edge (right side) - separate transform */}
+        <g transform={`translate(${pos.w - fontSize * 1.5}, ${pos.h/2}) rotate(-90)`}>
+          {space.price && <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
         </g>
         {renderBuildings(propertyState, pos, 'right')}
-        {ownerColor && <rect width={pos.w} height={pos.h} fill="none" stroke={ownerColor} strokeWidth="3" rx={3}/>}
       </g>
     );
   };
@@ -764,7 +764,7 @@ export default function Board2D({
           <text x={cardWidth/2} y={space.color ? 70 : 46} textAnchor="middle" fontSize={12} fill={TILE_COLORS.textMuted}>Unowned - ${space.price}</text>
         )}
 
-        {/* Rent info for properties - larger text */}
+        {/* Rent info for properties - rent array is [base, 1H, 2H, 3H, 4H, Hotel] */}
         {space.type === 'property' && space.rent && (
           <>
             <line x1={12} y1={space.color ? 82 : 58} x2={cardWidth-12} y2={space.color ? 82 : 58} stroke={TILE_COLORS.border} strokeWidth="1"/>
@@ -772,22 +772,22 @@ export default function Board2D({
             <text x={cardWidth-12} y={(space.color ? 82 : 58) + 18} textAnchor="end" fontSize={11} fill={propertyState?.houses === 0 && !propertyState?.hotels ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[0]}</text>
 
             <text x={12} y={(space.color ? 82 : 58) + 34} fontSize={11} fill={TILE_COLORS.textMuted}>With Color Set</text>
-            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 34} textAnchor="end" fontSize={11} fill={TILE_COLORS.text} fontWeight="bold">${space.rent[1]}</text>
+            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 34} textAnchor="end" fontSize={11} fill={TILE_COLORS.text} fontWeight="bold">${space.rent[0] * 2}</text>
 
             <text x={12} y={(space.color ? 82 : 58) + 50} fontSize={11} fill={TILE_COLORS.textMuted}>With 1 House</text>
-            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 50} textAnchor="end" fontSize={11} fill={propertyState?.houses === 1 ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[2]}</text>
+            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 50} textAnchor="end" fontSize={11} fill={propertyState?.houses === 1 ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[1]}</text>
 
             <text x={12} y={(space.color ? 82 : 58) + 66} fontSize={11} fill={TILE_COLORS.textMuted}>With 2 Houses</text>
-            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 66} textAnchor="end" fontSize={11} fill={propertyState?.houses === 2 ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[3]}</text>
+            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 66} textAnchor="end" fontSize={11} fill={propertyState?.houses === 2 ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[2]}</text>
 
             <text x={12} y={(space.color ? 82 : 58) + 82} fontSize={11} fill={TILE_COLORS.textMuted}>With 3 Houses</text>
-            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 82} textAnchor="end" fontSize={11} fill={propertyState?.houses === 3 ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[4]}</text>
+            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 82} textAnchor="end" fontSize={11} fill={propertyState?.houses === 3 ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[3]}</text>
 
             <text x={12} y={(space.color ? 82 : 58) + 98} fontSize={11} fill={TILE_COLORS.textMuted}>With 4 Houses</text>
-            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 98} textAnchor="end" fontSize={11} fill={propertyState?.houses === 4 ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[5]}</text>
+            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 98} textAnchor="end" fontSize={11} fill={propertyState?.houses === 4 && !propertyState?.hotels ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[4]}</text>
 
             <text x={12} y={(space.color ? 82 : 58) + 114} fontSize={11} fill={TILE_COLORS.textMuted}>With HOTEL</text>
-            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 114} textAnchor="end" fontSize={11} fill={propertyState?.hotels > 0 ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[6] || space.rent[5]}</text>
+            <text x={cardWidth-12} y={(space.color ? 82 : 58) + 114} textAnchor="end" fontSize={11} fill={propertyState?.hotels > 0 ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">${space.rent[5]}</text>
 
             <line x1={12} y1={(space.color ? 82 : 58) + 126} x2={cardWidth-12} y2={(space.color ? 82 : 58) + 126} stroke={TILE_COLORS.border} strokeWidth="1"/>
 
@@ -852,7 +852,7 @@ export default function Board2D({
           <g transform={`translate(0, ${cardHeight - 65})`}>
             <line x1={12} y1={0} x2={cardWidth-12} y2={0} stroke={TILE_COLORS.border} strokeWidth="1"/>
 
-            {/* Build house button */}
+            {/* Build house button (when houses < 4) */}
             {space.type === 'property' && !propertyState.mortgaged && propertyState.houses < 4 && !propertyState.hotels && (
               <g
                 transform="translate(12, 12)"
@@ -862,6 +862,19 @@ export default function Board2D({
                 <rect width={90} height={42} fill="#22c55e" rx={4}/>
                 <text x={45} y={18} textAnchor="middle" fontSize={18} fill="white" fontWeight="bold">▲</text>
                 <text x={45} y={34} textAnchor="middle" fontSize={10} fill="white" fontWeight="bold">Build House</text>
+              </g>
+            )}
+
+            {/* Build hotel button (when houses === 4) */}
+            {space.type === 'property' && !propertyState.mortgaged && propertyState.houses === 4 && !propertyState.hotels && (
+              <g
+                transform="translate(12, 12)"
+                style={{cursor: actionLoading ? 'wait' : 'pointer'}}
+                onClick={() => !actionLoading && handlePropertyAction('buildHotel', space.id)}
+              >
+                <rect width={90} height={42} fill="#dc2626" rx={4}/>
+                <text x={45} y={18} textAnchor="middle" fontSize={18} fill="white" fontWeight="bold">🏨</text>
+                <text x={45} y={34} textAnchor="middle" fontSize={10} fill="white" fontWeight="bold">Build Hotel</text>
               </g>
             )}
 
@@ -875,6 +888,19 @@ export default function Board2D({
                 <rect width={90} height={42} fill="#f59e0b" rx={4}/>
                 <text x={45} y={18} textAnchor="middle" fontSize={18} fill="white" fontWeight="bold">▼</text>
                 <text x={45} y={34} textAnchor="middle" fontSize={10} fill="white" fontWeight="bold">Sell House</text>
+              </g>
+            )}
+
+            {/* Sell hotel button */}
+            {space.type === 'property' && propertyState.hotels > 0 && (
+              <g
+                transform="translate(118, 12)"
+                style={{cursor: actionLoading ? 'wait' : 'pointer'}}
+                onClick={() => !actionLoading && handlePropertyAction('sellHotel', space.id)}
+              >
+                <rect width={90} height={42} fill="#f59e0b" rx={4}/>
+                <text x={45} y={18} textAnchor="middle" fontSize={18} fill="white" fontWeight="bold">▼</text>
+                <text x={45} y={34} textAnchor="middle" fontSize={10} fill="white" fontWeight="bold">Sell Hotel</text>
               </g>
             )}
 
@@ -1016,6 +1042,7 @@ export default function Board2D({
           </g>
         </g>
 
+        {/* Render all tiles first */}
         {BOARD_SPACES.map((space) => {
           const pos = getSpacePosition(space.position);
           return (
@@ -1023,11 +1050,23 @@ export default function Board2D({
               key={space.id}
               transform={`translate(${pos.x}, ${pos.y})`}
               onMouseEnter={() => handleMouseEnter(space.id)}
-              onClick={() => onPropertyClick && onPropertyClick(space.id)}
               style={{ cursor: 'pointer' }}
             >
               {renderSpace(space, pos)}
               {renderPlayers(space.position, pos)}
+            </g>
+          );
+        })}
+
+        {/* Render owner borders AFTER all tiles so they appear on top */}
+        {BOARD_SPACES.map((space) => {
+          const propertyState = getPropertyState(space);
+          if (!propertyState?.ownerId) return null;
+          const ownerColor = getOwnerColor(propertyState.ownerId);
+          const pos = getSpacePosition(space.position);
+          return (
+            <g key={`owner-${space.id}`} transform={`translate(${pos.x}, ${pos.y})`} style={{ pointerEvents: 'none' }}>
+              <rect width={pos.w} height={pos.h} fill="none" stroke={ownerColor} strokeWidth="3" rx={3}/>
             </g>
           );
         })}

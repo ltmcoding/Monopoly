@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Board2D from './Board2D';
 import PlayerPanel from './PlayerPanel';
 import ActionPanel from './ActionPanel';
-import PropertyCard from './PropertyCard';
 import TradeModal from './TradeModal';
 import AuctionModal from './AuctionModal';
 import GameLog from './GameLog';
 
 export default function Game({ socket, gameId, playerId, initialGameState, onExit }) {
   const [gameState, setGameState] = useState(initialGameState);
-  const [selectedProperty, setSelectedProperty] = useState(null);
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [notification, setNotification] = useState(null);
 
@@ -134,10 +132,6 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
     return currentPlayer && currentPlayer.id === playerId;
   };
 
-  const handlePropertyClick = (propertyId) => {
-    setSelectedProperty(propertyId);
-  };
-
   const handleRollDice = async () => {
     try {
       await socket.rollDice(gameId);
@@ -207,7 +201,6 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
         <div className="game-center">
           <Board2D
             gameState={gameState}
-            onPropertyClick={handlePropertyClick}
             onRollDice={handleRollDice}
             isMyTurn={isMyTurn()}
             canRoll={canRollDice()}
@@ -228,18 +221,6 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           />
         </div>
       </div>
-
-      {selectedProperty !== null && (
-        <PropertyCard
-          propertyId={selectedProperty}
-          gameState={gameState}
-          myPlayer={getMyPlayer()}
-          isMyTurn={isMyTurn()}
-          gameId={gameId}
-          socket={socket}
-          onClose={() => setSelectedProperty(null)}
-        />
-      )}
 
       {showTradeModal && (
         <TradeModal

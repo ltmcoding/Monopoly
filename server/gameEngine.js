@@ -791,15 +791,15 @@ class MonopolyGame {
     if (property.ownerId !== playerId) throw new Error("You don't own this property");
     if (property.houses === 0) throw new Error("No houses to sell");
 
-    // Check even build rule
+    // Check even build rule - can only sell from properties with most houses
     if (this.settings.evenBuild) {
       const colorGroup = Object.keys(COLOR_GROUPS).find(color =>
         COLOR_GROUPS[color].includes(propertyId)
       );
-      const minHouses = Math.min(...COLOR_GROUPS[colorGroup].map(id =>
+      const maxHouses = Math.max(...COLOR_GROUPS[colorGroup].map(id =>
         this.properties[id].houses
       ));
-      if (property.houses <= minHouses) {
+      if (property.houses < maxHouses) {
         throw new Error("Must sell evenly across color set");
       }
     }
