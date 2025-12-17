@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getSpaceById, COLOR_MAP } from '../utils/boardData';
 import { formatCurrency } from '../utils/formatters';
 
-export default function PropertyCard({ propertyId, gameState, myPlayer, isMyTurn, gameId, onClose }) {
+export default function PropertyCard({ propertyId, gameState, myPlayer, isMyTurn, gameId, socket, onClose }) {
+  const [loading, setLoading] = useState(false);
   const space = getSpaceById(propertyId);
 
   if (!space) {
@@ -13,6 +14,55 @@ export default function PropertyCard({ propertyId, gameState, myPlayer, isMyTurn
   const owner = property && property.ownerId
     ? gameState.players.find(p => p.id === property.ownerId)
     : null;
+
+  const isMyProperty = owner && myPlayer && owner.id === myPlayer.id;
+
+  const handleAction = async (action, data = {}) => {
+    if (!socket) return;
+    setLoading(true);
+    try {
+      await socket[action](gameId, ...Object.values(data));
+    } catch (err) {
+      alert(err.message || 'Action failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const canBuildHouse = () => {
+    if (!isMyProperty || !isMyTurn || loading) return false;
+    if (space.type !== 'property') return false;
+    if (property.mortgaged) return false;
+    if (property.hotels > 0) return false;
+    if (property.houses >= 4) return false;
+    if (myPlayer.cash < space.houseCost) return false;
+    return true;
+  };
+
+  const canBuildHotel = () => {
+    if (!isMyProperty || !isMyTurn || loading) return false;
+    if (space.type !== 'property') return false;
+    if (property.mortgaged) return false;
+    if (property.houses !== 4) return false;
+    if (property.hotels > 0) return false;
+    if (myPlayer.cash < space.hotelCost) return false;
+    return true;
+  };
+
+  const canMortgage = () => {
+    if (!isMyProperty || loading) return false;
+    if (property.mortgaged) return false;
+    if (property.houses > 0 || property.hotels > 0) return false;
+    return true;
+  };
+
+  const canUnmortgage = () => {
+    if (!isMyProperty || loading) return false;
+    if (!property.mortgaged) return false;
+    const unmortgageCost = Math.floor(space.mortgageValue * 1.1);
+    if (myPlayer.cash < unmortgageCost) return false;
+    return true;
+  };
 
   const renderPropertyDetails = () => {
     if (space.type === 'property') {
@@ -112,11 +162,11 @@ export default function PropertyCard({ propertyId, gameState, myPlayer, isMyTurn
             <h4>Rent:</h4>
             <div className="property-row">
               <span>1 Utility:</span>
-              <span>4× dice roll</span>
+              <span>4x dice roll</span>
             </div>
             <div className="property-row">
               <span>2 Utilities:</span>
-              <span>10× dice roll</span>
+              <span>10x dice roll</span>
             </div>
           </div>
           <div className="property-row">
@@ -127,6 +177,58 @@ export default function PropertyCard({ propertyId, gameState, myPlayer, isMyTurn
       );
     }
     return null;
+  };
+
+  const renderActions = () => {
+    if (!isMyProperty || !socket) return null;
+
+    const showBuild = canBuildHouse() || canBuildHotel();
+    const showMortgage = canMortgage();
+    const showUnmortgage = canUnmortgage();
+
+    if (!showBuild && !showMortgage && !showUnmortgage) return null;
+
+    return (
+      <div className="property-actions-section">
+        <h4>Actions</h4>
+        {canBuildHouse() && (
+          <button
+            className="btn btn-success btn-small"
+            onClick={() => handleAction('buildHouse', { propertyId })}
+            disabled={loading}
+          >
+            Build House ({formatCurrency(space.houseCost)})
+          </button>
+        )}
+        {canBuildHotel() && (
+          <button
+            className="btn btn-success btn-small"
+            onClick={() => handleAction('buildHotel', { propertyId })}
+            disabled={loading}
+          >
+            Build Hotel ({formatCurrency(space.hotelCost)})
+          </button>
+        )}
+        {canMortgage() && (
+          <button
+            className="btn btn-warning btn-small"
+            onClick={() => handleAction('mortgage', { propertyId })}
+            disabled={loading}
+          >
+            Mortgage ({formatCurrency(space.mortgageValue)})
+          </button>
+        )}
+        {canUnmortgage() && (
+          <button
+            className="btn btn-primary btn-small"
+            onClick={() => handleAction('unmortgage', { propertyId })}
+            disabled={loading}
+          >
+            Unmortgage ({formatCurrency(Math.floor(space.mortgageValue * 1.1))})
+          </button>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -163,6 +265,8 @@ export default function PropertyCard({ propertyId, gameState, myPlayer, isMyTurn
         )}
 
         {renderPropertyDetails()}
+
+        {renderActions()}
 
         <div className="modal-actions">
           <button className="btn btn-secondary" onClick={onClose}>

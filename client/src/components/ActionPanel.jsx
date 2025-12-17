@@ -4,7 +4,6 @@ import { formatCurrency, getPhaseDisplay } from '../utils/formatters';
 
 export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyTurn, onOpenTrade }) {
   const [loading, setLoading] = useState(false);
-  const [selectedPropertyForBuilding, setSelectedPropertyForBuilding] = useState(null);
 
   if (!myPlayer) return null;
 
@@ -51,41 +50,6 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
     return myPlayer.inJail && myPlayer.getOutOfJailCards > 0 && isMyTurn;
   };
 
-  const getMyBuildableProperties = () => {
-    return myPlayer.properties
-      .map(propId => {
-        const space = getSpaceById(propId);
-        const property = gameState.properties[propId];
-        return { space, property, id: propId };
-      })
-      .filter(({ space, property }) => {
-        if (space.type !== 'property') return false;
-        if (property.mortgaged) return false;
-        if (property.hotels > 0) return false;
-        return true;
-      });
-  };
-
-  const getMortgageableProperties = () => {
-    return myPlayer.properties
-      .map(propId => {
-        const space = getSpaceById(propId);
-        const property = gameState.properties[propId];
-        return { space, property, id: propId };
-      })
-      .filter(({ property }) => !property.mortgaged && property.houses === 0 && property.hotels === 0);
-  };
-
-  const getUnmortgageableProperties = () => {
-    return myPlayer.properties
-      .map(propId => {
-        const space = getSpaceById(propId);
-        const property = gameState.properties[propId];
-        return { space, property, id: propId };
-      })
-      .filter(({ property }) => property.mortgaged);
-  };
-
   return (
     <div className="action-panel">
       <h3>Actions</h3>
@@ -95,7 +59,7 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
       </div>
 
       {isMyTurn ? (
-        <div className="your-turn-indicator">✓ Your Turn</div>
+        <div className="your-turn-indicator">Your Turn</div>
       ) : (
         <div className="waiting-indicator">
           Waiting for {gameState.players[gameState.currentPlayerIndex]?.name}
@@ -110,7 +74,7 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
             onClick={() => handleAction('rollDice')}
             disabled={loading}
           >
-            🎲 Roll Dice
+            Roll Dice
           </button>
         )}
 
@@ -160,65 +124,13 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
           </button>
         )}
 
-        {/* Build Houses */}
-        {isMyTurn && !myPlayer.inJail && getMyBuildableProperties().length > 0 && (
-          <div className="property-actions">
-            <h4>Build on Properties:</h4>
-            {getMyBuildableProperties().map(({ space, property, id }) => (
-              <button
-                key={id}
-                className="btn btn-small btn-building"
-                onClick={() => handleAction('buildHouse', { propertyId: id })}
-                disabled={loading}
-              >
-                Build House on {space.name} ({formatCurrency(space.houseCost)})
-                {property.houses > 0 && ` [${property.houses}H]`}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Mortgage Properties */}
-        {gameState.settings.mortgageMode && getMortgageableProperties().length > 0 && (
-          <div className="property-actions">
-            <h4>Mortgage:</h4>
-            {getMortgageableProperties().map(({ space, id }) => (
-              <button
-                key={id}
-                className="btn btn-small btn-secondary"
-                onClick={() => handleAction('mortgage', { propertyId: id })}
-                disabled={loading}
-              >
-                Mortgage {space.name} ({formatCurrency(space.mortgageValue)})
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Unmortgage Properties */}
-        {gameState.settings.mortgageMode && getUnmortgageableProperties().length > 0 && (
-          <div className="property-actions">
-            <h4>Unmortgage:</h4>
-            {getUnmortgageableProperties().map(({ space, id }) => (
-              <button
-                key={id}
-                className="btn btn-small btn-success"
-                onClick={() => handleAction('unmortgage', { propertyId: id })}
-                disabled={loading}
-              >
-                Unmortgage {space.name} ({formatCurrency(Math.floor(space.mortgageValue * 1.1))})
-              </button>
-            ))}
-          </div>
-        )}
-
         {/* Trade */}
         <button
           className="btn btn-info btn-action"
           onClick={onOpenTrade}
           disabled={loading || myPlayer.isBankrupt}
         >
-          💱 Propose Trade
+          Propose Trade
         </button>
 
         {/* End Turn */}

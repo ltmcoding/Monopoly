@@ -199,6 +199,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
             players={gameState.players}
             currentPlayerIndex={gameState.currentPlayerIndex}
             myPlayerId={playerId}
+            gameState={gameState}
           />
           <GameLog actionLog={gameState.actionLog || []} />
         </div>
@@ -235,6 +236,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           myPlayer={getMyPlayer()}
           isMyTurn={isMyTurn()}
           gameId={gameId}
+          socket={socket}
           onClose={() => setSelectedProperty(null)}
         />
       )}

@@ -1,7 +1,17 @@
 import React from 'react';
 import { formatCurrency } from '../utils/formatters';
+import { getSpaceById, COLOR_MAP } from '../utils/boardData';
 
-export default function PlayerPanel({ players, currentPlayerIndex, myPlayerId }) {
+export default function PlayerPanel({ players, currentPlayerIndex, myPlayerId, gameState }) {
+  const getPropertyColor = (space) => {
+    if (space.type === 'property' && space.color) {
+      return COLOR_MAP[space.color] || '#888';
+    }
+    if (space.type === 'railroad') return '#444';
+    if (space.type === 'utility') return '#888';
+    return '#666';
+  };
+
   return (
     <div className="player-panel">
       <h3>Players</h3>
@@ -31,14 +41,9 @@ export default function PlayerPanel({ players, currentPlayerIndex, myPlayerId })
               </div>
 
               <div className="player-stats">
-                <div className="stat">
-                  <span className="stat-label">Properties:</span>
-                  <span className="stat-value">{player.properties.length}</span>
-                </div>
-
                 {player.inJail && (
                   <div className="stat jail-indicator">
-                    <span>🔒 In Jail ({3 - player.jailTurns} turns left)</span>
+                    <span>In Jail ({3 - player.jailTurns} turns left)</span>
                   </div>
                 )}
 
@@ -51,14 +56,49 @@ export default function PlayerPanel({ players, currentPlayerIndex, myPlayerId })
 
                 {isBankrupt && (
                   <div className="stat bankrupt-indicator">
-                    <span>💀 Bankrupt</span>
+                    <span>Bankrupt</span>
                   </div>
                 )}
               </div>
 
+              {/* Owned Properties List */}
+              {player.properties.length > 0 && gameState && (
+                <div className="player-properties-list">
+                  <div className="properties-header">Properties ({player.properties.length})</div>
+                  <div className="properties-grid">
+                    {player.properties.map(propId => {
+                      const space = getSpaceById(propId);
+                      const prop = gameState.properties[propId];
+                      if (!space || !prop) return null;
+                      return (
+                        <div
+                          key={propId}
+                          className={`owned-property-chip ${prop.mortgaged ? 'mortgaged' : ''}`}
+                          style={{
+                            borderLeftColor: getPropertyColor(space),
+                            borderLeftWidth: '3px',
+                            borderLeftStyle: 'solid'
+                          }}
+                          title={`${space.name}${prop.houses > 0 ? ` (${prop.houses}H)` : ''}${prop.hotels > 0 ? ' (Hotel)' : ''}${prop.mortgaged ? ' [M]' : ''}`}
+                        >
+                          <span className="prop-name">{space.name}</span>
+                          {prop.houses > 0 && <span className="prop-houses">{prop.houses}H</span>}
+                          {prop.hotels > 0 && <span className="prop-hotel">H</span>}
+                          {prop.mortgaged && <span className="prop-mortgaged">M</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {player.properties.length === 0 && (
+                <div className="no-properties">No properties</div>
+              )}
+
               {isCurrentPlayer && !isBankrupt && (
                 <div className="current-turn-indicator">
-                  ▶ Current Turn
+                  Current Turn
                 </div>
               )}
             </div>
