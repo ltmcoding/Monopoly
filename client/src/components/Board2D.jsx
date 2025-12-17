@@ -21,18 +21,18 @@ const TILE_COLORS = {
   backgroundCorner: '#151a1f',
   text: '#e6edf3',
   textMuted: '#8b949e',
-  price: '#4ade80',
+  price: '#d4a932', // Gold price
   border: '#c9a227', // Gold border
   borderDark: '#8b7355',
 };
 
-// Wood colors for borders
+// Wood colors for borders - darker shades
 const WOOD_COLORS = {
-  light: '#8B5A2B',
-  medium: '#6B4423',
-  dark: '#4a2c17',
-  grain1: '#7a4a1f',
-  grain2: '#5c3a1a',
+  light: '#5c3d1e',
+  medium: '#4a2f17',
+  dark: '#2d1a0e',
+  grain1: '#5a3518',
+  grain2: '#3d2512',
 };
 
 // Dice pip positions (normalized 0-1)
@@ -127,44 +127,14 @@ const SpeedDieFace = ({ value, size }) => {
   );
 };
 
-// House icon component
-const HouseIcon = ({ x, y, size = 12 }) => (
-  <g transform={`translate(${x - size/2}, ${y - size/2})`}>
-    <path
-      d={`M${size/2},0 L${size},${size*0.45} L${size},${size} L0,${size} L0,${size*0.45} Z`}
-      fill="#22c55e"
-      stroke="#15803d"
-      strokeWidth="1.5"
-    />
-  </g>
-);
-
-// Hotel icon component
-const HotelIcon = ({ x, y, size = 16 }) => (
-  <g transform={`translate(${x - size/2}, ${y - size*0.4})`}>
-    <rect width={size} height={size * 0.8} rx="2" fill="#ef4444" stroke="#b91c1c" strokeWidth="1.5"/>
-    <text x={size/2} y={size * 0.55} textAnchor="middle" fontSize={size * 0.45} fill="white" fontWeight="bold">H</text>
-  </g>
-);
-
-// Corner space renderers
+// Corner space renderers with emojis
 const renderGoCorner = (size) => (
   <g>
     <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
     <g transform={`translate(${size/2}, ${size/2})`}>
-      {/* GO text at top */}
-      <text y={-size*0.28} textAnchor="middle" fontSize={size*0.18} fill="#e74c3c" fontWeight="bold">GO</text>
-      {/* Red arrow */}
-      <g transform="translate(0, 5)">
-        <polygon
-          points={`${-size*0.25},-${size*0.08} ${size*0.12},-${size*0.08} ${size*0.12},-${size*0.15} ${size*0.28},0 ${size*0.12},${size*0.15} ${size*0.12},${size*0.08} ${-size*0.25},${size*0.08}`}
-          fill="#e74c3c"
-          stroke="#c0392b"
-          strokeWidth="1.5"
-        />
-      </g>
-      {/* Collect text */}
-      <text y={size*0.32} textAnchor="middle" fontSize={size*0.09} fill={TILE_COLORS.price} fontWeight="bold">COLLECT $200</text>
+      <text y={-size*0.22} textAnchor="middle" fontSize={size*0.16} fill="#e74c3c" fontWeight="bold">GO</text>
+      <text y={size*0.05} textAnchor="middle" fontSize={size*0.25}>{">"}</text>
+      <text y={size*0.32} textAnchor="middle" fontSize={size*0.1} fill={TILE_COLORS.price} fontWeight="bold">COLLECT $200</text>
     </g>
   </g>
 );
@@ -173,67 +143,60 @@ const renderJailCorner = (size) => (
   <g>
     <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
 
-    {/* Just Visiting section - bottom left triangle with clear border */}
+    {/* Just Visiting section - bottom left */}
     <g>
       <path
-        d={`M0,${size} L0,${size*0.4} L${size*0.4},${size} Z`}
+        d={`M0,${size} L0,${size*0.35} L${size*0.35},${size} Z`}
         fill={TILE_COLORS.background}
         stroke={TILE_COLORS.border}
         strokeWidth="2"
       />
       <text
-        x={size*0.12}
-        y={size*0.82}
-        fontSize={size*0.065}
+        x={size*0.08}
+        y={size*0.78}
+        fontSize={size*0.07}
         fill={TILE_COLORS.text}
         fontWeight="bold"
-        transform={`rotate(-45, ${size*0.12}, ${size*0.82})`}
+        transform={`rotate(-45, ${size*0.08}, ${size*0.78})`}
       >
         JUST
       </text>
       <text
-        x={size*0.18}
-        y={size*0.92}
-        fontSize={size*0.065}
+        x={size*0.14}
+        y={size*0.9}
+        fontSize={size*0.07}
         fill={TILE_COLORS.text}
         fontWeight="bold"
-        transform={`rotate(-45, ${size*0.18}, ${size*0.92})`}
+        transform={`rotate(-45, ${size*0.14}, ${size*0.9})`}
       >
         VISITING
       </text>
     </g>
 
-    {/* Jail cell - top right area */}
-    <g transform={`translate(${size*0.35}, ${size*0.08})`}>
+    {/* Jail cell */}
+    <g transform={`translate(${size*0.32}, ${size*0.08})`}>
       <rect
-        width={size*0.57}
-        height={size*0.52}
+        width={size*0.6}
+        height={size*0.55}
         fill="#2d2d2d"
-        stroke="#444"
+        stroke="#555"
         strokeWidth="3"
-        rx="2"
+        rx="3"
       />
       {/* Bars */}
-      {[0.15, 0.35, 0.55, 0.75, 0.95].map((xPos, i) => (
+      {[0.18, 0.38, 0.58, 0.78].map((xPos, i) => (
         <line
           key={i}
-          x1={size*0.57*xPos}
+          x1={size*0.6*xPos}
           y1={0}
-          x2={size*0.57*xPos}
-          y2={size*0.52}
+          x2={size*0.6*xPos}
+          y2={size*0.55}
           stroke="#888"
           strokeWidth="4"
           strokeLinecap="round"
         />
       ))}
-      <text
-        x={size*0.285}
-        y={size*0.3}
-        textAnchor="middle"
-        fontSize={size*0.085}
-        fill="#f59e0b"
-        fontWeight="bold"
-      >
+      <text x={size*0.3} y={size*0.32} textAnchor="middle" fontSize={size*0.1} fill="#f59e0b" fontWeight="bold">
         IN JAIL
       </text>
     </g>
@@ -244,20 +207,11 @@ const renderFreeParkingCorner = (size, potAmount = 0) => (
   <g>
     <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
     <g transform={`translate(${size/2}, ${size/2})`}>
-      {/* Title */}
-      <text y={-size*0.32} textAnchor="middle" fontSize={size*0.1} fill={TILE_COLORS.text} fontWeight="bold">FREE</text>
-      <text y={-size*0.2} textAnchor="middle" fontSize={size*0.1} fill={TILE_COLORS.text} fontWeight="bold">PARKING</text>
-
-      {/* Car icon */}
-      <g transform="scale(1.8) translate(-12, -2)">
-        <path d="M2,8 L2,6 Q2,4 4,4 L8,4 L10,2 L16,2 L18,4 L22,4 Q24,4 24,6 L24,8 L22,8 L22,10 L4,10 L4,8 Z" fill="#e74c3c" stroke="#c0392b" strokeWidth="0.5"/>
-        <circle cx="7" cy="10" r="2.5" fill="#333"/>
-        <circle cx="19" cy="10" r="2.5" fill="#333"/>
-      </g>
-
-      {/* Pot amount */}
+      <text y={-size*0.28} textAnchor="middle" fontSize={size*0.1} fill={TILE_COLORS.text} fontWeight="bold">FREE</text>
+      <text y={-size*0.14} textAnchor="middle" fontSize={size*0.1} fill={TILE_COLORS.text} fontWeight="bold">PARKING</text>
+      <text y={size*0.12} textAnchor="middle" fontSize={size*0.28}>P</text>
       {potAmount > 0 && (
-        <text y={size*0.38} textAnchor="middle" fontSize={size*0.11} fill={TILE_COLORS.price} fontWeight="bold">${potAmount}</text>
+        <text y={size*0.36} textAnchor="middle" fontSize={size*0.11} fill={TILE_COLORS.price} fontWeight="bold">${potAmount}</text>
       )}
     </g>
   </g>
@@ -267,87 +221,10 @@ const renderGoToJailCorner = (size) => (
   <g>
     <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
     <g transform={`translate(${size/2}, ${size/2})`}>
-      {/* Title */}
-      <text y={-size*0.32} textAnchor="middle" fontSize={size*0.1} fill={TILE_COLORS.text} fontWeight="bold">GO TO</text>
-      <text y={-size*0.2} textAnchor="middle" fontSize={size*0.1} fill={TILE_COLORS.text} fontWeight="bold">JAIL</text>
-
-      {/* Police officer */}
-      <g transform="translate(0, 8)">
-        <circle cx="0" cy="-8" r={size*0.1} fill="#3498db"/>
-        <rect x={-size*0.08} y={-2} width={size*0.16} height={size*0.18} fill="#3498db" rx="2"/>
-        <circle cx="0" cy="-8" r={size*0.065} fill="#fad7a0"/>
-        <line x1={size*0.08} y1="4" x2={size*0.22} y2="-8" stroke="#fad7a0" strokeWidth="4" strokeLinecap="round"/>
-      </g>
+      <text y={-size*0.28} textAnchor="middle" fontSize={size*0.1} fill={TILE_COLORS.text} fontWeight="bold">GO TO</text>
+      <text y={-size*0.14} textAnchor="middle" fontSize={size*0.1} fill={TILE_COLORS.text} fontWeight="bold">JAIL</text>
+      <text y={size*0.18} textAnchor="middle" fontSize={size*0.3}>X</text>
     </g>
-  </g>
-);
-
-// Special space icons with names
-const renderChanceSpace = (w, h) => (
-  <g>
-    <rect x={-2} y={-2} width={w+4} height={h+4} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
-    <g transform={`translate(${w/2}, ${h/2 - 5})`}>
-      <rect x="-14" y="-18" width="28" height="24" fill="#f39c12" stroke="#e67e22" strokeWidth="1.5" rx="3"/>
-      <text textAnchor="middle" dominantBaseline="middle" y="-5" fontSize="22" fill="#fff" fontWeight="bold">?</text>
-    </g>
-    <text x={w/2} y={h - 10} textAnchor="middle" fontSize="9" fill={TILE_COLORS.text} fontWeight="bold">CHANCE</text>
-  </g>
-);
-
-const renderCommunityChestSpace = (w, h) => (
-  <g>
-    <rect x={-2} y={-2} width={w+4} height={h+4} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
-    <g transform={`translate(${w/2}, ${h/2 - 8})`}>
-      <rect x="-12" y="-6" width="24" height="14" fill="#3498db" stroke="#2980b9" strokeWidth="1.5" rx="2"/>
-      <path d="M-12,-6 Q0,-16 12,-6" fill="#3498db" stroke="#2980b9" strokeWidth="1.5"/>
-      <rect x="-3" y="-3" width="6" height="6" fill="#f1c40f" rx="1"/>
-    </g>
-    <text x={w/2} y={h - 10} textAnchor="middle" fontSize="8" fill={TILE_COLORS.text} fontWeight="bold">COMMUNITY</text>
-    <text x={w/2} y={h - 1} textAnchor="middle" fontSize="8" fill={TILE_COLORS.text} fontWeight="bold">CHEST</text>
-  </g>
-);
-
-const renderTaxSpace = (w, h, amount, name) => (
-  <g>
-    <rect x={-2} y={-2} width={w+4} height={h+4} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
-    <g transform={`translate(${w/2}, ${h/2 - 10})`}>
-      <polygon points="0,-14 12,10 -12,10" fill="#9b59b6" stroke="#8e44ad" strokeWidth="1.5"/>
-      <text y="3" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">$</text>
-    </g>
-    <text x={w/2} y={h - 18} textAnchor="middle" fontSize="8" fill={TILE_COLORS.text} fontWeight="bold">{name.toUpperCase()}</text>
-    <text x={w/2} y={h - 8} textAnchor="middle" fontSize="10" fill={TILE_COLORS.price} fontWeight="bold">${amount}</text>
-  </g>
-);
-
-const renderRailroadSpace = (w, h, name) => (
-  <g>
-    <rect x={-2} y={-2} width={w+4} height={h+4} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
-    <g transform={`translate(${w/2}, ${h/2 - 12})`}>
-      {/* Steam train silhouette */}
-      <rect x="-14" y="0" width="28" height="12" fill="#4a4a4a" rx="2"/>
-      <rect x="-18" y="2" width="8" height="10" fill="#4a4a4a"/>
-      <circle cx="-14" cy="14" r="4" fill="#333"/>
-      <circle cx="0" cy="14" r="4" fill="#333"/>
-      <circle cx="12" cy="14" r="4" fill="#333"/>
-      <rect x="-10" y="-6" width="10" height="6" fill="#e74c3c"/>
-    </g>
-    <text x={w/2} y={h - 18} textAnchor="middle" fontSize="7" fill={TILE_COLORS.text} fontWeight="bold">{name.split(' ')[0].toUpperCase()}</text>
-    <text x={w/2} y={h - 9} textAnchor="middle" fontSize="7" fill={TILE_COLORS.text} fontWeight="bold">RAILROAD</text>
-  </g>
-);
-
-const renderUtilitySpace = (w, h, isElectric, name) => (
-  <g>
-    <rect x={-2} y={-2} width={w+4} height={h+4} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
-    <g transform={`translate(${w/2}, ${h/2 - 10})`}>
-      {isElectric ? (
-        <polygon points="0,-18 10,2 3,2 8,18 -8,2 0,2" fill="#f1c40f" stroke="#f39c12" strokeWidth="1.5"/>
-      ) : (
-        <path d="M0,-16 Q14,6 0,16 Q-14,6 0,-16" fill="#3498db" stroke="#2980b9" strokeWidth="1.5"/>
-      )}
-    </g>
-    <text x={w/2} y={h - 18} textAnchor="middle" fontSize="7" fill={TILE_COLORS.text} fontWeight="bold">{isElectric ? 'ELECTRIC' : 'WATER'}</text>
-    <text x={w/2} y={h - 9} textAnchor="middle" fontSize="7" fill={TILE_COLORS.text} fontWeight="bold">{isElectric ? 'COMPANY' : 'WORKS'}</text>
   </g>
 );
 
@@ -362,19 +239,18 @@ export default function Board2D({
   gameId = null
 }) {
   const containerRef = useRef(null);
-  const [boardSize, setBoardSize] = useState(880);
+  const [boardSize, setBoardSize] = useState(950);
   const [isRolling, setIsRolling] = useState(false);
   const [displayDice, setDisplayDice] = useState(gameState?.dice || [1, 1]);
-  const [hoveredSpace, setHoveredSpace] = useState(null);
   const [showDebugMenu, setShowDebugMenu] = useState(false);
 
-  // Responsive sizing - bigger default
+  // Responsive sizing - even bigger
   useEffect(() => {
     const updateSize = () => {
       const container = document.querySelector('.game-center');
       if (container) {
-        const maxSize = Math.min(container.clientWidth - 20, container.clientHeight - 20, 950);
-        setBoardSize(Math.max(maxSize, 700));
+        const maxSize = Math.min(container.clientWidth - 20, container.clientHeight - 20, 1050);
+        setBoardSize(Math.max(maxSize, 750));
       }
     };
     updateSize();
@@ -390,63 +266,70 @@ export default function Board2D({
   }, [gameState?.dice, isRolling]);
 
   // Scaled dimensions - bigger proportions
-  const woodBorderWidth = Math.round(boardSize * 0.025);
-  const cornerSize = Math.round(boardSize * 0.13);
-  const colorBarHeight = Math.round(boardSize * 0.028);
+  const woodBorderWidth = Math.round(boardSize * 0.022);
+  const cornerSize = Math.round(boardSize * 0.135);
+  const colorBarHeight = Math.round(boardSize * 0.032);
   const sideSpaces = 9;
-  const spaceWidth = (boardSize - 2 * cornerSize - 2 * woodBorderWidth) / sideSpaces;
+  const spaceWidth = Math.floor((boardSize - 2 * cornerSize - 2 * woodBorderWidth) / sideSpaces);
   const innerBoardStart = cornerSize + woodBorderWidth;
   const innerBoardSize = boardSize - 2 * cornerSize - 2 * woodBorderWidth;
+  const fontSize = Math.round(boardSize * 0.012);
+  const priceFontSize = Math.round(boardSize * 0.014);
 
   // Calculate position for each space
   const getSpacePosition = (position) => {
     const offset = woodBorderWidth;
+
     if (position === 0) {
-      return { x: boardSize - cornerSize - offset, y: boardSize - cornerSize - offset, w: cornerSize, h: cornerSize, rotation: 0, isCorner: true };
+      // GO corner (bottom right)
+      return { x: boardSize - cornerSize - offset, y: boardSize - cornerSize - offset, w: cornerSize, h: cornerSize, side: 'corner' };
     } else if (position > 0 && position < 10) {
+      // Bottom row (left of GO)
       return {
         x: boardSize - cornerSize - offset - (position * spaceWidth),
         y: boardSize - cornerSize - offset,
         w: spaceWidth,
         h: cornerSize,
-        rotation: 0,
-        colorBarSide: 'top'
+        side: 'bottom'
       };
     } else if (position === 10) {
-      return { x: offset, y: boardSize - cornerSize - offset, w: cornerSize, h: cornerSize, rotation: 0, isCorner: true };
+      // Jail corner (bottom left)
+      return { x: offset, y: boardSize - cornerSize - offset, w: cornerSize, h: cornerSize, side: 'corner' };
     } else if (position > 10 && position < 20) {
+      // Left column (going up)
       const idx = position - 10;
       return {
         x: offset,
         y: boardSize - cornerSize - offset - (idx * spaceWidth),
         w: cornerSize,
         h: spaceWidth,
-        rotation: 90,
-        colorBarSide: 'right'
+        side: 'left'
       };
     } else if (position === 20) {
-      return { x: offset, y: offset, w: cornerSize, h: cornerSize, rotation: 0, isCorner: true };
+      // Free Parking corner (top left)
+      return { x: offset, y: offset, w: cornerSize, h: cornerSize, side: 'corner' };
     } else if (position > 20 && position < 30) {
+      // Top row (going right)
       const idx = position - 20;
       return {
         x: cornerSize + offset + ((idx - 1) * spaceWidth),
         y: offset,
         w: spaceWidth,
         h: cornerSize,
-        rotation: 180,
-        colorBarSide: 'bottom'
+        side: 'top'
       };
     } else if (position === 30) {
-      return { x: boardSize - cornerSize - offset, y: offset, w: cornerSize, h: cornerSize, rotation: 0, isCorner: true };
+      // Go To Jail corner (top right)
+      return { x: boardSize - cornerSize - offset, y: offset, w: cornerSize, h: cornerSize, side: 'corner' };
     } else {
+      // Right column (going down)
       const idx = position - 30;
       return {
         x: boardSize - cornerSize - offset,
         y: cornerSize + offset + ((idx - 1) * spaceWidth),
         w: cornerSize,
         h: spaceWidth,
-        rotation: 270,
-        colorBarSide: 'left'
+        side: 'right'
       };
     }
   };
@@ -525,94 +408,573 @@ export default function Board2D({
     }
   };
 
-  // Render color bar for properties
-  const renderColorBar = (space, pos) => {
-    if (!space.color) return null;
+  // Render property tile for bottom row (color bar on top, price at bottom)
+  const renderBottomTile = (space, pos, propertyState) => {
     const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
-
-    let barX = 0, barY = 0, barW = 0, barH = colorBarHeight;
-
-    switch(pos.colorBarSide) {
-      case 'top':
-        barW = pos.w;
-        break;
-      case 'bottom':
-        barY = pos.h - colorBarHeight;
-        barW = pos.w;
-        break;
-      case 'left':
-        barH = pos.h;
-        barW = colorBarHeight;
-        break;
-      case 'right':
-        barX = pos.w - colorBarHeight;
-        barH = pos.h;
-        barW = colorBarHeight;
-        break;
-      default:
-        return null;
-    }
+    const nameParts = space.name.toUpperCase().split(' ');
 
     return (
-      <rect
-        x={barX}
-        y={barY}
-        width={barW}
-        height={barH}
-        fill={color}
-        rx="2"
-      />
+      <g>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+
+        {/* Color bar at top */}
+        {space.color && (
+          <rect x={0} y={0} width={pos.w} height={colorBarHeight} fill={color} rx="3 3 0 0"/>
+        )}
+
+        {/* Name - centered */}
+        <text
+          x={pos.w / 2}
+          y={colorBarHeight + fontSize * 1.8}
+          textAnchor="middle"
+          fontSize={fontSize}
+          fill={TILE_COLORS.text}
+          fontWeight="600"
+        >
+          {nameParts[0]}
+        </text>
+        {nameParts.length > 1 && (
+          <text
+            x={pos.w / 2}
+            y={colorBarHeight + fontSize * 3}
+            textAnchor="middle"
+            fontSize={fontSize}
+            fill={TILE_COLORS.text}
+            fontWeight="600"
+          >
+            {nameParts.slice(1).join(' ').substring(0, 10)}
+          </text>
+        )}
+
+        {/* Price at bottom */}
+        {space.price && (
+          <text
+            x={pos.w / 2}
+            y={pos.h - fontSize}
+            textAnchor="middle"
+            fontSize={priceFontSize}
+            fill={TILE_COLORS.price}
+            fontWeight="bold"
+          >
+            ${space.price}
+          </text>
+        )}
+
+        {/* Buildings */}
+        {renderBuildings(propertyState, pos, 'bottom')}
+
+        {/* Owner indicator */}
+        {renderOwnerBorder(propertyState, pos)}
+
+        {/* Mortgaged */}
+        {renderMortgaged(propertyState, pos)}
+      </g>
     );
   };
 
-  // Render houses/hotel on color bar
-  const renderBuildings = (propertyState, pos, space) => {
-    if (!propertyState || !space.color) return null;
+  // Render property tile for top row (mirrored - color bar at bottom, price at top)
+  const renderTopTile = (space, pos, propertyState) => {
+    const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
+    const nameParts = space.name.toUpperCase().split(' ');
+
+    return (
+      <g>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+
+        {/* Color bar at bottom */}
+        {space.color && (
+          <rect x={0} y={pos.h - colorBarHeight} width={pos.w} height={colorBarHeight} fill={color} rx="0 0 3 3"/>
+        )}
+
+        {/* Price at top */}
+        {space.price && (
+          <text
+            x={pos.w / 2}
+            y={fontSize * 1.5}
+            textAnchor="middle"
+            fontSize={priceFontSize}
+            fill={TILE_COLORS.price}
+            fontWeight="bold"
+          >
+            ${space.price}
+          </text>
+        )}
+
+        {/* Name - centered */}
+        <text
+          x={pos.w / 2}
+          y={pos.h / 2 - fontSize * 0.3}
+          textAnchor="middle"
+          fontSize={fontSize}
+          fill={TILE_COLORS.text}
+          fontWeight="600"
+        >
+          {nameParts[0]}
+        </text>
+        {nameParts.length > 1 && (
+          <text
+            x={pos.w / 2}
+            y={pos.h / 2 + fontSize * 1}
+            textAnchor="middle"
+            fontSize={fontSize}
+            fill={TILE_COLORS.text}
+            fontWeight="600"
+          >
+            {nameParts.slice(1).join(' ').substring(0, 10)}
+          </text>
+        )}
+
+        {/* Buildings */}
+        {renderBuildings(propertyState, pos, 'top')}
+
+        {/* Owner indicator */}
+        {renderOwnerBorder(propertyState, pos)}
+
+        {/* Mortgaged */}
+        {renderMortgaged(propertyState, pos)}
+      </g>
+    );
+  };
+
+  // Render property tile for left column (rotated - color bar on right, text horizontal)
+  const renderLeftTile = (space, pos, propertyState) => {
+    const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
+    const nameParts = space.name.toUpperCase().split(' ');
+
+    return (
+      <g>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+
+        {/* Color bar on right side */}
+        {space.color && (
+          <rect x={pos.w - colorBarHeight} y={0} width={colorBarHeight} height={pos.h} fill={color} rx="0 3 3 0"/>
+        )}
+
+        {/* Content area - rotated text to read from outside */}
+        <g transform={`translate(${pos.w/2 - colorBarHeight/2}, ${pos.h/2}) rotate(-90)`}>
+          {/* Name */}
+          <text
+            x={0}
+            y={-fontSize * 0.5}
+            textAnchor="middle"
+            fontSize={fontSize}
+            fill={TILE_COLORS.text}
+            fontWeight="600"
+          >
+            {nameParts[0]}
+          </text>
+          {nameParts.length > 1 && (
+            <text
+              x={0}
+              y={fontSize * 0.8}
+              textAnchor="middle"
+              fontSize={fontSize}
+              fill={TILE_COLORS.text}
+              fontWeight="600"
+            >
+              {nameParts.slice(1).join(' ').substring(0, 10)}
+            </text>
+          )}
+
+          {/* Price */}
+          {space.price && (
+            <text
+              x={0}
+              y={fontSize * 2.3}
+              textAnchor="middle"
+              fontSize={priceFontSize}
+              fill={TILE_COLORS.price}
+              fontWeight="bold"
+            >
+              ${space.price}
+            </text>
+          )}
+        </g>
+
+        {/* Buildings */}
+        {renderBuildings(propertyState, pos, 'left')}
+
+        {/* Owner indicator */}
+        {renderOwnerBorder(propertyState, pos)}
+
+        {/* Mortgaged */}
+        {renderMortgaged(propertyState, pos)}
+      </g>
+    );
+  };
+
+  // Render property tile for right column (rotated - color bar on left, text horizontal)
+  const renderRightTile = (space, pos, propertyState) => {
+    const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
+    const nameParts = space.name.toUpperCase().split(' ');
+
+    return (
+      <g>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+
+        {/* Color bar on left side */}
+        {space.color && (
+          <rect x={0} y={0} width={colorBarHeight} height={pos.h} fill={color} rx="3 0 0 3"/>
+        )}
+
+        {/* Content area - rotated text to read from outside */}
+        <g transform={`translate(${pos.w/2 + colorBarHeight/2}, ${pos.h/2}) rotate(90)`}>
+          {/* Name */}
+          <text
+            x={0}
+            y={-fontSize * 0.5}
+            textAnchor="middle"
+            fontSize={fontSize}
+            fill={TILE_COLORS.text}
+            fontWeight="600"
+          >
+            {nameParts[0]}
+          </text>
+          {nameParts.length > 1 && (
+            <text
+              x={0}
+              y={fontSize * 0.8}
+              textAnchor="middle"
+              fontSize={fontSize}
+              fill={TILE_COLORS.text}
+              fontWeight="600"
+            >
+              {nameParts.slice(1).join(' ').substring(0, 10)}
+            </text>
+          )}
+
+          {/* Price */}
+          {space.price && (
+            <text
+              x={0}
+              y={fontSize * 2.3}
+              textAnchor="middle"
+              fontSize={priceFontSize}
+              fill={TILE_COLORS.price}
+              fontWeight="bold"
+            >
+              ${space.price}
+            </text>
+          )}
+        </g>
+
+        {/* Buildings */}
+        {renderBuildings(propertyState, pos, 'right')}
+
+        {/* Owner indicator */}
+        {renderOwnerBorder(propertyState, pos)}
+
+        {/* Mortgaged */}
+        {renderMortgaged(propertyState, pos)}
+      </g>
+    );
+  };
+
+  // Render special space (chance, community chest, tax) for bottom
+  const renderSpecialBottom = (space, pos) => {
+    let emoji = '';
+    let label1 = '';
+    let label2 = '';
+
+    if (space.type === 'chance') {
+      emoji = '?';
+      label1 = 'CHANCE';
+    } else if (space.type === 'community_chest') {
+      emoji = '$';
+      label1 = 'COMMUNITY';
+      label2 = 'CHEST';
+    } else if (space.type === 'tax') {
+      emoji = '$';
+      label1 = space.name.toUpperCase();
+      label2 = `$${space.amount}`;
+    }
+
+    return (
+      <g>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+        <text x={pos.w/2} y={fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">
+          {label1}
+        </text>
+        {label2 && (
+          <text x={pos.w/2} y={fontSize * 3} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">
+            {label2}
+          </text>
+        )}
+        <text x={pos.w/2} y={pos.h - fontSize * 1.5} textAnchor="middle" fontSize={pos.h * 0.25} fill={space.type === 'chance' ? '#f39c12' : '#3498db'}>
+          {emoji}
+        </text>
+      </g>
+    );
+  };
+
+  // Render special space for top (mirrored)
+  const renderSpecialTop = (space, pos) => {
+    let emoji = '';
+    let label1 = '';
+    let label2 = '';
+
+    if (space.type === 'chance') {
+      emoji = '?';
+      label1 = 'CHANCE';
+    } else if (space.type === 'community_chest') {
+      emoji = '$';
+      label1 = 'COMMUNITY';
+      label2 = 'CHEST';
+    } else if (space.type === 'tax') {
+      emoji = '$';
+      label1 = space.name.toUpperCase();
+      label2 = `$${space.amount}`;
+    }
+
+    return (
+      <g>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+        <text x={pos.w/2} y={fontSize * 1.5} textAnchor="middle" fontSize={pos.h * 0.25} fill={space.type === 'chance' ? '#f39c12' : '#3498db'}>
+          {emoji}
+        </text>
+        <text x={pos.w/2} y={pos.h - fontSize * 2.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">
+          {label1}
+        </text>
+        {label2 && (
+          <text x={pos.w/2} y={pos.h - fontSize} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">
+            {label2}
+          </text>
+        )}
+      </g>
+    );
+  };
+
+  // Render special space for left side (rotated)
+  const renderSpecialLeft = (space, pos) => {
+    let emoji = '';
+    let label1 = '';
+    let label2 = '';
+
+    if (space.type === 'chance') {
+      emoji = '?';
+      label1 = 'CHANCE';
+    } else if (space.type === 'community_chest') {
+      emoji = '$';
+      label1 = 'COMMUNITY';
+      label2 = 'CHEST';
+    } else if (space.type === 'tax') {
+      emoji = '$';
+      label1 = space.name.toUpperCase();
+      label2 = `$${space.amount}`;
+    }
+
+    return (
+      <g>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+        <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(-90)`}>
+          <text x={-pos.h * 0.25} y={-fontSize * 0.3} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">
+            {label1}
+          </text>
+          {label2 && (
+            <text x={-pos.h * 0.25} y={fontSize * 1} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">
+              {label2}
+            </text>
+          )}
+          <text x={pos.h * 0.2} y={fontSize * 0.5} textAnchor="middle" fontSize={pos.w * 0.35} fill={space.type === 'chance' ? '#f39c12' : '#3498db'}>
+            {emoji}
+          </text>
+        </g>
+      </g>
+    );
+  };
+
+  // Render special space for right side (rotated)
+  const renderSpecialRight = (space, pos) => {
+    let emoji = '';
+    let label1 = '';
+    let label2 = '';
+
+    if (space.type === 'chance') {
+      emoji = '?';
+      label1 = 'CHANCE';
+    } else if (space.type === 'community_chest') {
+      emoji = '$';
+      label1 = 'COMMUNITY';
+      label2 = 'CHEST';
+    } else if (space.type === 'tax') {
+      emoji = '$';
+      label1 = space.name.toUpperCase();
+      label2 = `$${space.amount}`;
+    }
+
+    return (
+      <g>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+        <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(90)`}>
+          <text x={-pos.h * 0.25} y={-fontSize * 0.3} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">
+            {label1}
+          </text>
+          {label2 && (
+            <text x={-pos.h * 0.25} y={fontSize * 1} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">
+              {label2}
+            </text>
+          )}
+          <text x={pos.h * 0.2} y={fontSize * 0.5} textAnchor="middle" fontSize={pos.w * 0.35} fill={space.type === 'chance' ? '#f39c12' : '#3498db'}>
+            {emoji}
+          </text>
+        </g>
+      </g>
+    );
+  };
+
+  // Render railroad for each side
+  const renderRailroad = (space, pos, side) => {
+    const nameParts = space.name.toUpperCase().split(' ');
+    const firstWord = nameParts[0];
+
+    if (side === 'bottom') {
+      return (
+        <g>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <text x={pos.w/2} y={fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord}</text>
+          <text x={pos.w/2} y={fontSize * 3} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">RAILROAD</text>
+          <text x={pos.w/2} y={pos.h * 0.6} textAnchor="middle" fontSize={pos.h * 0.22}>T</text>
+          <text x={pos.w/2} y={pos.h - fontSize} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
+        </g>
+      );
+    } else if (side === 'top') {
+      return (
+        <g>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <text x={pos.w/2} y={fontSize * 1.5} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
+          <text x={pos.w/2} y={pos.h * 0.45} textAnchor="middle" fontSize={pos.h * 0.22}>T</text>
+          <text x={pos.w/2} y={pos.h - fontSize * 2.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord}</text>
+          <text x={pos.w/2} y={pos.h - fontSize} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">RAILROAD</text>
+        </g>
+      );
+    } else if (side === 'left') {
+      return (
+        <g>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(-90)`}>
+            <text x={-pos.h * 0.25} y={-fontSize * 0.3} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord}</text>
+            <text x={-pos.h * 0.25} y={fontSize * 1} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">RAILROAD</text>
+            <text x={pos.h * 0.15} y={fontSize * 0.5} textAnchor="middle" fontSize={pos.w * 0.3}>T</text>
+            <text x={pos.h * 0.35} y={fontSize * 0.5} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
+          </g>
+        </g>
+      );
+    } else {
+      return (
+        <g>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(90)`}>
+            <text x={-pos.h * 0.25} y={-fontSize * 0.3} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord}</text>
+            <text x={-pos.h * 0.25} y={fontSize * 1} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">RAILROAD</text>
+            <text x={pos.h * 0.15} y={fontSize * 0.5} textAnchor="middle" fontSize={pos.w * 0.3}>T</text>
+            <text x={pos.h * 0.35} y={fontSize * 0.5} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
+          </g>
+        </g>
+      );
+    }
+  };
+
+  // Render utility for each side
+  const renderUtility = (space, pos, side) => {
+    const isElectric = space.id === 12;
+    const emoji = isElectric ? 'E' : 'W';
+    const name1 = isElectric ? 'ELECTRIC' : 'WATER';
+    const name2 = isElectric ? 'COMPANY' : 'WORKS';
+
+    if (side === 'bottom') {
+      return (
+        <g>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <text x={pos.w/2} y={fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
+          <text x={pos.w/2} y={fontSize * 3} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>
+          <text x={pos.w/2} y={pos.h * 0.62} textAnchor="middle" fontSize={pos.h * 0.25} fill={isElectric ? '#f1c40f' : '#3498db'}>{emoji}</text>
+          <text x={pos.w/2} y={pos.h - fontSize} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
+        </g>
+      );
+    } else if (side === 'top') {
+      return (
+        <g>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <text x={pos.w/2} y={fontSize * 1.5} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
+          <text x={pos.w/2} y={pos.h * 0.45} textAnchor="middle" fontSize={pos.h * 0.25} fill={isElectric ? '#f1c40f' : '#3498db'}>{emoji}</text>
+          <text x={pos.w/2} y={pos.h - fontSize * 2.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
+          <text x={pos.w/2} y={pos.h - fontSize} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>
+        </g>
+      );
+    } else if (side === 'left') {
+      return (
+        <g>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(-90)`}>
+            <text x={-pos.h * 0.25} y={-fontSize * 0.3} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
+            <text x={-pos.h * 0.25} y={fontSize * 1} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>
+            <text x={pos.h * 0.18} y={fontSize * 0.5} textAnchor="middle" fontSize={pos.w * 0.35} fill={isElectric ? '#f1c40f' : '#3498db'}>{emoji}</text>
+            <text x={pos.h * 0.38} y={fontSize * 0.5} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
+          </g>
+        </g>
+      );
+    } else {
+      return (
+        <g>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(90)`}>
+            <text x={-pos.h * 0.25} y={-fontSize * 0.3} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
+            <text x={-pos.h * 0.25} y={fontSize * 1} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>
+            <text x={pos.h * 0.18} y={fontSize * 0.5} textAnchor="middle" fontSize={pos.w * 0.35} fill={isElectric ? '#f1c40f' : '#3498db'}>{emoji}</text>
+            <text x={pos.h * 0.38} y={fontSize * 0.5} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
+          </g>
+        </g>
+      );
+    }
+  };
+
+  // Render buildings on color bar
+  const renderBuildings = (propertyState, pos, side) => {
+    if (!propertyState) return null;
 
     const hasHotel = propertyState.hotels > 0;
     const houses = propertyState.houses;
 
     if (!hasHotel && houses === 0) return null;
 
-    let buildingX, buildingY;
-    switch(pos.colorBarSide) {
-      case 'top':
-        buildingX = pos.w / 2;
-        buildingY = colorBarHeight / 2 + 2;
-        break;
+    const buildingSize = colorBarHeight * 0.7;
+    let x, y;
+
+    switch(side) {
       case 'bottom':
-        buildingX = pos.w / 2;
-        buildingY = pos.h - colorBarHeight / 2 - 2;
+        x = pos.w / 2;
+        y = colorBarHeight / 2;
+        break;
+      case 'top':
+        x = pos.w / 2;
+        y = pos.h - colorBarHeight / 2;
         break;
       case 'left':
-        buildingX = colorBarHeight / 2 + 2;
-        buildingY = pos.h / 2;
+        x = pos.w - colorBarHeight / 2;
+        y = pos.h / 2;
         break;
       case 'right':
-        buildingX = pos.w - colorBarHeight / 2 - 2;
-        buildingY = pos.h / 2;
+        x = colorBarHeight / 2;
+        y = pos.h / 2;
         break;
       default:
         return null;
     }
 
     if (hasHotel) {
-      return <HotelIcon x={buildingX} y={buildingY} size={colorBarHeight * 1.3} />;
+      return (
+        <g transform={`translate(${x}, ${y})`}>
+          <rect x={-buildingSize} y={-buildingSize/2} width={buildingSize*2} height={buildingSize} fill="#ef4444" stroke="#b91c1c" strokeWidth="1" rx="2"/>
+          <text x={0} y={buildingSize*0.25} textAnchor="middle" fontSize={buildingSize*0.7} fill="white" fontWeight="bold">H</text>
+        </g>
+      );
     }
 
     return (
-      <g>
-        <HouseIcon x={buildingX - 10} y={buildingY} size={colorBarHeight * 1.1} />
+      <g transform={`translate(${x}, ${y})`}>
+        <rect x={-buildingSize/2} y={-buildingSize/2} width={buildingSize} height={buildingSize} fill="#22c55e" stroke="#15803d" strokeWidth="1" rx="1"/>
         {houses > 1 && (
-          <text
-            x={buildingX + 8}
-            y={buildingY + 4}
-            fontSize={colorBarHeight * 0.8}
-            fill="#fff"
-            fontWeight="bold"
-          >
-            ×{houses}
-          </text>
+          <text x={buildingSize} y={buildingSize*0.3} fontSize={buildingSize*0.8} fill="#fff" fontWeight="bold">x{houses}</text>
         )}
       </g>
     );
@@ -625,15 +987,15 @@ export default function Board2D({
 
     return (
       <rect
-        x={3}
-        y={3}
-        width={pos.w - 6}
-        height={pos.h - 6}
+        x={2}
+        y={2}
+        width={pos.w - 4}
+        height={pos.h - 4}
         fill="none"
         stroke={ownerColor}
-        strokeWidth="4"
-        rx="3"
-        opacity="0.9"
+        strokeWidth="3"
+        rx="2"
+        opacity="0.85"
       />
     );
   };
@@ -644,27 +1006,27 @@ export default function Board2D({
 
     return (
       <>
-        <rect x={0} y={0} width={pos.w} height={pos.h} fill="rgba(0,0,0,0.6)" rx="4"/>
-        <text x={pos.w/2} y={pos.h/2} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill="#ef4444" fontWeight="bold">
+        <rect x={0} y={0} width={pos.w} height={pos.h} fill="rgba(0,0,0,0.6)" rx="3"/>
+        <text x={pos.w/2} y={pos.h/2} textAnchor="middle" dominantBaseline="middle" fontSize={fontSize} fill="#ef4444" fontWeight="bold">
           MORTGAGED
         </text>
       </>
     );
   };
 
-  // Render player tokens - simple circles with gradient
+  // Render player tokens
   const renderPlayers = (position, pos) => {
     const players = getPlayersOnSpace(position);
     if (players.length === 0) return null;
 
-    const tokenSize = Math.min(pos.w, pos.h) * 0.22;
+    const tokenSize = Math.min(pos.w, pos.h) * 0.2;
     const centerX = pos.w / 2;
-    const centerY = pos.h / 2 + (pos.colorBarSide === 'top' ? colorBarHeight / 2 : 0);
+    const centerY = pos.h / 2;
 
     const getTokenPosition = (index, total) => {
       if (total === 1) return { x: centerX, y: centerY };
       const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
-      const radius = tokenSize * 0.8;
+      const radius = tokenSize * 0.9;
       return {
         x: centerX + Math.cos(angle) * radius,
         y: centerY + Math.sin(angle) * radius
@@ -705,8 +1067,8 @@ export default function Board2D({
 
           {/* In jail indicator */}
           {player.inJail && position === 10 && (
-            <text x={0} y={-tokenSize/2 - 6} textAnchor="middle" fontSize="9" fill="#ef4444" fontWeight="bold">
-              JAILED
+            <text x={0} y={-tokenSize/2 - 4} textAnchor="middle" fontSize={fontSize * 0.8} fill="#ef4444" fontWeight="bold">
+              JAIL
             </text>
           )}
         </g>
@@ -714,104 +1076,49 @@ export default function Board2D({
     });
   };
 
-  // Render space content (name, icons)
-  const renderSpaceContent = (space, pos) => {
-    const isCorner = space.position % 10 === 0;
-    if (isCorner) return null;
-
-    // Special spaces
-    if (space.type === 'chance') return renderChanceSpace(pos.w, pos.h);
-    if (space.type === 'community_chest') return renderCommunityChestSpace(pos.w, pos.h);
-    if (space.type === 'tax') return renderTaxSpace(pos.w, pos.h, space.amount, space.name);
-    if (space.type === 'railroad') return renderRailroadSpace(pos.w, pos.h, space.name);
-    if (space.type === 'utility') return renderUtilitySpace(pos.w, pos.h, space.id === 12, space.name);
-
-    // Regular property
-    const lines = space.name.split(' ');
-    const displayLines = lines.length > 2 ? [lines.slice(0, -1).join(' '), lines[lines.length - 1]] : lines;
-
-    return (
-      <g>
-        {/* Background */}
-        <rect x={-2} y={-2} width={pos.w+4} height={pos.h+4} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
-        {/* Color bar */}
-        {renderColorBar(space, pos)}
-        {/* Name */}
-        {displayLines.map((line, i) => (
-          <text
-            key={i}
-            x={pos.w / 2}
-            y={colorBarHeight + 18 + i * 12}
-            textAnchor="middle"
-            fontSize="9"
-            fill={TILE_COLORS.text}
-            fontWeight="600"
-          >
-            {line.length > 14 ? line.substring(0, 13) + '…' : line}
-          </text>
-        ))}
-      </g>
-    );
-  };
-
-  // Render price
-  const renderPrice = (space, pos) => {
-    if (!space.price) return null;
-
-    return (
-      <text
-        x={pos.w / 2}
-        y={pos.h - 10}
-        textAnchor="middle"
-        fontSize="11"
-        fill={TILE_COLORS.price}
-        fontWeight="bold"
-      >
-        ${space.price}
-      </text>
-    );
-  };
-
-  // Render rent tooltip on hover
-  const renderTooltip = (space, pos) => {
-    if (hoveredSpace !== space.id) return null;
-
+  // Render a complete space based on its position and type
+  const renderSpace = (space, pos) => {
     const propertyState = getPropertyState(space);
-    if (!space.rent) return null;
+    const side = pos.side;
 
-    let currentRent = space.rent[0];
-    if (propertyState) {
-      if (propertyState.hotels > 0) {
-        currentRent = space.rent[5];
-      } else if (propertyState.houses > 0) {
-        currentRent = space.rent[propertyState.houses];
+    // Corners handled separately
+    if (side === 'corner') {
+      switch(space.position) {
+        case 0: return renderGoCorner(pos.w);
+        case 10: return renderJailCorner(pos.w);
+        case 20: return renderFreeParkingCorner(pos.w, gameState.freeParkingPot || 0);
+        case 30: return renderGoToJailCorner(pos.w);
+        default: return null;
       }
     }
 
-    const owner = propertyState?.ownerId ? gameState.players.find(p => p.id === propertyState.ownerId) : null;
+    // Special spaces
+    if (space.type === 'chance' || space.type === 'community_chest' || space.type === 'tax') {
+      switch(side) {
+        case 'bottom': return renderSpecialBottom(space, pos);
+        case 'top': return renderSpecialTop(space, pos);
+        case 'left': return renderSpecialLeft(space, pos);
+        case 'right': return renderSpecialRight(space, pos);
+        default: return null;
+      }
+    }
 
-    return (
-      <g transform={`translate(${pos.w/2}, ${-40})`} className="rent-tooltip">
-        <rect x="-55" y="-28" width="110" height="56" fill="rgba(0,0,0,0.95)" rx="8" stroke={TILE_COLORS.border} strokeWidth="1"/>
-        <text x="0" y="-12" textAnchor="middle" fontSize="10" fill="#e6edf3" fontWeight="bold">
-          Rent: ${currentRent}
-        </text>
-        {owner && (
-          <text x="0" y="6" textAnchor="middle" fontSize="9" fill={owner.color}>
-            Owner: {owner.name}
-          </text>
-        )}
-      </g>
-    );
-  };
+    // Railroads
+    if (space.type === 'railroad') {
+      return renderRailroad(space, pos, side);
+    }
 
-  // Render corner spaces
-  const renderCorner = (space, pos) => {
-    switch(space.position) {
-      case 0: return renderGoCorner(pos.w);
-      case 10: return renderJailCorner(pos.w);
-      case 20: return renderFreeParkingCorner(pos.w, gameState.freeParkingPot || 0);
-      case 30: return renderGoToJailCorner(pos.w);
+    // Utilities
+    if (space.type === 'utility') {
+      return renderUtility(space, pos, side);
+    }
+
+    // Properties
+    switch(side) {
+      case 'bottom': return renderBottomTile(space, pos, propertyState);
+      case 'top': return renderTopTile(space, pos, propertyState);
+      case 'left': return renderLeftTile(space, pos, propertyState);
+      case 'right': return renderRightTile(space, pos, propertyState);
       default: return null;
     }
   };
@@ -833,7 +1140,7 @@ export default function Board2D({
       <div className="debug-menu">
         <div className="debug-menu-header">
           <h3>Debug Menu</h3>
-          <button onClick={() => setShowDebugMenu(false)}>×</button>
+          <button onClick={() => setShowDebugMenu(false)}>x</button>
         </div>
         <div className="debug-menu-content">
           <div className="debug-section">
@@ -850,7 +1157,7 @@ export default function Board2D({
             <div className="debug-property-list">
               {unownedProperties.slice(0, 10).map(prop => (
                 <button key={prop.id} onClick={() => handleDebugAddProperty(prop.id)} className="debug-property-btn">
-                  {prop.name.substring(0, 15)}
+                  {prop.name.substring(0, 18)}
                 </button>
               ))}
             </div>
@@ -871,7 +1178,7 @@ export default function Board2D({
   };
 
   return (
-    <div className="board-2d" ref={containerRef}>
+    <div className="board-2d" ref={containerRef} style={{ position: 'relative' }}>
       <svg
         width={boardSize}
         height={boardSize}
@@ -884,7 +1191,7 @@ export default function Board2D({
       >
         {/* Definitions */}
         <defs>
-          {/* Wood grain pattern */}
+          {/* Wood grain pattern - darker */}
           <pattern id="woodGrain" patternUnits="userSpaceOnUse" width="100" height="100">
             <rect width="100" height="100" fill={WOOD_COLORS.medium}/>
             <path d="M0,10 Q25,5 50,10 T100,10" stroke={WOOD_COLORS.grain1} strokeWidth="2" fill="none" opacity="0.5"/>
@@ -959,8 +1266,8 @@ export default function Board2D({
           {/* Monopoly logo - bigger */}
           <text
             textAnchor="middle"
-            y={-boardSize * 0.12}
-            fontSize={boardSize * 0.06}
+            y={-boardSize * 0.13}
+            fontSize={boardSize * 0.065}
             fontWeight="bold"
             fill="#f59e0b"
             fontFamily="'Playfair Display', Georgia, serif"
@@ -969,46 +1276,46 @@ export default function Board2D({
             MONOPOLY
           </text>
 
-          {/* Dice area - bigger */}
+          {/* Dice area */}
           <g transform="translate(0, 10)">
             {/* Dice */}
-            <g transform="translate(-35, -25)">
-              <DiceFace value={displayDice[0]} size={55} isRolling={isRolling} />
+            <g transform="translate(-40, -30)">
+              <DiceFace value={displayDice[0]} size={60} isRolling={isRolling} />
             </g>
-            <g transform="translate(35, -25)">
-              <DiceFace value={displayDice[1]} size={55} isRolling={isRolling} />
+            <g transform="translate(40, -30)">
+              <DiceFace value={displayDice[1]} size={60} isRolling={isRolling} />
             </g>
 
             {/* Speed die (if enabled) */}
             {gameState.settings?.speedDie && gameState.speedDie && (
-              <g transform="translate(0, 45)">
-                <SpeedDieFace value={gameState.speedDie} size={40} />
+              <g transform="translate(0, 50)">
+                <SpeedDieFace value={gameState.speedDie} size={45} />
               </g>
             )}
 
-            {/* Roll button - bigger */}
+            {/* Roll button */}
             {canRoll && isMyTurn && (
               <g
-                transform="translate(0, 60)"
+                transform="translate(0, 70)"
                 onClick={handleRollDice}
                 style={{ cursor: 'pointer' }}
                 className="roll-button"
               >
                 <rect
-                  x="-55"
-                  y="-16"
-                  width="110"
-                  height="32"
+                  x="-60"
+                  y="-18"
+                  width="120"
+                  height="36"
                   fill="#f59e0b"
                   stroke="#d97706"
                   strokeWidth="2"
-                  rx="16"
+                  rx="18"
                   filter="url(#dropShadow)"
                 />
                 <text
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fontSize="14"
+                  fontSize="16"
                   fill="#1a1a1a"
                   fontWeight="bold"
                 >
@@ -1018,24 +1325,24 @@ export default function Board2D({
             )}
           </g>
 
-          {/* Current player indicator - bigger */}
-          <g transform="translate(0, 120)">
+          {/* Current player indicator */}
+          <g transform="translate(0, 130)">
             <rect
-              x="-100"
-              y="-16"
-              width="200"
-              height="32"
+              x="-110"
+              y="-18"
+              width="220"
+              height="36"
               fill="rgba(0, 0, 0, 0.4)"
-              rx="16"
+              rx="18"
               stroke={TILE_COLORS.border}
               strokeWidth="1"
             />
-            <circle cx="-75" cy="0" r="8" fill={currentPlayer?.color || '#666'}/>
+            <circle cx="-80" cy="0" r="10" fill={currentPlayer?.color || '#666'}/>
             <text
               x="5"
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize="13"
+              fontSize="15"
               fill={TILE_COLORS.text}
               fontWeight="600"
             >
@@ -1047,42 +1354,16 @@ export default function Board2D({
         {/* Board spaces */}
         {BOARD_SPACES.map((space) => {
           const pos = getSpacePosition(space.position);
-          const propertyState = getPropertyState(space);
-          const isCorner = space.position % 10 === 0;
 
           return (
             <g
               key={space.id}
               transform={`translate(${pos.x}, ${pos.y})`}
               onClick={() => onPropertyClick && onPropertyClick(space.id)}
-              onMouseEnter={() => setHoveredSpace(space.id)}
-              onMouseLeave={() => setHoveredSpace(null)}
               style={{ cursor: 'pointer' }}
-              className="board-space"
             >
-              {isCorner ? (
-                renderCorner(space, pos)
-              ) : (
-                <>
-                  {/* Space content (includes background) */}
-                  {renderSpaceContent(space, pos)}
-
-                  {/* Buildings (houses/hotel) */}
-                  {renderBuildings(propertyState, pos, space)}
-
-                  {/* Owner border */}
-                  {renderOwnerBorder(propertyState, pos)}
-
-                  {/* Mortgaged indicator */}
-                  {renderMortgaged(propertyState, pos)}
-
-                  {/* Price */}
-                  {renderPrice(space, pos)}
-
-                  {/* Hover tooltip */}
-                  {renderTooltip(space, pos)}
-                </>
-              )}
+              {/* Render the space */}
+              {renderSpace(space, pos)}
 
               {/* Players on this space */}
               {renderPlayers(space.position, pos)}
@@ -1101,16 +1382,6 @@ export default function Board2D({
 
       {/* Debug menu */}
       {renderDebugMenu()}
-
-      {/* Legend */}
-      <div className="board-legend">
-        <div className="legend-item">
-          <span className="legend-house"></span>
-          <span className="legend-label">House</span>
-          <span className="legend-hotel"></span>
-          <span className="legend-label">Hotel</span>
-        </div>
-      </div>
     </div>
   );
 }
