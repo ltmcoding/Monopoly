@@ -87,7 +87,7 @@ const SpeedDieFace = ({ value, size }) => (
 // Corner renderers with real emojis
 const renderGoCorner = (size) => (
   <g>
-    <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
+    <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx={4}/>
     <g transform={`translate(${size/2}, ${size/2})`}>
       <text y={-size*0.22} textAnchor="middle" fontSize={size*0.16} fill="#e74c3c" fontWeight="bold">GO</text>
       <text y={size*0.08} textAnchor="middle" fontSize={size*0.22}>➡️</text>
@@ -96,27 +96,44 @@ const renderGoCorner = (size) => (
   </g>
 );
 
-const renderJailCorner = (size) => (
-  <g>
-    <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
+// Fixed Jail corner with proper layout like the real game
+const renderJailCorner = (size) => {
+  const jailSize = size * 0.62;
+  const visitingWidth = size - jailSize;
+
+  return (
     <g>
-      <path d={`M0,${size} L0,${size*0.35} L${size*0.35},${size} Z`} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="2"/>
-      <text x={size*0.08} y={size*0.78} fontSize={size*0.065} fill={TILE_COLORS.text} fontWeight="bold" transform={`rotate(-45, ${size*0.08}, ${size*0.78})`}>JUST</text>
-      <text x={size*0.14} y={size*0.9} fontSize={size*0.065} fill={TILE_COLORS.text} fontWeight="bold" transform={`rotate(-45, ${size*0.14}, ${size*0.9})`}>VISITING</text>
+      {/* Main background */}
+      <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx={4}/>
+
+      {/* Jail cell in top-right */}
+      <g transform={`translate(${visitingWidth}, 0)`}>
+        <rect width={jailSize} height={jailSize} fill="#2d2d2d" stroke="#666" strokeWidth="3"/>
+        {/* Jail bars */}
+        {[0.2, 0.4, 0.6, 0.8].map((xPos, i) => (
+          <line key={i} x1={jailSize * xPos} y1={0} x2={jailSize * xPos} y2={jailSize} stroke="#888" strokeWidth="4" strokeLinecap="round"/>
+        ))}
+        <text x={jailSize/2} y={jailSize/2 + 4} textAnchor="middle" fontSize={size*0.08} fill="#f59e0b" fontWeight="bold">IN JAIL</text>
+      </g>
+
+      {/* "JUST" text on left strip - rotated to read bottom to top */}
+      <g transform={`translate(${visitingWidth/2}, ${size/2}) rotate(-90)`}>
+        <text textAnchor="middle" fontSize={size*0.07} fill={TILE_COLORS.text} fontWeight="bold">JUST</text>
+      </g>
+
+      {/* "VISITING" text on bottom strip */}
+      <text x={size/2 + visitingWidth/4} y={size - size*0.06} textAnchor="middle" fontSize={size*0.07} fill={TILE_COLORS.text} fontWeight="bold">VISITING</text>
+
+      {/* Border lines to separate sections */}
+      <line x1={visitingWidth} y1={jailSize} x2={size} y2={jailSize} stroke={TILE_COLORS.border} strokeWidth="2"/>
+      <line x1={visitingWidth} y1={0} x2={visitingWidth} y2={size} stroke={TILE_COLORS.border} strokeWidth="2"/>
     </g>
-    <g transform={`translate(${size*0.32}, ${size*0.08})`}>
-      <rect width={size*0.6} height={size*0.55} fill="#2d2d2d" stroke="#555" strokeWidth="3" rx="3"/>
-      {[0.18, 0.38, 0.58, 0.78].map((xPos, i) => (
-        <line key={i} x1={size*0.6*xPos} y1={0} x2={size*0.6*xPos} y2={size*0.55} stroke="#888" strokeWidth="4" strokeLinecap="round"/>
-      ))}
-      <text x={size*0.3} y={size*0.32} textAnchor="middle" fontSize={size*0.1} fill="#f59e0b" fontWeight="bold">IN JAIL</text>
-    </g>
-  </g>
-);
+  );
+};
 
 const renderFreeParkingCorner = (size, potAmount = 0) => (
   <g>
-    <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
+    <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx={4}/>
     <g transform={`translate(${size/2}, ${size/2})`}>
       <text y={-size*0.28} textAnchor="middle" fontSize={size*0.09} fill={TILE_COLORS.text} fontWeight="bold">FREE</text>
       <text y={-size*0.14} textAnchor="middle" fontSize={size*0.09} fill={TILE_COLORS.text} fontWeight="bold">PARKING</text>
@@ -130,7 +147,7 @@ const renderFreeParkingCorner = (size, potAmount = 0) => (
 
 const renderGoToJailCorner = (size) => (
   <g>
-    <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx="4"/>
+    <rect width={size} height={size} fill={TILE_COLORS.backgroundCorner} stroke={TILE_COLORS.border} strokeWidth="2" rx={4}/>
     <g transform={`translate(${size/2}, ${size/2})`}>
       <text y={-size*0.28} textAnchor="middle" fontSize={size*0.09} fill={TILE_COLORS.text} fontWeight="bold">GO TO</text>
       <text y={-size*0.14} textAnchor="middle" fontSize={size*0.09} fill={TILE_COLORS.text} fontWeight="bold">JAIL</text>
@@ -156,6 +173,7 @@ export default function Board2D({
   const [showDebugMenu, setShowDebugMenu] = useState(false);
   const [hoveredSpace, setHoveredSpace] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     const updateSize = () => {
@@ -176,7 +194,14 @@ export default function Board2D({
     }
   }, [gameState?.dice, isRolling]);
 
-  // Smaller font sizes to prevent overflow
+  // Cleanup hover timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeout) clearTimeout(hoverTimeout);
+    };
+  }, [hoverTimeout]);
+
+  // Sizing calculations
   const woodBorderWidth = Math.round(boardSize * 0.022);
   const cornerSize = Math.round(boardSize * 0.135);
   const colorBarHeight = Math.round(boardSize * 0.028);
@@ -186,6 +211,9 @@ export default function Board2D({
   const innerBoardSize = boardSize - 2 * cornerSize - 2 * woodBorderWidth;
   const fontSize = Math.round(boardSize * 0.009);
   const priceFontSize = Math.round(boardSize * 0.01);
+
+  // Text positioning offset for tiles without color bar (to align with property tiles)
+  const noColorBarOffset = colorBarHeight;
 
   const getSpacePosition = (position) => {
     const offset = woodBorderWidth;
@@ -248,8 +276,21 @@ export default function Board2D({
   };
 
   const handleMouseLeave = () => {
-    const timeout = setTimeout(() => setHoveredSpace(null), 150);
+    const timeout = setTimeout(() => setHoveredSpace(null), 200);
     setHoverTimeout(timeout);
+  };
+
+  // Handle property actions from hover card
+  const handlePropertyAction = async (action, propertyId) => {
+    if (!socket || actionLoading) return;
+    setActionLoading(true);
+    try {
+      await socket[action](gameId, propertyId);
+    } catch (err) {
+      console.error('Action failed:', err);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // Get border color - owner color replaces gold when owned
@@ -258,7 +299,7 @@ export default function Board2D({
     return TILE_COLORS.border;
   };
 
-  // Bottom tile (color bar top, price bottom)
+  // Bottom tile (color bar top, name below color bar, price at bottom)
   const renderBottomTile = (space, pos, propertyState) => {
     const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
     const borderColor = getBorderColor(propertyState);
@@ -267,8 +308,8 @@ export default function Board2D({
 
     return (
       <g>
-        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx="3"/>
-        {space.color && <rect x={0} y={0} width={pos.w} height={colorBarHeight} fill={color} rx="3 3 0 0"/>}
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
+        {space.color && <rect x={0} y={0} width={pos.w} height={colorBarHeight} fill={color}/>}
         <text x={pos.w/2} y={colorBarHeight + fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
         {name2 && <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>}
         {space.price && <text x={pos.w/2} y={pos.h - fontSize * 0.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
@@ -278,7 +319,7 @@ export default function Board2D({
     );
   };
 
-  // Top tile (mirrored - price top, color bar bottom)
+  // Top tile (mirrored - price at top, name in middle, color bar at bottom)
   const renderTopTile = (space, pos, propertyState) => {
     const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
     const borderColor = getBorderColor(propertyState);
@@ -287,18 +328,18 @@ export default function Board2D({
 
     return (
       <g>
-        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx="3"/>
-        {space.color && <rect x={0} y={pos.h - colorBarHeight} width={pos.w} height={colorBarHeight} fill={color} rx="0 0 3 3"/>}
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
+        {space.color && <rect x={0} y={pos.h - colorBarHeight} width={pos.w} height={colorBarHeight} fill={color}/>}
         {space.price && <text x={pos.w/2} y={fontSize * 1.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
-        <text x={pos.w/2} y={pos.h/2 - fontSize * 0.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
-        {name2 && <text x={pos.w/2} y={pos.h/2 + fontSize * 1} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>}
+        <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
+        {name2 && <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 0.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>}
         {renderBuildings(propertyState, pos, 'top')}
         {renderMortgaged(propertyState, pos)}
       </g>
     );
   };
 
-  // Left tile (rotated 90 to read from left - color bar on right, price at outer edge)
+  // Left tile (rotated - color bar on right edge, name and price positioned consistently)
   const renderLeftTile = (space, pos, propertyState) => {
     const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
     const borderColor = getBorderColor(propertyState);
@@ -307,12 +348,12 @@ export default function Board2D({
 
     return (
       <g>
-        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx="3"/>
-        {space.color && <rect x={pos.w - colorBarHeight} y={0} width={colorBarHeight} height={pos.h} fill={color} rx="0 3 3 0"/>}
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
+        {space.color && <rect x={pos.w - colorBarHeight} y={0} width={colorBarHeight} height={pos.h} fill={color}/>}
         <g transform={`translate(${(pos.w - colorBarHeight)/2}, ${pos.h/2}) rotate(90)`}>
-          <text x={0} y={-fontSize * 0.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
-          {name2 && <text x={0} y={fontSize * 0.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>}
-          {space.price && <text x={0} y={fontSize * 2} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
+          <text x={0} y={-fontSize * 0.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
+          {name2 && <text x={0} y={fontSize * 0.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>}
+          {space.price && <text x={0} y={fontSize * 2.2} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
         </g>
         {renderBuildings(propertyState, pos, 'left')}
         {renderMortgaged(propertyState, pos)}
@@ -320,7 +361,7 @@ export default function Board2D({
     );
   };
 
-  // Right tile (rotated -90 to read from right - color bar on left, price at outer edge)
+  // Right tile (rotated - color bar on left edge)
   const renderRightTile = (space, pos, propertyState) => {
     const color = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color];
     const borderColor = getBorderColor(propertyState);
@@ -329,12 +370,12 @@ export default function Board2D({
 
     return (
       <g>
-        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx="3"/>
-        {space.color && <rect x={0} y={0} width={colorBarHeight} height={pos.h} fill={color} rx="3 0 0 3"/>}
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
+        {space.color && <rect x={0} y={0} width={colorBarHeight} height={pos.h} fill={color}/>}
         <g transform={`translate(${(pos.w + colorBarHeight)/2}, ${pos.h/2}) rotate(-90)`}>
-          <text x={0} y={-fontSize * 0.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
-          {name2 && <text x={0} y={fontSize * 0.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>}
-          {space.price && <text x={0} y={fontSize * 2} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
+          <text x={0} y={-fontSize * 0.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name1}</text>
+          {name2 && <text x={0} y={fontSize * 0.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name2}</text>}
+          {space.price && <text x={0} y={fontSize * 2.2} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
         </g>
         {renderBuildings(propertyState, pos, 'right')}
         {renderMortgaged(propertyState, pos)}
@@ -342,7 +383,7 @@ export default function Board2D({
     );
   };
 
-  // Special bottom
+  // Special bottom - centered emoji, text at same position as properties
   const renderSpecialBottom = (space, pos) => {
     let emoji = '', label1 = '', label2 = '';
     if (space.type === 'chance') { emoji = '❓'; label1 = 'CHANCE'; }
@@ -351,15 +392,17 @@ export default function Board2D({
 
     return (
       <g>
-        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
-        <text x={pos.w/2} y={fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{label1}</text>
-        {label2 && <text x={pos.w/2} y={fontSize * 2.8} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
-        <text x={pos.w/2} y={pos.h - fontSize * 2} textAnchor="middle" fontSize={pos.h * 0.2}>{emoji}</text>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
+        {/* Text at same position as properties (offset by colorBarHeight to align) */}
+        <text x={pos.w/2} y={colorBarHeight + fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{label1}</text>
+        {label2 && <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
+        {/* Centered emoji */}
+        <text x={pos.w/2} y={pos.h * 0.65} textAnchor="middle" fontSize={pos.h * 0.22}>{emoji}</text>
       </g>
     );
   };
 
-  // Special top (mirrored)
+  // Special top - mirrored layout with centered emoji
   const renderSpecialTop = (space, pos) => {
     let emoji = '', label1 = '', label2 = '';
     if (space.type === 'chance') { emoji = '❓'; label1 = 'CHANCE'; }
@@ -368,15 +411,17 @@ export default function Board2D({
 
     return (
       <g>
-        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
-        <text x={pos.w/2} y={fontSize * 2.5} textAnchor="middle" fontSize={pos.h * 0.2}>{emoji}</text>
-        <text x={pos.w/2} y={pos.h - fontSize * 2.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{label1}</text>
-        {label2 && <text x={pos.w/2} y={pos.h - fontSize * 0.8} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
+        {/* Centered emoji */}
+        <text x={pos.w/2} y={pos.h * 0.38} textAnchor="middle" fontSize={pos.h * 0.22}>{emoji}</text>
+        {/* Text at bottom, aligned with property text positions */}
+        <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{label1}</text>
+        {label2 && <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 0.5} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
       </g>
     );
   };
 
-  // Special left (rotated 90)
+  // Special left - rotated with centered emoji
   const renderSpecialLeft = (space, pos) => {
     let emoji = '', label1 = '', label2 = '';
     if (space.type === 'chance') { emoji = '❓'; label1 = 'CHANCE'; }
@@ -385,17 +430,19 @@ export default function Board2D({
 
     return (
       <g>
-        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
         <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(90)`}>
-          <text x={0} y={-fontSize * 1.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{label1}</text>
-          {label2 && <text x={0} y={-fontSize * 0.2} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
-          <text x={0} y={fontSize * 2} textAnchor="middle" fontSize={pos.w * 0.25}>{emoji}</text>
+          {/* Text at consistent position */}
+          <text x={0} y={-fontSize * 0.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{label1}</text>
+          {label2 && <text x={0} y={fontSize * 0.6} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
+          {/* Centered emoji */}
+          <text x={0} y={fontSize * 2.8} textAnchor="middle" fontSize={pos.w * 0.25}>{emoji}</text>
         </g>
       </g>
     );
   };
 
-  // Special right (rotated -90)
+  // Special right - rotated with centered emoji
   const renderSpecialRight = (space, pos) => {
     let emoji = '', label1 = '', label2 = '';
     if (space.type === 'chance') { emoji = '❓'; label1 = 'CHANCE'; }
@@ -404,110 +451,123 @@ export default function Board2D({
 
     return (
       <g>
-        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+        <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
         <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(-90)`}>
-          <text x={0} y={-fontSize * 1.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{label1}</text>
-          {label2 && <text x={0} y={-fontSize * 0.2} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
-          <text x={0} y={fontSize * 2} textAnchor="middle" fontSize={pos.w * 0.25}>{emoji}</text>
+          <text x={0} y={-fontSize * 0.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{label1}</text>
+          {label2 && <text x={0} y={fontSize * 0.6} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
+          <text x={0} y={fontSize * 2.8} textAnchor="middle" fontSize={pos.w * 0.25}>{emoji}</text>
         </g>
       </g>
     );
   };
 
-  // Railroad renderers
-  const renderRailroad = (space, pos, side) => {
+  // Railroad renderers - text at same level as property names
+  const renderRailroad = (space, pos, side, propertyState) => {
     const firstWord = truncate(space.name.split(' ')[0].toUpperCase(), 8);
+    const borderColor = getBorderColor(propertyState);
+
     if (side === 'bottom') {
       return (
         <g>
-          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
-          <text x={pos.w/2} y={fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord}</text>
-          <text x={pos.w/2} y={fontSize * 2.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">R.R.</text>
-          <text x={pos.w/2} y={pos.h * 0.58} textAnchor="middle" fontSize={pos.h * 0.18}>🚂</text>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
+          {/* Text aligned with property tiles (using colorBarHeight offset) */}
+          <text x={pos.w/2} y={colorBarHeight + fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord}</text>
+          <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">R.R.</text>
+          <text x={pos.w/2} y={pos.h * 0.6} textAnchor="middle" fontSize={pos.h * 0.18}>🚂</text>
           <text x={pos.w/2} y={pos.h - fontSize * 0.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
+          {renderMortgaged(propertyState, pos)}
         </g>
       );
     } else if (side === 'top') {
       return (
         <g>
-          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
           <text x={pos.w/2} y={fontSize * 1.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
-          <text x={pos.w/2} y={pos.h * 0.42} textAnchor="middle" fontSize={pos.h * 0.18}>🚂</text>
-          <text x={pos.w/2} y={pos.h - fontSize * 2.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord}</text>
-          <text x={pos.w/2} y={pos.h - fontSize * 0.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">R.R.</text>
+          <text x={pos.w/2} y={pos.h * 0.4} textAnchor="middle" fontSize={pos.h * 0.18}>🚂</text>
+          {/* Text aligned with property tiles */}
+          <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord}</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 0.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">R.R.</text>
+          {renderMortgaged(propertyState, pos)}
         </g>
       );
     } else if (side === 'left') {
       return (
         <g>
-          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
           <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(90)`}>
-            <text x={0} y={-fontSize * 1.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord} R.R.</text>
-            <text x={0} y={fontSize * 0.3} textAnchor="middle" fontSize={pos.w * 0.22}>🚂</text>
-            <text x={0} y={fontSize * 2} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
+            <text x={0} y={-fontSize * 0.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord} R.R.</text>
+            <text x={0} y={fontSize * 0.8} textAnchor="middle" fontSize={pos.w * 0.22}>🚂</text>
+            <text x={0} y={fontSize * 2.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
           </g>
+          {renderMortgaged(propertyState, pos)}
         </g>
       );
     } else {
       return (
         <g>
-          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
           <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(-90)`}>
-            <text x={0} y={-fontSize * 1.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord} R.R.</text>
-            <text x={0} y={fontSize * 0.3} textAnchor="middle" fontSize={pos.w * 0.22}>🚂</text>
-            <text x={0} y={fontSize * 2} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
+            <text x={0} y={-fontSize * 0.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{firstWord} R.R.</text>
+            <text x={0} y={fontSize * 0.8} textAnchor="middle" fontSize={pos.w * 0.22}>🚂</text>
+            <text x={0} y={fontSize * 2.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
           </g>
+          {renderMortgaged(propertyState, pos)}
         </g>
       );
     }
   };
 
-  // Utility renderers
-  const renderUtility = (space, pos, side) => {
+  // Utility renderers - text at same level as properties
+  const renderUtility = (space, pos, side, propertyState) => {
     const isElectric = space.id === 12;
     const emoji = isElectric ? '💡' : '💧';
     const name = isElectric ? 'ELECTRIC' : 'WATER';
+    const borderColor = getBorderColor(propertyState);
 
     if (side === 'bottom') {
       return (
         <g>
-          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
-          <text x={pos.w/2} y={fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name}</text>
-          <text x={pos.w/2} y={fontSize * 2.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">CO.</text>
-          <text x={pos.w/2} y={pos.h * 0.58} textAnchor="middle" fontSize={pos.h * 0.18}>{emoji}</text>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
+          <text x={pos.w/2} y={colorBarHeight + fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name}</text>
+          <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">CO.</text>
+          <text x={pos.w/2} y={pos.h * 0.6} textAnchor="middle" fontSize={pos.h * 0.18}>{emoji}</text>
           <text x={pos.w/2} y={pos.h - fontSize * 0.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
+          {renderMortgaged(propertyState, pos)}
         </g>
       );
     } else if (side === 'top') {
       return (
         <g>
-          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
           <text x={pos.w/2} y={fontSize * 1.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
-          <text x={pos.w/2} y={pos.h * 0.42} textAnchor="middle" fontSize={pos.h * 0.18}>{emoji}</text>
-          <text x={pos.w/2} y={pos.h - fontSize * 2.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name}</text>
-          <text x={pos.w/2} y={pos.h - fontSize * 0.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">CO.</text>
+          <text x={pos.w/2} y={pos.h * 0.4} textAnchor="middle" fontSize={pos.h * 0.18}>{emoji}</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name}</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 0.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">CO.</text>
+          {renderMortgaged(propertyState, pos)}
         </g>
       );
     } else if (side === 'left') {
       return (
         <g>
-          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
           <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(90)`}>
-            <text x={0} y={-fontSize * 1.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name} CO.</text>
-            <text x={0} y={fontSize * 0.3} textAnchor="middle" fontSize={pos.w * 0.22}>{emoji}</text>
-            <text x={0} y={fontSize * 2} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
+            <text x={0} y={-fontSize * 0.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name} CO.</text>
+            <text x={0} y={fontSize * 0.8} textAnchor="middle" fontSize={pos.w * 0.22}>{emoji}</text>
+            <text x={0} y={fontSize * 2.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
           </g>
+          {renderMortgaged(propertyState, pos)}
         </g>
       );
     } else {
       return (
         <g>
-          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx="3"/>
+          <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={borderColor} strokeWidth="1.5" rx={3}/>
           <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(-90)`}>
-            <text x={0} y={-fontSize * 1.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name} CO.</text>
-            <text x={0} y={fontSize * 0.3} textAnchor="middle" fontSize={pos.w * 0.22}>{emoji}</text>
-            <text x={0} y={fontSize * 2} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
+            <text x={0} y={-fontSize * 0.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="600">{name} CO.</text>
+            <text x={0} y={fontSize * 0.8} textAnchor="middle" fontSize={pos.w * 0.22}>{emoji}</text>
+            <text x={0} y={fontSize * 2.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
           </g>
+          {renderMortgaged(propertyState, pos)}
         </g>
       );
     }
@@ -533,7 +593,7 @@ export default function Board2D({
     if (hasHotel) {
       return (
         <g transform={`translate(${x}, ${y})`}>
-          <rect x={-buildingSize} y={-buildingSize/2} width={buildingSize*2} height={buildingSize} fill="#ef4444" stroke="#b91c1c" strokeWidth="1" rx="2"/>
+          <rect x={-buildingSize} y={-buildingSize/2} width={buildingSize*2} height={buildingSize} fill="#ef4444" stroke="#b91c1c" strokeWidth="1" rx={2}/>
           <text x={0} y={buildingSize*0.25} textAnchor="middle" fontSize={buildingSize*0.7} fill="white" fontWeight="bold">H</text>
         </g>
       );
@@ -541,7 +601,7 @@ export default function Board2D({
 
     return (
       <g transform={`translate(${x}, ${y})`}>
-        <rect x={-buildingSize/2} y={-buildingSize/2} width={buildingSize} height={buildingSize} fill="#22c55e" stroke="#15803d" strokeWidth="1" rx="1"/>
+        <rect x={-buildingSize/2} y={-buildingSize/2} width={buildingSize} height={buildingSize} fill="#22c55e" stroke="#15803d" strokeWidth="1" rx={1}/>
         {houses > 1 && <text x={buildingSize} y={buildingSize*0.3} fontSize={buildingSize*0.8} fill="#fff" fontWeight="bold">x{houses}</text>}
       </g>
     );
@@ -552,7 +612,7 @@ export default function Board2D({
     if (!propertyState?.mortgaged) return null;
     return (
       <>
-        <rect x={0} y={0} width={pos.w} height={pos.h} fill="rgba(0,0,0,0.6)" rx="3"/>
+        <rect x={0} y={0} width={pos.w} height={pos.h} fill="rgba(0,0,0,0.6)" rx={3}/>
         <text x={pos.w/2} y={pos.h/2} textAnchor="middle" dominantBaseline="middle" fontSize={fontSize * 0.9} fill="#ef4444" fontWeight="bold">MORTGAGED</text>
       </>
     );
@@ -620,8 +680,8 @@ export default function Board2D({
       }
     }
 
-    if (space.type === 'railroad') return renderRailroad(space, pos, side);
-    if (space.type === 'utility') return renderUtility(space, pos, side);
+    if (space.type === 'railroad') return renderRailroad(space, pos, side, propertyState);
+    if (space.type === 'utility') return renderUtility(space, pos, side, propertyState);
 
     switch(side) {
       case 'bottom': return renderBottomTile(space, pos, propertyState);
@@ -632,7 +692,7 @@ export default function Board2D({
     }
   };
 
-  // Property hover card
+  // Enhanced property hover card with full rent info and actions
   const renderHoverCard = () => {
     if (!hoveredSpace) return null;
     const space = getSpaceById(hoveredSpace);
@@ -641,37 +701,210 @@ export default function Board2D({
     const propertyState = getPropertyState(space);
     const pos = getSpacePosition(space.position);
     const owner = propertyState?.ownerId ? gameState.players.find(p => p.id === propertyState.ownerId) : null;
+    const myPlayer = gameState.players.find(p => p.id === myPlayerId);
+    const isMyProperty = owner && myPlayer && owner.id === myPlayer.id;
 
+    // Calculate current rent
     let currentRent = space.rent?.[0] || 0;
     if (propertyState) {
       if (propertyState.hotels > 0) currentRent = space.rent?.[5] || currentRent;
       else if (propertyState.houses > 0) currentRent = space.rent?.[propertyState.houses] || currentRent;
     }
 
-    // Position card near tile but inside board
-    let cardX = pos.x + pos.w + 10;
-    let cardY = pos.y;
-    if (pos.side === 'right') cardX = pos.x - 160;
-    if (pos.side === 'top') cardY = pos.y + pos.h + 10;
-    if (cardX + 150 > boardSize) cardX = boardSize - 160;
-    if (cardY + 100 > boardSize) cardY = boardSize - 110;
+    // Card dimensions
+    const cardWidth = 180;
+    const cardHeight = space.type === 'property' ? (isMyProperty ? 320 : 260) : (isMyProperty ? 200 : 150);
+
+    // Position card aligned with tile, facing inside the board
+    let cardX, cardY;
+    if (pos.side === 'bottom') {
+      cardX = pos.x + pos.w/2 - cardWidth/2;
+      cardY = pos.y - cardHeight - 8;
+    } else if (pos.side === 'top') {
+      cardX = pos.x + pos.w/2 - cardWidth/2;
+      cardY = pos.y + pos.h + 8;
+    } else if (pos.side === 'left') {
+      cardX = pos.x + pos.w + 8;
+      cardY = pos.y + pos.h/2 - cardHeight/2;
+    } else if (pos.side === 'right') {
+      cardX = pos.x - cardWidth - 8;
+      cardY = pos.y + pos.h/2 - cardHeight/2;
+    } else {
+      cardX = pos.x + pos.w + 8;
+      cardY = pos.y;
+    }
+
+    // Keep card within bounds
+    if (cardX + cardWidth > boardSize - 10) cardX = boardSize - cardWidth - 10;
+    if (cardY + cardHeight > boardSize - 10) cardY = boardSize - cardHeight - 10;
     if (cardX < 10) cardX = 10;
     if (cardY < 10) cardY = 10;
 
+    const propertyColor = ENHANCED_COLORS[space.color] || COLOR_MAP[space.color] || '#666';
+    let yPos = 0;
+
     return (
-      <g transform={`translate(${cardX}, ${cardY})`}>
-        <rect width={150} height={95} fill="rgba(20,25,30,0.95)" stroke={TILE_COLORS.border} strokeWidth="1" rx="6"/>
-        <text x={75} y={18} textAnchor="middle" fontSize={11} fill={TILE_COLORS.text} fontWeight="bold">{space.name}</text>
+      <g
+        transform={`translate(${cardX}, ${cardY})`}
+        onMouseEnter={() => handleMouseEnter(hoveredSpace)}
+        onMouseLeave={handleMouseLeave}
+      >
+        {/* Card background */}
+        <rect width={cardWidth} height={cardHeight} fill="rgba(15,20,25,0.98)" stroke={TILE_COLORS.border} strokeWidth="2" rx={8}/>
+
+        {/* Color bar for properties */}
+        {space.color && <rect x={0} y={0} width={cardWidth} height={24} fill={propertyColor} rx={8} style={{clipPath: 'inset(0 0 16px 0 round 8px)'}}/>}
+
+        {/* Title */}
+        <text x={cardWidth/2} y={space.color ? 42 : 22} textAnchor="middle" fontSize={13} fill={TILE_COLORS.text} fontWeight="bold">{space.name}</text>
+        yPos = space.color ? 58 : 38;
+
+        {/* Owner info */}
         {owner ? (
-          <text x={75} y={34} textAnchor="middle" fontSize={9} fill={owner.color}>Owner: {owner.name}</text>
+          <text x={cardWidth/2} y={yPos = space.color ? 58 : 38} textAnchor="middle" fontSize={10} fill={owner.color}>Owner: {owner.name}</text>
         ) : (
-          <text x={75} y={34} textAnchor="middle" fontSize={9} fill={TILE_COLORS.textMuted}>Unowned</text>
+          <text x={cardWidth/2} y={yPos = space.color ? 58 : 38} textAnchor="middle" fontSize={10} fill={TILE_COLORS.textMuted}>Unowned - ${space.price}</text>
         )}
-        <text x={75} y={50} textAnchor="middle" fontSize={10} fill={TILE_COLORS.price}>Rent: ${currentRent}</text>
-        <text x={75} y={66} textAnchor="middle" fontSize={9} fill={TILE_COLORS.textMuted}>Price: ${space.price}</text>
-        {propertyState?.houses > 0 && <text x={75} y={82} textAnchor="middle" fontSize={9} fill="#22c55e">Houses: {propertyState.houses}</text>}
-        {propertyState?.hotels > 0 && <text x={75} y={82} textAnchor="middle" fontSize={9} fill="#ef4444">HOTEL</text>}
-        {propertyState?.mortgaged && <text x={75} y={82} textAnchor="middle" fontSize={9} fill="#ef4444">MORTGAGED</text>}
+
+        {/* Rent info for properties */}
+        {space.type === 'property' && space.rent && (
+          <>
+            <line x1={10} y1={yPos = (space.color ? 70 : 50)} x2={cardWidth-10} y2={yPos} stroke={TILE_COLORS.border} strokeWidth="1"/>
+            <text x={10} y={yPos += 16} fontSize={9} fill={TILE_COLORS.textMuted}>RENT</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={propertyState?.houses === 0 && !propertyState?.hotels ? TILE_COLORS.price : TILE_COLORS.text}>${space.rent[0]}</text>
+
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>With Color Set</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={TILE_COLORS.text}>${space.rent[1]}</text>
+
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>With 1 House</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={propertyState?.houses === 1 ? TILE_COLORS.price : TILE_COLORS.text}>${space.rent[2]}</text>
+
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>With 2 Houses</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={propertyState?.houses === 2 ? TILE_COLORS.price : TILE_COLORS.text}>${space.rent[3]}</text>
+
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>With 3 Houses</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={propertyState?.houses === 3 ? TILE_COLORS.price : TILE_COLORS.text}>${space.rent[4]}</text>
+
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>With 4 Houses</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={propertyState?.houses === 4 ? TILE_COLORS.price : TILE_COLORS.text}>${space.rent[5]}</text>
+
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>With HOTEL</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={propertyState?.hotels > 0 ? TILE_COLORS.price : TILE_COLORS.text}>${space.rent[6] || space.rent[5]}</text>
+
+            <line x1={10} y1={yPos += 10} x2={cardWidth-10} y2={yPos} stroke={TILE_COLORS.border} strokeWidth="1"/>
+
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>House Cost</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={TILE_COLORS.text}>${space.houseCost}</text>
+
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>Mortgage Value</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={TILE_COLORS.text}>${space.mortgageValue}</text>
+          </>
+        )}
+
+        {/* Rent info for railroads */}
+        {space.type === 'railroad' && (
+          <>
+            <line x1={10} y1={yPos = (space.color ? 70 : 50)} x2={cardWidth-10} y2={yPos} stroke={TILE_COLORS.border} strokeWidth="1"/>
+            <text x={10} y={yPos += 16} fontSize={9} fill={TILE_COLORS.textMuted}>1 Railroad</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={TILE_COLORS.text}>$25</text>
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>2 Railroads</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={TILE_COLORS.text}>$50</text>
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>3 Railroads</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={TILE_COLORS.text}>$100</text>
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>4 Railroads</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={TILE_COLORS.text}>$200</text>
+          </>
+        )}
+
+        {/* Rent info for utilities */}
+        {space.type === 'utility' && (
+          <>
+            <line x1={10} y1={yPos = (space.color ? 70 : 50)} x2={cardWidth-10} y2={yPos} stroke={TILE_COLORS.border} strokeWidth="1"/>
+            <text x={10} y={yPos += 16} fontSize={9} fill={TILE_COLORS.textMuted}>1 Utility</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={TILE_COLORS.text}>4x Dice</text>
+            <text x={10} y={yPos += 14} fontSize={9} fill={TILE_COLORS.textMuted}>2 Utilities</text>
+            <text x={cardWidth-10} y={yPos} textAnchor="end" fontSize={9} fill={TILE_COLORS.text}>10x Dice</text>
+          </>
+        )}
+
+        {/* Status badges */}
+        {propertyState?.mortgaged && (
+          <g transform={`translate(${cardWidth/2}, ${cardHeight - (isMyProperty ? 70 : 20)})`}>
+            <rect x={-40} y={-10} width={80} height={20} fill="#dc2626" rx={4}/>
+            <text textAnchor="middle" y={4} fontSize={10} fill="white" fontWeight="bold">MORTGAGED</text>
+          </g>
+        )}
+
+        {propertyState?.houses > 0 && !propertyState.hotels && (
+          <g transform={`translate(${cardWidth/2 - 30}, ${cardHeight - (isMyProperty ? 70 : 20)})`}>
+            <rect x={-20} y={-10} width={40} height={20} fill="#22c55e" rx={4}/>
+            <text textAnchor="middle" y={4} fontSize={10} fill="white" fontWeight="bold">{propertyState.houses} House{propertyState.houses > 1 ? 's' : ''}</text>
+          </g>
+        )}
+
+        {propertyState?.hotels > 0 && (
+          <g transform={`translate(${cardWidth/2}, ${cardHeight - (isMyProperty ? 70 : 20)})`}>
+            <rect x={-30} y={-10} width={60} height={20} fill="#ef4444" rx={4}/>
+            <text textAnchor="middle" y={4} fontSize={10} fill="white" fontWeight="bold">HOTEL</text>
+          </g>
+        )}
+
+        {/* Action buttons for owned properties */}
+        {isMyProperty && isMyTurn && socket && (
+          <g transform={`translate(0, ${cardHeight - 55})`}>
+            <line x1={10} y1={0} x2={cardWidth-10} y2={0} stroke={TILE_COLORS.border} strokeWidth="1"/>
+
+            {/* Build house button */}
+            {space.type === 'property' && !propertyState.mortgaged && propertyState.houses < 4 && !propertyState.hotels && (
+              <g
+                transform="translate(10, 10)"
+                style={{cursor: actionLoading ? 'wait' : 'pointer'}}
+                onClick={() => !actionLoading && handlePropertyAction('buildHouse', space.id)}
+              >
+                <rect width={75} height={35} fill="#22c55e" rx={4}/>
+                <text x={37} y={15} textAnchor="middle" fontSize={14} fill="white">▲</text>
+                <text x={37} y={28} textAnchor="middle" fontSize={8} fill="white">Build House</text>
+              </g>
+            )}
+
+            {/* Sell house button */}
+            {space.type === 'property' && propertyState.houses > 0 && !propertyState.hotels && (
+              <g
+                transform="translate(95, 10)"
+                style={{cursor: actionLoading ? 'wait' : 'pointer'}}
+                onClick={() => !actionLoading && handlePropertyAction('sellHouse', space.id)}
+              >
+                <rect width={75} height={35} fill="#f59e0b" rx={4}/>
+                <text x={37} y={15} textAnchor="middle" fontSize={14} fill="white">▼</text>
+                <text x={37} y={28} textAnchor="middle" fontSize={8} fill="white">Sell House</text>
+              </g>
+            )}
+
+            {/* Mortgage button */}
+            {!propertyState.mortgaged && propertyState.houses === 0 && !propertyState.hotels && (
+              <g
+                transform={`translate(${space.type === 'property' ? 95 : 10}, 10)`}
+                style={{cursor: actionLoading ? 'wait' : 'pointer'}}
+                onClick={() => !actionLoading && handlePropertyAction('mortgage', space.id)}
+              >
+                <rect width={75} height={35} fill="#ef4444" rx={4}/>
+                <text x={37} y={22} textAnchor="middle" fontSize={9} fill="white" fontWeight="bold">Mortgage</text>
+              </g>
+            )}
+
+            {/* Unmortgage button */}
+            {propertyState.mortgaged && (
+              <g
+                transform="translate(10, 10)"
+                style={{cursor: actionLoading ? 'wait' : 'pointer'}}
+                onClick={() => !actionLoading && handlePropertyAction('unmortgage', space.id)}
+              >
+                <rect width={160} height={35} fill="#3b82f6" rx={4}/>
+                <text x={80} y={22} textAnchor="middle" fontSize={9} fill="white" fontWeight="bold">Unmortgage (${Math.floor(space.mortgageValue * 1.1)})</text>
+              </g>
+            )}
+          </g>
+        )}
       </g>
     );
   };
@@ -753,8 +986,8 @@ export default function Board2D({
           </filter>
         </defs>
 
-        <rect x="0" y="0" width={boardSize} height={boardSize} fill="url(#woodGrain)" rx="8"/>
-        <rect x="0" y="0" width={boardSize} height={boardSize} fill="none" stroke={WOOD_COLORS.dark} strokeWidth="4" rx="8"/>
+        <rect x="0" y="0" width={boardSize} height={boardSize} fill="url(#woodGrain)" rx={8}/>
+        <rect x="0" y="0" width={boardSize} height={boardSize} fill="none" stroke={WOOD_COLORS.dark} strokeWidth="4" rx={8}/>
         <rect x={innerBoardStart} y={innerBoardStart} width={innerBoardSize} height={innerBoardSize} fill="url(#woodGrain)" stroke={WOOD_COLORS.dark} strokeWidth="3"/>
         <rect x={innerBoardStart + woodBorderWidth} y={innerBoardStart + woodBorderWidth} width={innerBoardSize - 2 * woodBorderWidth} height={innerBoardSize - 2 * woodBorderWidth} fill="url(#boardBg)"/>
 
@@ -768,13 +1001,13 @@ export default function Board2D({
             )}
             {canRoll && isMyTurn && (
               <g transform="translate(0, 70)" onClick={handleRollDice} style={{ cursor: 'pointer' }} className="roll-button">
-                <rect x="-60" y="-18" width="120" height="36" fill="#f59e0b" stroke="#d97706" strokeWidth="2" rx="18" filter="url(#dropShadow)"/>
+                <rect x="-60" y="-18" width="120" height="36" fill="#f59e0b" stroke="#d97706" strokeWidth="2" rx={18} filter="url(#dropShadow)"/>
                 <text textAnchor="middle" dominantBaseline="middle" fontSize="16" fill="#1a1a1a" fontWeight="bold">{isRolling ? 'Rolling...' : 'Roll Dice'}</text>
               </g>
             )}
           </g>
           <g transform="translate(0, 130)">
-            <rect x="-110" y="-18" width="220" height="36" fill="rgba(0, 0, 0, 0.4)" rx="18" stroke={TILE_COLORS.border} strokeWidth="1"/>
+            <rect x="-110" y="-18" width="220" height="36" fill="rgba(0, 0, 0, 0.4)" rx={18} stroke={TILE_COLORS.border} strokeWidth="1"/>
             <circle cx="-80" cy="0" r="10" fill={currentPlayer?.color || '#666'}/>
             <text x="5" textAnchor="middle" dominantBaseline="middle" fontSize="15" fill={TILE_COLORS.text} fontWeight="600">{currentPlayer?.name}'s Turn</text>
           </g>
@@ -788,6 +1021,7 @@ export default function Board2D({
               transform={`translate(${pos.x}, ${pos.y})`}
               onMouseEnter={() => handleMouseEnter(space.id)}
               onMouseLeave={handleMouseLeave}
+              onClick={() => onPropertyClick && onPropertyClick(space.id)}
               style={{ cursor: 'pointer' }}
             >
               {renderSpace(space, pos)}
