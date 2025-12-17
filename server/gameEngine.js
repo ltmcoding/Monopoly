@@ -718,12 +718,12 @@ class MonopolyGame {
     );
     if (anyMortgaged) throw new Error("Cannot build while properties in set are mortgaged");
 
-    // Check even build rule
+    // Check even build rule - must build on property with fewest houses first
     if (this.settings.evenBuild) {
-      const maxHouses = Math.max(...COLOR_GROUPS[colorGroup].map(id =>
+      const minHouses = Math.min(...COLOR_GROUPS[colorGroup].map(id =>
         this.properties[id].houses
       ));
-      if (property.houses >= maxHouses) {
+      if (property.houses > minHouses) {
         throw new Error("Must build evenly across color set");
       }
     }
