@@ -839,6 +839,80 @@ io.on('connection', (socket) => {
     }
   });
 
+  // DEBUG: Add cash to current player
+  socket.on('debugAddCash', ({ gameId, amount }, callback) => {
+    try {
+      const gameRoom = games.get(gameId);
+      if (!gameRoom) throw new Error('Game not found');
+
+      const playerId = gameRoom.playerSockets.get(socket.id);
+      if (!playerId) throw new Error('Player not found');
+
+      const player = gameRoom.game.getPlayer(playerId);
+      if (!player) throw new Error('Player not found');
+
+      player.cash += amount;
+      console.log(`[DEBUG] Added $${amount} to ${player.name}. New balance: $${player.cash}`);
+
+      gameRoom.game.logAction('debug_cash', playerId, { amount },
+        `[DEBUG] ${player.name} received $${amount}`);
+
+      gameRoom.broadcast(io, 'gameUpdate', {
+        gameState: gameRoom.getGameState()
+      });
+
+      if (callback) {
+        callback({ success: true, gameState: gameRoom.getGameState() });
+      }
+    } catch (error) {
+      console.error('Error in debugAddCash:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
+  // DEBUG: Add property to current player
+  socket.on('debugAddProperty', ({ gameId, propertyId }, callback) => {
+    try {
+      const gameRoom = games.get(gameId);
+      if (!gameRoom) throw new Error('Game not found');
+
+      const playerId = gameRoom.playerSockets.get(socket.id);
+      if (!playerId) throw new Error('Player not found');
+
+      const player = gameRoom.game.getPlayer(playerId);
+      if (!player) throw new Error('Player not found');
+
+      const property = gameRoom.game.properties[propertyId];
+      if (!property) throw new Error('Property not found');
+      if (property.ownerId) throw new Error('Property already owned');
+
+      const space = BOARD_SPACES.find(s => s.id === propertyId);
+
+      property.ownerId = playerId;
+      player.properties.push(propertyId);
+
+      console.log(`[DEBUG] Added ${space?.name || propertyId} to ${player.name}`);
+
+      gameRoom.game.logAction('debug_property', playerId, { propertyId },
+        `[DEBUG] ${player.name} received ${space?.name || propertyId}`);
+
+      gameRoom.broadcast(io, 'gameUpdate', {
+        gameState: gameRoom.getGameState()
+      });
+
+      if (callback) {
+        callback({ success: true, gameState: gameRoom.getGameState() });
+      }
+    } catch (error) {
+      console.error('Error in debugAddProperty:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
   // Handle disconnect
   socket.on('disconnect', (reason) => {
     console.log(`Client disconnected: ${socket.id}, reason: ${reason}`);

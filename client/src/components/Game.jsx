@@ -211,6 +211,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
             isMyTurn={isMyTurn()}
             canRoll={canRollDice()}
             myPlayerId={playerId}
+            socket={socket}
+            gameId={gameId}
           />
         </div>
 
