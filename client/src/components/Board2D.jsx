@@ -1,18 +1,18 @@
 import React from 'react';
 import { BOARD_SPACES, COLOR_MAP, getSpaceById } from '../utils/boardData';
 
-// Enhanced color map with better colors
+// Enhanced color map with refined colors
 const ENHANCED_COLORS = {
-  brown: '#8B4513',
-  lightblue: '#ADD8E6',
-  pink: '#DB7093',
-  orange: '#FF8C00',
-  red: '#DC143C',
-  yellow: '#FFD700',
-  green: '#228B22',
-  darkblue: '#000080',
-  railroad: '#1a1a1a',
-  utility: '#708090'
+  brown: '#78593a',
+  lightblue: '#88c8dc',
+  pink: '#c9668f',
+  orange: '#e59035',
+  red: '#d63b3b',
+  yellow: '#e6c84b',
+  green: '#3d9d5c',
+  darkblue: '#1e4d91',
+  railroad: '#3d4045',
+  utility: '#5c6370'
 };
 
 // Space type icons
@@ -334,15 +334,15 @@ export default function Board2D({ gameState, onPropertyClick }) {
           maxWidth: '100%',
           height: 'auto',
           borderRadius: '12px',
-          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5), 0 0 60px rgba(245, 158, 11, 0.1)'
         }}
       >
         {/* Definitions */}
         <defs>
           <linearGradient id="boardBg" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#c8e6c9" />
-            <stop offset="50%" stopColor="#a5d6a7" />
-            <stop offset="100%" stopColor="#c8e6c9" />
+            <stop offset="0%" stopColor="#1a3a2a" />
+            <stop offset="50%" stopColor="#0f2820" />
+            <stop offset="100%" stopColor="#1a3a2a" />
           </linearGradient>
           <filter id="dropShadow">
             <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.2"/>
@@ -355,7 +355,7 @@ export default function Board2D({ gameState, onPropertyClick }) {
           y="0"
           width={boardSize}
           height={boardSize}
-          fill="#1a365d"
+          fill="#0d1117"
           rx="12"
         />
 
@@ -375,9 +375,10 @@ export default function Board2D({ gameState, onPropertyClick }) {
             dominantBaseline="middle"
             fontSize="36"
             fontWeight="bold"
-            fill="#1a365d"
+            fill="#f59e0b"
             fontFamily="'Playfair Display', Georgia, serif"
             letterSpacing="4"
+            style={{ textShadow: '0 2px 10px rgba(245, 158, 11, 0.3)' }}
           >
             MONOPOLY
           </text>

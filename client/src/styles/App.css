@@ -21,9 +21,9 @@
   --color-secondary-light: #4a5568;
   --color-secondary-dark: #1a202c;
 
-  --color-accent: #d4af37;            /* Rich gold */
-  --color-accent-light: #e6c65a;
-  --color-accent-dark: #b8941f;
+  --color-accent: #f59e0b;            /* Refined amber */
+  --color-accent-light: #fbbf24;
+  --color-accent-dark: #d97706;
 
   --color-success: #38a169;           /* Emerald green */
   --color-success-light: #48bb78;
@@ -146,6 +146,61 @@
   --z-modal: 1000;
   --z-notification: 2000;
   --z-overlay: 3000;
+
+  /* ============================================
+     GLASSMORPHISM DESIGN SYSTEM
+     ============================================ */
+
+  /* Glass Background Colors */
+  --glass-bg: rgba(22, 27, 34, 0.75);
+  --glass-bg-elevated: rgba(28, 33, 40, 0.85);
+  --glass-bg-solid: rgba(22, 27, 34, 0.95);
+  --glass-bg-subtle: rgba(22, 27, 34, 0.6);
+
+  /* Glass Border Colors */
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.12);
+  --glass-border-accent: rgba(245, 158, 11, 0.25);
+  --glass-border-accent-strong: rgba(245, 158, 11, 0.4);
+
+  /* Backdrop Blur Values */
+  --glass-blur: blur(16px);
+  --glass-blur-strong: blur(24px);
+  --glass-blur-subtle: blur(8px);
+
+  /* Panel Hierarchy (Discord-style depth) */
+  --panel-bg-base: #0d1117;
+  --panel-bg-secondary: #161b22;
+  --panel-bg-elevated: #1c2128;
+  --panel-bg-surface: #21262d;
+  --panel-bg-overlay: #2d333b;
+
+  /* Refined Accent Colors (Warmer Amber) */
+  --color-accent-50: #fffbeb;
+  --color-accent-100: #fef3c7;
+  --color-accent-200: #fde68a;
+  --color-accent-300: #fcd34d;
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #d97706;
+  --color-accent-700: #b45309;
+  --color-accent-muted: rgba(245, 158, 11, 0.15);
+  --color-accent-glow: rgba(245, 158, 11, 0.25);
+
+  /* Glass Shadow System */
+  --shadow-glass-sm: 0 4px 16px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-glass-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-glass-xl: 0 24px 64px rgba(0, 0, 0, 0.6);
+  --shadow-inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-inset-dark: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+
+  /* Accent Glow Shadows */
+  --shadow-accent-glow-sm: 0 0 16px rgba(245, 158, 11, 0.15);
+  --shadow-accent-glow: 0 0 24px rgba(245, 158, 11, 0.2);
+  --shadow-accent-glow-lg: 0 0 40px rgba(245, 158, 11, 0.25);
+  --shadow-success-glow: 0 0 20px rgba(56, 161, 105, 0.2);
+  --shadow-danger-glow: 0 0 20px rgba(229, 62, 62, 0.2);
 }
 
 /* ============================================
@@ -180,7 +235,7 @@ body {
    ============================================ */
 .App {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--color-bg-primary) 0%, #141a21 50%, var(--color-bg-primary) 100%);
+  background: var(--panel-bg-base);
   position: relative;
 }
 
@@ -192,8 +247,9 @@ body {
   right: 0;
   bottom: 0;
   background-image:
-    radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.06) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(245, 158, 11, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(22, 27, 34, 0.4) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -211,16 +267,16 @@ body {
   font-weight: var(--font-weight-semibold);
   line-height: 1;
   text-decoration: none;
-  border: 2px solid transparent;
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
   outline: none;
   white-space: nowrap;
 }
 
 .btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .btn:active:not(:disabled) {
@@ -235,26 +291,26 @@ body {
 
 /* Button Variants */
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+  background: linear-gradient(135deg, var(--color-accent-500) 0%, var(--color-accent-600) 100%);
   color: var(--color-text-inverted);
-  border-color: var(--color-accent);
-  box-shadow: var(--shadow-gold);
+  border-color: var(--color-accent-500);
+  box-shadow: var(--shadow-accent-glow-sm);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--color-accent-light) 0%, var(--color-accent) 100%);
-  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+  background: linear-gradient(135deg, var(--color-accent-400) 0%, var(--color-accent-500) 100%);
+  box-shadow: var(--shadow-accent-glow);
 }
 
 .btn-secondary {
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   color: var(--color-text-primary);
-  border-color: var(--color-border);
+  border-color: var(--glass-border);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--color-bg-hover);
-  border-color: var(--color-border-light);
+  background: var(--panel-bg-surface);
+  border-color: var(--glass-border-hover);
 }
 
 .btn-success {
@@ -304,12 +360,13 @@ body {
 .btn-outline {
   background: transparent;
   color: var(--color-accent);
-  border-color: var(--color-accent);
+  border-color: var(--glass-border-accent);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background: var(--color-accent);
-  color: var(--color-text-inverted);
+  background: var(--color-accent-muted);
+  color: var(--color-accent-light);
+  border-color: var(--glass-border-accent-strong);
 }
 
 /* Button Sizes */
@@ -350,11 +407,12 @@ body {
   font-family: var(--font-family-primary);
   font-size: var(--font-size-base);
   color: var(--color-text-primary);
-  background: var(--color-bg-tertiary);
-  border: 2px solid var(--color-border);
+  background: var(--panel-bg-base);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
   outline: none;
+  box-shadow: var(--shadow-inset-dark);
 }
 
 .player-name-input:focus,
@@ -363,7 +421,7 @@ body {
 .trade-input:focus,
 .bid-input:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+  box-shadow: var(--shadow-inset-dark), 0 0 0 2px var(--color-accent-muted), var(--shadow-accent-glow-sm);
 }
 
 .player-name-input::placeholder,
@@ -385,15 +443,17 @@ body {
 }
 
 .home-card {
-  background: var(--color-bg-secondary);
+  background: var(--glass-bg-elevated);
+  backdrop-filter: var(--glass-blur-strong);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
   border-radius: var(--radius-2xl);
   padding: var(--space-10);
-  box-shadow: var(--shadow-2xl);
+  box-shadow: var(--shadow-glass-lg), var(--shadow-inset-highlight);
   max-width: 480px;
   width: 100%;
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
 }
 
 .home-card::before {
@@ -402,8 +462,14 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light), var(--color-accent));
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-accent-600) 20%,
+    var(--color-accent-400) 50%,
+    var(--color-accent-600) 80%,
+    transparent 100%);
+  box-shadow: var(--shadow-accent-glow-sm);
 }
 
 /* Home Logo Section */
@@ -423,8 +489,8 @@ body {
   font-weight: var(--font-weight-bold);
   color: var(--color-accent);
   margin-bottom: var(--space-2);
-  letter-spacing: 4px;
-  text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+  letter-spacing: 6px;
+  text-shadow: 0 2px 20px var(--color-accent-glow), 0 4px 40px rgba(245, 158, 11, 0.15);
 }
 
 .game-subtitle {
@@ -459,7 +525,7 @@ body {
 .btn-play {
   width: 100%;
   padding: var(--space-5) var(--space-6);
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+  background: linear-gradient(135deg, var(--color-accent-500) 0%, var(--color-accent-600) 100%);
   color: var(--color-text-inverted);
   border: none;
   border-radius: var(--radius-xl);
@@ -470,15 +536,31 @@ body {
   justify-content: center;
   gap: var(--space-3);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-gold), var(--shadow-glow);
+  transition: all var(--transition-normal);
+  box-shadow: 0 4px 20px var(--color-accent-glow), var(--shadow-accent-glow);
   position: relative;
   overflow: hidden;
 }
 
+.btn-play::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-play:hover:not(:disabled)::before {
+  left: 100%;
+}
+
 .btn-play:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--color-accent-400) 0%, var(--color-accent-500) 100%);
+  box-shadow: 0 8px 30px var(--color-accent-glow), var(--shadow-accent-glow-lg);
 }
 
 .btn-play:disabled {
@@ -508,9 +590,9 @@ body {
 .btn-secondary-action {
   flex: 1;
   padding: var(--space-3) var(--space-4);
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -519,13 +601,14 @@ body {
   justify-content: center;
   gap: var(--space-2);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
 }
 
 .btn-secondary-action:hover:not(:disabled) {
-  background: var(--color-bg-hover);
-  border-color: var(--color-accent);
+  background: var(--panel-bg-surface);
+  border-color: var(--glass-border-accent);
   color: var(--color-accent);
+  box-shadow: var(--shadow-accent-glow-sm);
 }
 
 .btn-secondary-action:disabled {
@@ -585,15 +668,17 @@ body {
    ROOM BROWSER
    ============================================ */
 .room-browser-modal {
-  background: var(--color-bg-secondary);
+  background: var(--glass-bg-elevated);
+  backdrop-filter: var(--glass-blur-strong);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
   border-radius: var(--radius-xl);
   width: 100%;
   max-width: 600px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-2xl);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass-xl), var(--shadow-inset-highlight);
   animation: slideUp var(--transition-normal);
 }
 
@@ -602,7 +687,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-5) var(--space-6);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .room-browser-title {
@@ -619,8 +705,8 @@ body {
 }
 
 .btn-close {
-  background: var(--color-bg-tertiary);
-  border: none;
+  background: var(--panel-bg-surface);
+  border: 1px solid var(--glass-border);
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
@@ -629,11 +715,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
 }
 
 .btn-close:hover {
-  background: var(--color-bg-hover);
+  background: var(--panel-bg-overlay);
+  border-color: var(--glass-border-hover);
   color: var(--color-text-primary);
 }
 
@@ -655,18 +742,19 @@ body {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
 }
 
 .btn-refresh:hover:not(:disabled) {
-  background: var(--color-bg-hover);
-  color: var(--color-text-primary);
+  background: var(--panel-bg-surface);
+  color: var(--color-accent);
+  border-color: var(--glass-border-accent);
 }
 
 .btn-refresh:disabled {
@@ -727,15 +815,19 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4);
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  transition: all var(--transition-fast);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid transparent;
+  transition: all var(--transition-normal);
 }
 
 .room-card:hover {
-  border-color: var(--color-border-light);
-  background: var(--color-bg-hover);
+  border-color: var(--glass-border-hover);
+  border-left-color: var(--color-accent);
+  background: var(--panel-bg-surface);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glass-sm);
 }
 
 .room-info {
@@ -819,10 +911,10 @@ body {
   justify-content: center;
   gap: var(--space-2);
   padding: var(--space-4);
-  background: rgba(212, 175, 55, 0.1);
+  background: var(--color-accent-muted);
   color: var(--color-accent);
   font-size: var(--font-size-sm);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--glass-border);
 }
 
 .loading-spinner {
@@ -851,8 +943,9 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -867,7 +960,9 @@ body {
 }
 
 .modal-content {
-  background: var(--color-bg-secondary);
+  background: var(--glass-bg-elevated);
+  backdrop-filter: var(--glass-blur-strong);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
   border-radius: var(--radius-xl);
   padding: var(--space-8);
   max-width: 600px;
@@ -875,9 +970,9 @@ body {
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: var(--shadow-2xl);
+  box-shadow: var(--shadow-glass-xl), var(--shadow-inset-highlight);
   animation: slideUp var(--transition-normal);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
 }
 
 @keyframes slideUp {
@@ -903,8 +998,8 @@ body {
   position: absolute;
   top: var(--space-4);
   right: var(--space-4);
-  background: var(--color-bg-tertiary);
-  border: none;
+  background: var(--panel-bg-surface);
+  border: 1px solid var(--glass-border);
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
@@ -914,11 +1009,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
 }
 
 .modal-close:hover {
-  background: var(--color-bg-hover);
+  background: var(--panel-bg-overlay);
+  border-color: var(--glass-border-hover);
   color: var(--color-text-primary);
 }
 
@@ -928,7 +1024,7 @@ body {
   justify-content: flex-end;
   margin-top: var(--space-6);
   padding-top: var(--space-6);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--glass-border);
 }
 
 /* Settings Modal */
@@ -990,15 +1086,17 @@ body {
 }
 
 .lobby-card {
-  background: var(--color-bg-secondary);
+  background: var(--glass-bg-elevated);
+  backdrop-filter: var(--glass-blur-strong);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
   border-radius: var(--radius-2xl);
   padding: var(--space-8);
-  box-shadow: var(--shadow-2xl);
+  box-shadow: var(--shadow-glass-lg), var(--shadow-inset-highlight);
   max-width: 700px;
   width: 100%;
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
 }
 
 .lobby-card::before {
@@ -1007,8 +1105,14 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light), var(--color-accent));
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-accent-600) 20%,
+    var(--color-accent-400) 50%,
+    var(--color-accent-600) 80%,
+    transparent 100%);
+  box-shadow: var(--shadow-accent-glow-sm);
 }
 
 .lobby-header {
@@ -1035,16 +1139,18 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4);
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-base);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-inset-dark);
 }
 
 .game-code-box:hover {
-  border-color: var(--color-accent);
-  background: var(--color-bg-hover);
+  border-color: var(--glass-border-accent);
+  background: var(--panel-bg-secondary);
+  box-shadow: var(--shadow-inset-dark), var(--shadow-accent-glow-sm);
 }
 
 .game-code-label {
@@ -1118,19 +1224,21 @@ body {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3);
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  transition: all var(--transition-fast);
+  border: 1px solid var(--glass-border);
+  transition: all var(--transition-normal);
 }
 
 .player-item:hover {
-  border-color: var(--color-border-light);
+  border-color: var(--glass-border-hover);
+  background: var(--panel-bg-surface);
 }
 
 .player-item.is-you {
-  border-color: var(--color-accent);
-  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--glass-border-accent);
+  background: linear-gradient(135deg, var(--color-accent-muted) 0%, transparent 100%);
+  box-shadow: var(--shadow-accent-glow-sm);
 }
 
 .player-item.empty {
@@ -1201,13 +1309,15 @@ body {
 }
 
 .color-picker-modal {
-  background: var(--color-bg-secondary);
+  background: var(--glass-bg-elevated);
+  backdrop-filter: var(--glass-blur-strong);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
   max-width: 350px;
   width: 90%;
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-2xl);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass-lg), var(--shadow-inset-highlight);
   animation: slideUp var(--transition-normal);
 }
 
@@ -1268,9 +1378,9 @@ body {
 }
 
 .settings-list {
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   overflow: hidden;
 }
 
@@ -1279,7 +1389,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .setting-toggle-row:last-child {
@@ -1347,15 +1457,17 @@ body {
   position: relative;
   width: 48px;
   height: 26px;
-  background: var(--color-border);
-  border: none;
+  background: var(--panel-bg-overlay);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-full);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
 }
 
 .toggle-btn.active {
   background: var(--color-success);
+  border-color: var(--color-success);
+  box-shadow: var(--shadow-success-glow);
 }
 
 .toggle-slider {
@@ -1393,11 +1505,11 @@ body {
   gap: var(--space-3);
   text-align: center;
   padding: var(--space-4);
-  background: rgba(212, 175, 55, 0.1);
+  background: var(--color-accent-muted);
   border-radius: var(--radius-lg);
   color: var(--color-accent);
   font-weight: var(--font-weight-medium);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid var(--glass-border-accent);
 }
 
 .waiting-dots {
@@ -1434,6 +1546,7 @@ body {
   color: var(--color-text-primary);
   position: relative;
   z-index: 1;
+  background: var(--panel-bg-base);
 }
 
 .game-header {
@@ -1441,11 +1554,13 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: var(--space-3) var(--space-5);
-  background: var(--color-bg-secondary);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-radius: var(--radius-lg);
   margin-bottom: var(--space-3);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-glass-sm);
+  border: 1px solid var(--glass-border);
 }
 
 .game-title-small {
@@ -1475,12 +1590,22 @@ body {
 .game-left,
 .game-center,
 .game-right {
-  background: var(--color-bg-secondary);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   overflow-y: auto;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
+}
+
+.game-left {
+  background: var(--panel-bg-secondary);
+  box-shadow: var(--shadow-glass-sm);
+}
+
+.game-right {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-glass), var(--shadow-inset-highlight);
 }
 
 .game-center {
@@ -1488,7 +1613,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
+  background: linear-gradient(135deg, var(--panel-bg-secondary) 0%, var(--panel-bg-elevated) 100%);
+  box-shadow: var(--shadow-glass-sm);
 }
 
 /* ============================================
@@ -1500,7 +1626,7 @@ body {
   margin-bottom: var(--space-4);
   color: var(--color-text-primary);
   padding-bottom: var(--space-3);
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .players-list-game {
@@ -1510,26 +1636,27 @@ body {
 }
 
 .player-card {
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   border-radius: var(--radius-lg);
   padding: var(--space-3);
-  border: 2px solid transparent;
-  transition: all var(--transition-fast);
+  border: 1px solid var(--glass-border);
+  transition: all var(--transition-normal);
 }
 
 .player-card.current-turn {
   border-color: var(--color-success);
   background: linear-gradient(135deg, rgba(56, 161, 105, 0.15) 0%, rgba(56, 161, 105, 0.05) 100%);
+  box-shadow: var(--shadow-success-glow);
 }
 
 .player-card.my-player {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.2);
+  border-color: var(--glass-border-accent);
+  box-shadow: var(--shadow-accent-glow-sm);
 }
 
 .player-card.bankrupt {
   opacity: 0.5;
-  background: var(--color-bg-hover);
+  background: var(--panel-bg-surface);
 }
 
 .player-card-header {
@@ -1576,7 +1703,7 @@ body {
   font-size: var(--font-size-xs);
   margin-top: var(--space-2);
   padding-top: var(--space-2);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--glass-border);
 }
 
 .stat {
@@ -1627,11 +1754,11 @@ body {
   margin-bottom: var(--space-4);
   color: var(--color-text-primary);
   padding-bottom: var(--space-3);
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .phase-indicator {
-  background: rgba(66, 153, 225, 0.15);
+  background: rgba(66, 153, 225, 0.1);
   padding: var(--space-3);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-3);
@@ -1639,29 +1766,30 @@ body {
   color: var(--color-info-light);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  border: 1px solid rgba(66, 153, 225, 0.2);
+  border: 1px solid rgba(66, 153, 225, 0.15);
 }
 
 .your-turn-indicator {
-  background: rgba(56, 161, 105, 0.15);
+  background: rgba(56, 161, 105, 0.1);
   color: var(--color-success-light);
   padding: var(--space-3);
   border-radius: var(--radius-md);
   text-align: center;
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--space-4);
-  border: 1px solid rgba(56, 161, 105, 0.2);
+  border: 1px solid rgba(56, 161, 105, 0.15);
+  box-shadow: var(--shadow-success-glow);
 }
 
 .waiting-indicator {
-  background: rgba(212, 175, 55, 0.15);
+  background: var(--color-accent-muted);
   color: var(--color-accent);
   padding: var(--space-3);
   border-radius: var(--radius-md);
   text-align: center;
   margin-bottom: var(--space-4);
   font-size: var(--font-size-sm);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid var(--glass-border-accent);
 }
 
 .action-buttons {
@@ -1673,9 +1801,9 @@ body {
 .property-actions {
   margin: var(--space-4) 0;
   padding: var(--space-3);
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
 }
 
 .property-actions h4 {
@@ -1688,11 +1816,11 @@ body {
 .buildings-available {
   margin-top: var(--space-5);
   padding: var(--space-3);
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   border-radius: var(--radius-md);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
 }
 
 .buildings-available div {
@@ -1754,15 +1882,16 @@ body {
 .log-messages {
   max-height: 250px;
   overflow-y: auto;
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-base);
   border-radius: var(--radius-md);
   padding: var(--space-3);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-inset-dark);
 }
 
 .log-entry {
   padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
   font-size: var(--font-size-xs);
 }
 
@@ -1809,7 +1938,7 @@ body {
   display: flex;
   justify-content: space-between;
   padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
   font-size: var(--font-size-sm);
 }
 
@@ -1829,9 +1958,9 @@ body {
 .rent-section {
   margin: var(--space-4) 0;
   padding: var(--space-4);
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
 }
 
 .rent-section h4 {
@@ -1886,7 +2015,7 @@ body {
 .pending-trades {
   margin-bottom: var(--space-8);
   padding-bottom: var(--space-8);
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .pending-trades h3 {
@@ -1895,11 +2024,11 @@ body {
 }
 
 .trade-offer {
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   padding: var(--space-4);
   border-radius: var(--radius-lg);
   margin-bottom: var(--space-4);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
 }
 
 .trade-from,
@@ -1945,27 +2074,27 @@ body {
 }
 
 .trade-column {
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   padding: var(--space-4);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
 }
 
 .trade-column h4 {
   margin-bottom: var(--space-4);
   color: var(--color-text-primary);
   padding-bottom: var(--space-3);
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
   font-size: var(--font-size-base);
 }
 
 .property-checkboxes {
   max-height: 180px;
   overflow-y: auto;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: var(--space-3);
-  background: var(--color-bg-hover);
+  background: var(--panel-bg-base);
 }
 
 .property-checkbox {
@@ -2000,9 +2129,9 @@ body {
   text-align: center;
   margin: var(--space-6) 0;
   padding: var(--space-6);
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-elevated);
   border-radius: var(--radius-lg);
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--glass-border);
 }
 
 .auction-property h3 {
@@ -2020,9 +2149,10 @@ body {
   text-align: center;
   margin: var(--space-6) 0;
   padding: var(--space-5);
-  background: rgba(212, 175, 55, 0.15);
+  background: var(--color-accent-muted);
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(212, 175, 55, 0.3);
+  border: 1px solid var(--glass-border-accent);
+  box-shadow: var(--shadow-accent-glow-sm);
 }
 
 .current-bid-label {
@@ -2093,15 +2223,16 @@ body {
 .bid-list {
   max-height: 120px;
   overflow-y: auto;
-  background: var(--color-bg-tertiary);
+  background: var(--panel-bg-base);
   border-radius: var(--radius-md);
   padding: var(--space-3);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-inset-dark);
 }
 
 .bid-entry {
   padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
   font-size: var(--font-size-sm);
   font-family: var(--font-family-mono);
   color: var(--color-text-secondary);
@@ -2147,16 +2278,18 @@ body {
 }
 
 .game-over-card {
-  background: var(--color-bg-secondary);
+  background: var(--glass-bg-elevated);
+  backdrop-filter: var(--glass-blur-strong);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
   border-radius: var(--radius-2xl);
   padding: var(--space-16) var(--space-12);
-  box-shadow: var(--shadow-2xl);
+  box-shadow: var(--shadow-glass-xl), var(--shadow-accent-glow);
   text-align: center;
   max-width: 500px;
   width: 100%;
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border-accent);
 }
 
 .game-over-card::before {
@@ -2165,8 +2298,14 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 8px;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light), var(--color-accent));
+  height: 4px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-accent-600) 20%,
+    var(--color-accent-400) 50%,
+    var(--color-accent-600) 80%,
+    transparent 100%);
+  box-shadow: var(--shadow-accent-glow);
 }
 
 .game-over-card h1 {
@@ -2363,3 +2502,82 @@ body {
 .mb-4 { margin-bottom: var(--space-4); }
 .py-2 { padding-top: var(--space-2); padding-bottom: var(--space-2); }
 .px-4 { padding-left: var(--space-4); padding-right: var(--space-4); }
+
+/* ============================================
+   GLASSMORPHISM UTILITY CLASSES
+   ============================================ */
+
+/* Standard Glass Panel */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass), var(--shadow-inset-highlight);
+}
+
+/* Elevated Glass Panel */
+.glass-panel-elevated {
+  background: var(--glass-bg-elevated);
+  backdrop-filter: var(--glass-blur-strong);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
+  border: 1px solid var(--glass-border-hover);
+  box-shadow: var(--shadow-glass-lg), var(--shadow-inset-highlight);
+}
+
+/* Subtle Glass Panel */
+.glass-panel-subtle {
+  background: var(--glass-bg-subtle);
+  backdrop-filter: var(--glass-blur-subtle);
+  -webkit-backdrop-filter: var(--glass-blur-subtle);
+  border: 1px solid var(--glass-border);
+}
+
+/* Accent Glass Panel */
+.glass-panel-accent {
+  background: var(--color-accent-muted);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border-accent);
+  box-shadow: var(--shadow-glass), var(--shadow-accent-glow-sm);
+}
+
+/* ============================================
+   BROWSER FALLBACKS
+   ============================================ */
+
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(16px)) {
+  .home-card,
+  .lobby-card,
+  .room-browser-modal,
+  .modal-content,
+  .color-picker-modal,
+  .game-header,
+  .game-right,
+  .game-over-card {
+    background: var(--glass-bg-solid);
+  }
+
+  .glass-panel,
+  .glass-panel-elevated,
+  .glass-panel-subtle,
+  .glass-panel-accent {
+    background: var(--panel-bg-elevated);
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .btn-play::before {
+    display: none;
+  }
+}
