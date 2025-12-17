@@ -138,6 +138,19 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
     setSelectedProperty(propertyId);
   };
 
+  const handleRollDice = async () => {
+    try {
+      await socket.rollDice(gameId);
+    } catch (err) {
+      showNotification(err.message || 'Failed to roll dice', 'error');
+    }
+  };
+
+  const canRollDice = () => {
+    if (gameState.phase !== 'rolling' || !isMyTurn()) return false;
+    return !gameState.hasRolledThisTurn || gameState.canRollAgain;
+  };
+
   const handleLeaveGame = async () => {
     if (window.confirm('Are you sure you want to leave the game?')) {
       try {
@@ -194,6 +207,10 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           <Board2D
             gameState={gameState}
             onPropertyClick={handlePropertyClick}
+            onRollDice={handleRollDice}
+            isMyTurn={isMyTurn()}
+            canRoll={canRollDice()}
+            myPlayerId={playerId}
           />
         </div>
 

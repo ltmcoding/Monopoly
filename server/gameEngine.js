@@ -33,6 +33,7 @@ class MonopolyGame {
     this.pendingCardAction = null;
     this.lastDiceRoll = null;
     this.hasRolledThisTurn = false;
+    this.canRollAgain = false; // True when doubles are rolled
     this.hostId = null; // Set when first player joins
 
     // Initialize properties
@@ -179,10 +180,14 @@ class MonopolyGame {
       this.handleMrMonopoly(player);
     }
 
+    // Set canRollAgain for doubles (player can roll again after completing current action)
+    // Reset to false if tripled out (sent to jail) or phase ended
+    this.canRollAgain = isDoubles && this.doublesCount < 3 && this.phase !== "ended";
+
     return {
       dice: this.dice,
       doubles: isDoubles,
-      canRollAgain: isDoubles && this.phase === "rolling"
+      canRollAgain: this.canRollAgain
     };
   }
 
@@ -251,6 +256,8 @@ class MonopolyGame {
     player.position = 10; // Jail position
     player.inJail = true;
     player.jailTurns = 0;
+    this.canRollAgain = false; // Can't roll again after being sent to jail
+    this.doublesCount = 0;
     this.logAction('sent_to_jail', player.id, {}, `${player.name} was sent to jail`);
   }
 
@@ -1039,6 +1046,7 @@ class MonopolyGame {
 
     this.doublesCount = 0;
     this.hasRolledThisTurn = false;
+    this.canRollAgain = false;
     this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
 
     // Skip bankrupt players
@@ -1090,6 +1098,7 @@ class MonopolyGame {
       trades: this.trades,
       actionLog: this.actionLog.slice(-20), // Last 20 actions
       hasRolledThisTurn: this.hasRolledThisTurn,
+      canRollAgain: this.canRollAgain,
       hostId: this.hostId
     };
   }

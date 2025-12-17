@@ -33,7 +33,10 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
   };
 
   const canRollDice = () => {
-    return gameState.phase === 'rolling' && isMyTurn && !loading;
+    // Can only roll if: it's rolling phase, my turn, not loading,
+    // AND either haven't rolled yet OR can roll again (doubles)
+    if (gameState.phase !== 'rolling' || !isMyTurn || loading) return false;
+    return !gameState.hasRolledThisTurn || gameState.canRollAgain;
   };
 
   const canEndTurn = () => {
