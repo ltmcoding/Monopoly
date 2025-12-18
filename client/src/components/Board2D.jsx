@@ -203,6 +203,10 @@ export default function Board2D({
   const fontSize = Math.round(boardSize * 0.009);
   const priceFontSize = Math.round(boardSize * 0.01);
 
+  // Consistent spacing for all tile orientations
+  const textGap = fontSize * 1.8;        // Gap from color bar to first line of text
+  const priceGap = fontSize * 1.0;       // Gap from edge to price
+
   const getSpacePosition = (position) => {
     const offset = woodBorderWidth;
     if (position === 0) {
@@ -299,9 +303,9 @@ export default function Board2D({
         {isMortgaged && (
           <text x={pos.w/2} y={colorBarHeight * 0.7} textAnchor="middle" fontSize={colorBarHeight * 0.5} fill="#ef4444" fontWeight="bold">MORTGAGED</text>
         )}
-        <text x={pos.w/2} y={colorBarHeight + fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
-        {name2 && <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
-        {space.price && <text x={pos.w/2} y={pos.h - fontSize * 0.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
+        <text x={pos.w/2} y={colorBarHeight + textGap} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
+        {name2 && <text x={pos.w/2} y={colorBarHeight + textGap + fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
+        {space.price && <text x={pos.w/2} y={pos.h - priceGap} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
         {renderBuildings(propertyState, pos, 'bottom')}
       </g>
     );
@@ -323,9 +327,9 @@ export default function Board2D({
         {isMortgaged && (
           <text x={pos.w/2} y={pos.h - colorBarHeight * 0.3} textAnchor="middle" fontSize={colorBarHeight * 0.5} fill="#ef4444" fontWeight="bold">MORTGAGED</text>
         )}
-        {space.price && <text x={pos.w/2} y={fontSize * 1.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
-        <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
-        {name2 && <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 0.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
+        {space.price && <text x={pos.w/2} y={priceGap + priceFontSize * 0.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
+        <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 0.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
+        {name2 && <text x={pos.w/2} y={pos.h - colorBarHeight - textGap + fontSize} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
         {renderBuildings(propertyState, pos, 'top')}
       </g>
     );
@@ -340,9 +344,8 @@ export default function Board2D({
     const name2 = space.name.split(' ').length > 1 ? truncate(space.name.split(' ').slice(1).join(' ').toUpperCase(), 9) : '';
 
     // Color bar on RIGHT edge (toward board center)
-    // Text should be positioned like bottom tile: name right under color bar, price at far end
-    // After rotate(90): negative y moves RIGHT, positive y moves LEFT
-    const textCenterX = pos.w - colorBarHeight - fontSize * 2.5; // Close to color bar
+    // Use same spacing as top/bottom tiles for consistency
+    const textCenterX = pos.w - colorBarHeight - textGap;
 
     return (
       <g>
@@ -356,12 +359,11 @@ export default function Board2D({
           </g>
         )}
         <g transform={`translate(${textCenterX}, ${pos.h/2}) rotate(90)`}>
-          {/* Names - after rotation, these appear close to color bar */}
           <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
           {name2 && <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
         </g>
-        {/* Price at outer edge (left side) - separate transform */}
-        <g transform={`translate(${fontSize * 1.5}, ${pos.h/2}) rotate(90)`}>
+        {/* Price at outer edge (left side) */}
+        <g transform={`translate(${priceGap + priceFontSize * 0.3}, ${pos.h/2}) rotate(90)`}>
           {space.price && <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
         </g>
         {renderBuildings(propertyState, pos, 'left')}
@@ -378,9 +380,8 @@ export default function Board2D({
     const name2 = space.name.split(' ').length > 1 ? truncate(space.name.split(' ').slice(1).join(' ').toUpperCase(), 9) : '';
 
     // Color bar on LEFT edge (toward board center)
-    // Text should be positioned like bottom tile: name right under color bar, price at far end
-    // After rotate(-90): negative y moves LEFT, positive y moves RIGHT
-    const textCenterX = colorBarHeight + fontSize * 2.5; // Close to color bar
+    // Use same spacing as top/bottom tiles for consistency
+    const textCenterX = colorBarHeight + textGap;
 
     return (
       <g>
@@ -394,12 +395,11 @@ export default function Board2D({
           </g>
         )}
         <g transform={`translate(${textCenterX}, ${pos.h/2}) rotate(-90)`}>
-          {/* Names - after rotation, these appear close to color bar */}
           <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
           {name2 && <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
         </g>
-        {/* Price at outer edge (right side) - separate transform */}
-        <g transform={`translate(${pos.w - fontSize * 1.5}, ${pos.h/2}) rotate(-90)`}>
+        {/* Price at outer edge (right side) */}
+        <g transform={`translate(${pos.w - priceGap - priceFontSize * 0.3}, ${pos.h/2}) rotate(-90)`}>
           {space.price && <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
         </g>
         {renderBuildings(propertyState, pos, 'right')}
@@ -420,9 +420,9 @@ export default function Board2D({
     return (
       <g>
         <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
-        <text x={pos.w/2} y={colorBarHeight + fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
-        {label2 && <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? taxPriceColor : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
-        <text x={pos.w/2} y={pos.h * 0.65} textAnchor="middle" fontSize={pos.h * 0.22}>{emoji}</text>
+        <text x={pos.w/2} y={colorBarHeight + textGap} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
+        {label2 && <text x={pos.w/2} y={colorBarHeight + textGap + fontSize * 1.2} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? taxPriceColor : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
+        <text x={pos.w/2} y={pos.h * 0.68} textAnchor="middle" fontSize={pos.h * 0.2}>{emoji}</text>
       </g>
     );
   };
@@ -437,9 +437,9 @@ export default function Board2D({
     return (
       <g>
         <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
-        <text x={pos.w/2} y={pos.h * 0.38} textAnchor="middle" fontSize={pos.h * 0.22}>{emoji}</text>
-        <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
-        {label2 && <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 0.5} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
+        <text x={pos.w/2} y={pos.h * 0.35} textAnchor="middle" fontSize={pos.h * 0.2}>{emoji}</text>
+        <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 0.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
+        {label2 && <text x={pos.w/2} y={pos.h - colorBarHeight - textGap + fontSize} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
       </g>
     );
   };
@@ -451,10 +451,10 @@ export default function Board2D({
     else if (space.type === 'community_chest') { emoji = '💰'; label1 = 'COMM.'; label2 = 'CHEST'; }
     else if (space.type === 'tax') { emoji = '💎'; label1 = truncate(space.name.toUpperCase(), 10); label2 = `$${space.amount}`; }
 
-    // Text position aligned with property tiles (offset from inner edge by color bar width)
-    const textCenterX = pos.w - colorBarHeight - fontSize * 2.5;
-    // Icon centered in usable area (excluding color bar space on inner edge)
-    const iconCenterX = (pos.w - colorBarHeight) / 2;
+    // Text position aligned with property tiles
+    const textCenterX = pos.w - colorBarHeight - textGap;
+    // Icon positioned to not overlap with text (shifted toward outer edge)
+    const iconCenterX = pos.w * 0.35;
 
     return (
       <g>
@@ -463,9 +463,9 @@ export default function Board2D({
           <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
           {label2 && <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label2}</text>}
         </g>
-        {/* Emoji centered in usable area */}
+        {/* Emoji positioned away from text to avoid overlap */}
         <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(90)`}>
-          <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.25}>{emoji}</text>
+          <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.2}>{emoji}</text>
         </g>
       </g>
     );
@@ -478,10 +478,10 @@ export default function Board2D({
     else if (space.type === 'community_chest') { emoji = '💰'; label1 = 'COMM.'; label2 = 'CHEST'; }
     else if (space.type === 'tax') { emoji = '💎'; label1 = truncate(space.name.toUpperCase(), 10); label2 = `$${space.amount}`; }
 
-    // Text position aligned with property tiles (offset from inner edge by color bar width)
-    const textCenterX = colorBarHeight + fontSize * 2.5;
-    // Icon centered in usable area (excluding color bar space on inner edge)
-    const iconCenterX = colorBarHeight + (pos.w - colorBarHeight) / 2;
+    // Text position aligned with property tiles
+    const textCenterX = colorBarHeight + textGap;
+    // Icon positioned to not overlap with text (shifted toward outer edge)
+    const iconCenterX = pos.w * 0.65;
 
     return (
       <g>
@@ -490,9 +490,9 @@ export default function Board2D({
           <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
           {label2 && <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label2}</text>}
         </g>
-        {/* Emoji centered in usable area */}
+        {/* Emoji positioned away from text to avoid overlap */}
         <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(-90)`}>
-          <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.25}>{emoji}</text>
+          <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.2}>{emoji}</text>
         </g>
       </g>
     );
@@ -507,10 +507,10 @@ export default function Board2D({
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
-          <text x={pos.w/2} y={colorBarHeight + fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{firstWord}</text>
-          <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">R.R.</text>
-          <text x={pos.w/2} y={pos.h * 0.6} textAnchor="middle" fontSize={pos.h * 0.18}>{isMortgaged ? '🚫' : '🚂'}</text>
-          <text x={pos.w/2} y={pos.h - fontSize * 0.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
+          <text x={pos.w/2} y={colorBarHeight + textGap} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{firstWord}</text>
+          <text x={pos.w/2} y={colorBarHeight + textGap + fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">R.R.</text>
+          <text x={pos.w/2} y={pos.h * 0.62} textAnchor="middle" fontSize={pos.h * 0.18}>{isMortgaged ? '🚫' : '🚂'}</text>
+          <text x={pos.w/2} y={pos.h - priceGap} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
           {isMortgaged && <text x={pos.w/2} y={pos.h * 0.4} textAnchor="middle" fontSize={fontSize * 0.8} fill="#ef4444" fontWeight="bold">MORTGAGED</text>}
         </g>
       );
@@ -518,17 +518,17 @@ export default function Board2D({
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
-          <text x={pos.w/2} y={fontSize * 1.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
-          <text x={pos.w/2} y={pos.h * 0.4} textAnchor="middle" fontSize={pos.h * 0.18}>{isMortgaged ? '🚫' : '🚂'}</text>
-          <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{firstWord}</text>
-          <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 0.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">R.R.</text>
+          <text x={pos.w/2} y={priceGap + priceFontSize * 0.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
+          <text x={pos.w/2} y={pos.h * 0.38} textAnchor="middle" fontSize={pos.h * 0.18}>{isMortgaged ? '🚫' : '🚂'}</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 0.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{firstWord}</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap + fontSize} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">R.R.</text>
           {isMortgaged && <text x={pos.w/2} y={pos.h * 0.58} textAnchor="middle" fontSize={fontSize * 0.8} fill="#ef4444" fontWeight="bold">MORTGAGED</text>}
         </g>
       );
     } else if (side === 'left') {
-      // Left side: text aligned with property tiles, icon centered in usable area
-      const textCenterX = pos.w - colorBarHeight - fontSize * 2.5;
-      const iconCenterX = (pos.w - colorBarHeight) / 2;
+      // Left side: text aligned with property tiles, icon positioned to avoid overlap
+      const textCenterX = pos.w - colorBarHeight - textGap;
+      const iconCenterX = pos.w * 0.4;
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
@@ -537,18 +537,18 @@ export default function Board2D({
             <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">R.R.</text>
           </g>
           <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(90)`}>
-            <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.22}>{isMortgaged ? '🚫' : '🚂'}</text>
+            <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.18}>{isMortgaged ? '🚫' : '🚂'}</text>
           </g>
-          <g transform={`translate(${fontSize * 1.5}, ${pos.h/2}) rotate(90)`}>
+          <g transform={`translate(${priceGap + priceFontSize * 0.3}, ${pos.h/2}) rotate(90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
           </g>
           {isMortgaged && <g transform={`translate(${pos.w - colorBarHeight/2}, ${pos.h/2}) rotate(90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
         </g>
       );
     } else {
-      // Right side: text aligned with property tiles, icon centered in usable area
-      const textCenterX = colorBarHeight + fontSize * 2.5;
-      const iconCenterX = colorBarHeight + (pos.w - colorBarHeight) / 2;
+      // Right side: text aligned with property tiles, icon positioned to avoid overlap
+      const textCenterX = colorBarHeight + textGap;
+      const iconCenterX = pos.w * 0.6;
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
@@ -557,9 +557,9 @@ export default function Board2D({
             <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">R.R.</text>
           </g>
           <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(-90)`}>
-            <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.22}>{isMortgaged ? '🚫' : '🚂'}</text>
+            <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.18}>{isMortgaged ? '🚫' : '🚂'}</text>
           </g>
-          <g transform={`translate(${pos.w - fontSize * 1.5}, ${pos.h/2}) rotate(-90)`}>
+          <g transform={`translate(${pos.w - priceGap - priceFontSize * 0.3}, ${pos.h/2}) rotate(-90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
           </g>
           {isMortgaged && <g transform={`translate(${colorBarHeight/2}, ${pos.h/2}) rotate(-90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
@@ -579,10 +579,10 @@ export default function Board2D({
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
-          <text x={pos.w/2} y={colorBarHeight + fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name}</text>
-          <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">CO.</text>
-          <text x={pos.w/2} y={pos.h * 0.6} textAnchor="middle" fontSize={pos.h * 0.18}>{isMortgaged ? '🚫' : emoji}</text>
-          <text x={pos.w/2} y={pos.h - fontSize * 0.8} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
+          <text x={pos.w/2} y={colorBarHeight + textGap} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name}</text>
+          <text x={pos.w/2} y={colorBarHeight + textGap + fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">CO.</text>
+          <text x={pos.w/2} y={pos.h * 0.62} textAnchor="middle" fontSize={pos.h * 0.18}>{isMortgaged ? '🚫' : emoji}</text>
+          <text x={pos.w/2} y={pos.h - priceGap} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
           {isMortgaged && <text x={pos.w/2} y={pos.h * 0.4} textAnchor="middle" fontSize={fontSize * 0.8} fill="#ef4444" fontWeight="bold">MORTGAGED</text>}
         </g>
       );
@@ -590,17 +590,17 @@ export default function Board2D({
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
-          <text x={pos.w/2} y={fontSize * 1.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
-          <text x={pos.w/2} y={pos.h * 0.4} textAnchor="middle" fontSize={pos.h * 0.18}>{isMortgaged ? '🚫' : emoji}</text>
-          <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 1.8} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name}</text>
-          <text x={pos.w/2} y={pos.h - colorBarHeight - fontSize * 0.5} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">CO.</text>
+          <text x={pos.w/2} y={priceGap + priceFontSize * 0.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
+          <text x={pos.w/2} y={pos.h * 0.38} textAnchor="middle" fontSize={pos.h * 0.18}>{isMortgaged ? '🚫' : emoji}</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 0.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name}</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap + fontSize} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">CO.</text>
           {isMortgaged && <text x={pos.w/2} y={pos.h * 0.58} textAnchor="middle" fontSize={fontSize * 0.8} fill="#ef4444" fontWeight="bold">MORTGAGED</text>}
         </g>
       );
     } else if (side === 'left') {
-      // Left side: text aligned with property tiles, icon centered in usable area
-      const textCenterX = pos.w - colorBarHeight - fontSize * 2.5;
-      const iconCenterX = (pos.w - colorBarHeight) / 2;
+      // Left side: text aligned with property tiles, icon positioned to avoid overlap
+      const textCenterX = pos.w - colorBarHeight - textGap;
+      const iconCenterX = pos.w * 0.4;
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
@@ -609,18 +609,18 @@ export default function Board2D({
             <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">CO.</text>
           </g>
           <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(90)`}>
-            <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.22}>{isMortgaged ? '🚫' : emoji}</text>
+            <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.18}>{isMortgaged ? '🚫' : emoji}</text>
           </g>
-          <g transform={`translate(${fontSize * 1.5}, ${pos.h/2}) rotate(90)`}>
+          <g transform={`translate(${priceGap + priceFontSize * 0.3}, ${pos.h/2}) rotate(90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
           </g>
           {isMortgaged && <g transform={`translate(${pos.w - colorBarHeight/2}, ${pos.h/2}) rotate(90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
         </g>
       );
     } else {
-      // Right side: text aligned with property tiles, icon centered in usable area
-      const textCenterX = colorBarHeight + fontSize * 2.5;
-      const iconCenterX = colorBarHeight + (pos.w - colorBarHeight) / 2;
+      // Right side: text aligned with property tiles, icon positioned to avoid overlap
+      const textCenterX = colorBarHeight + textGap;
+      const iconCenterX = pos.w * 0.6;
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
@@ -629,9 +629,9 @@ export default function Board2D({
             <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">CO.</text>
           </g>
           <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(-90)`}>
-            <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.22}>{isMortgaged ? '🚫' : emoji}</text>
+            <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.18}>{isMortgaged ? '🚫' : emoji}</text>
           </g>
-          <g transform={`translate(${pos.w - fontSize * 1.5}, ${pos.h/2}) rotate(-90)`}>
+          <g transform={`translate(${pos.w - priceGap - priceFontSize * 0.3}, ${pos.h/2}) rotate(-90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
           </g>
           {isMortgaged && <g transform={`translate(${colorBarHeight/2}, ${pos.h/2}) rotate(-90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}

@@ -836,6 +836,20 @@ class MonopolyGame {
     if (property.ownerId !== playerId) throw new Error("You don't own this property");
     if (property.hotels === 0) throw new Error("No hotel to sell");
 
+    // Check even build rule - can only sell from properties with most houses (hotels = 5)
+    if (this.settings.evenBuild) {
+      const colorGroup = Object.keys(COLOR_GROUPS).find(color =>
+        COLOR_GROUPS[color].includes(propertyId)
+      );
+      const maxHouses = Math.max(...COLOR_GROUPS[colorGroup].map(id =>
+        this.getEffectiveHouses(id)
+      ));
+      // Hotels are 5, so can only sell if this is at max (other properties don't have more)
+      if (this.getEffectiveHouses(propertyId) < maxHouses) {
+        throw new Error("Must sell evenly across color set");
+      }
+    }
+
     // Check if 4 houses are available to exchange
     if (this.availableHouses < 4) throw new Error("Not enough houses available to downgrade hotel");
 
