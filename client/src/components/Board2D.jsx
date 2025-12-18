@@ -332,9 +332,9 @@ export default function Board2D({
         {isMortgaged && (
           <text x={pos.w/2} y={pos.h - colorBarHeight * 0.3} textAnchor="middle" fontSize={colorBarHeight * 0.5} fill="#ef4444" fontWeight="bold">MORTGAGED</text>
         )}
-        {space.price && <text x={pos.w/2} y={priceGap + priceFontSize * 0.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
-        <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 1.4} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
-        {name2 && <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 0.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
+        {space.price && <text x={pos.w/2} y={priceGap} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">${space.price}</text>}
+        <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name1}</text>
+        {name2 && <text x={pos.w/2} y={pos.h - colorBarHeight - textGap} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name2}</text>}
         {renderBuildings(propertyState, pos, 'top')}
       </g>
     );
@@ -443,8 +443,8 @@ export default function Board2D({
       <g>
         <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
         <text x={pos.w/2} y={pos.h * 0.5} textAnchor="middle" fontSize={pos.h * 0.2}>{emoji}</text>
-        <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 1.4} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
-        {label2 && <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 0.2} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
+        <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
+        {label2 && <text x={pos.w/2} y={pos.h - colorBarHeight - textGap} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
       </g>
     );
   };
@@ -523,10 +523,10 @@ export default function Board2D({
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
-          <text x={pos.w/2} y={priceGap + priceFontSize * 0.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
+          <text x={pos.w/2} y={priceGap} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
           <text x={pos.w/2} y={pos.h * 0.5} textAnchor="middle" fontSize={pos.h * 0.18}>{isMortgaged ? '🚫' : '🚂'}</text>
-          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 1.4} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{firstWord}</text>
-          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 0.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">R.R.</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{firstWord}</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">R.R.</text>
           {isMortgaged && <text x={pos.w/2} y={pos.h * 0.65} textAnchor="middle" fontSize={fontSize * 0.8} fill="#ef4444" fontWeight="bold">MORTGAGED</text>}
         </g>
       );
@@ -595,10 +595,10 @@ export default function Board2D({
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
-          <text x={pos.w/2} y={priceGap + priceFontSize * 0.3} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
+          <text x={pos.w/2} y={priceGap} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
           <text x={pos.w/2} y={pos.h * 0.5} textAnchor="middle" fontSize={pos.h * 0.18}>{isMortgaged ? '🚫' : emoji}</text>
-          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 1.4} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name}</text>
-          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 0.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">CO.</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap - fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name}</text>
+          <text x={pos.w/2} y={pos.h - colorBarHeight - textGap} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">CO.</text>
           {isMortgaged && <text x={pos.w/2} y={pos.h * 0.65} textAnchor="middle" fontSize={fontSize * 0.8} fill="#ef4444" fontWeight="bold">MORTGAGED</text>}
         </g>
       );
