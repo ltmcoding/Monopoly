@@ -414,11 +414,14 @@ export default function Board2D({
     else if (space.type === 'community_chest') { emoji = '💰'; label1 = 'COMM.'; label2 = 'CHEST'; }
     else if (space.type === 'tax') { emoji = '💎'; label1 = truncate(space.name.toUpperCase(), 10); label2 = `$${space.amount}`; }
 
+    // Income tax ($200) uses white text, luxury tax uses gold
+    const taxPriceColor = space.amount === 200 ? '#ffffff' : TILE_COLORS.price;
+
     return (
       <g>
         <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
         <text x={pos.w/2} y={colorBarHeight + fontSize * 1.6} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
-        {label2 && <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? TILE_COLORS.price : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
+        {label2 && <text x={pos.w/2} y={colorBarHeight + fontSize * 2.8} textAnchor="middle" fontSize={space.type === 'tax' ? priceFontSize : fontSize} fill={space.type === 'tax' ? taxPriceColor : TILE_COLORS.text} fontWeight="bold">{label2}</text>}
         <text x={pos.w/2} y={pos.h * 0.65} textAnchor="middle" fontSize={pos.h * 0.22}>{emoji}</text>
       </g>
     );
@@ -441,15 +444,17 @@ export default function Board2D({
     );
   };
 
-  // Special left - rotated, text positioned like property tiles
+  // Special left - rotated, text aligned with property tiles (account for color bar space)
   const renderSpecialLeft = (space, pos) => {
     let emoji = '', label1 = '', label2 = '';
     if (space.type === 'chance') { emoji = '❓'; label1 = 'CHANCE'; }
     else if (space.type === 'community_chest') { emoji = '💰'; label1 = 'COMM.'; label2 = 'CHEST'; }
     else if (space.type === 'tax') { emoji = '💎'; label1 = truncate(space.name.toUpperCase(), 10); label2 = `$${space.amount}`; }
 
-    // Position text like property tiles - near where color bar would be (right edge)
-    const textCenterX = pos.w - fontSize * 3;
+    // Text position aligned with property tiles (offset from inner edge by color bar width)
+    const textCenterX = pos.w - colorBarHeight - fontSize * 2.5;
+    // Icon centered in usable area (excluding color bar space on inner edge)
+    const iconCenterX = (pos.w - colorBarHeight) / 2;
 
     return (
       <g>
@@ -458,23 +463,25 @@ export default function Board2D({
           <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
           {label2 && <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label2}</text>}
         </g>
-        {/* Emoji in center */}
-        <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(90)`}>
+        {/* Emoji centered in usable area */}
+        <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(90)`}>
           <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.25}>{emoji}</text>
         </g>
       </g>
     );
   };
 
-  // Special right - rotated, text positioned like property tiles
+  // Special right - rotated, text aligned with property tiles (account for color bar space)
   const renderSpecialRight = (space, pos) => {
     let emoji = '', label1 = '', label2 = '';
     if (space.type === 'chance') { emoji = '❓'; label1 = 'CHANCE'; }
     else if (space.type === 'community_chest') { emoji = '💰'; label1 = 'COMM.'; label2 = 'CHEST'; }
     else if (space.type === 'tax') { emoji = '💎'; label1 = truncate(space.name.toUpperCase(), 10); label2 = `$${space.amount}`; }
 
-    // Position text like property tiles - near where color bar would be (left edge)
-    const textCenterX = fontSize * 3;
+    // Text position aligned with property tiles (offset from inner edge by color bar width)
+    const textCenterX = colorBarHeight + fontSize * 2.5;
+    // Icon centered in usable area (excluding color bar space on inner edge)
+    const iconCenterX = colorBarHeight + (pos.w - colorBarHeight) / 2;
 
     return (
       <g>
@@ -483,8 +490,8 @@ export default function Board2D({
           <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label1}</text>
           {label2 && <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{label2}</text>}
         </g>
-        {/* Emoji in center */}
-        <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(-90)`}>
+        {/* Emoji centered in usable area */}
+        <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(-90)`}>
           <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.25}>{emoji}</text>
         </g>
       </g>
@@ -519,8 +526,9 @@ export default function Board2D({
         </g>
       );
     } else if (side === 'left') {
-      // Left side: text near right edge (like property color bar position), price at left
-      const textCenterX = pos.w - fontSize * 3;
+      // Left side: text aligned with property tiles, icon centered in usable area
+      const textCenterX = pos.w - colorBarHeight - fontSize * 2.5;
+      const iconCenterX = (pos.w - colorBarHeight) / 2;
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
@@ -528,18 +536,19 @@ export default function Board2D({
             <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{firstWord}</text>
             <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">R.R.</text>
           </g>
-          <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(90)`}>
+          <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.22}>{isMortgaged ? '🚫' : '🚂'}</text>
           </g>
           <g transform={`translate(${fontSize * 1.5}, ${pos.h/2}) rotate(90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
           </g>
-          {isMortgaged && <g transform={`translate(${pos.w/2 + fontSize * 2}, ${pos.h/2}) rotate(90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
+          {isMortgaged && <g transform={`translate(${pos.w - colorBarHeight/2}, ${pos.h/2}) rotate(90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
         </g>
       );
     } else {
-      // Right side: text near left edge (like property color bar position), price at right
-      const textCenterX = fontSize * 3;
+      // Right side: text aligned with property tiles, icon centered in usable area
+      const textCenterX = colorBarHeight + fontSize * 2.5;
+      const iconCenterX = colorBarHeight + (pos.w - colorBarHeight) / 2;
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
@@ -547,13 +556,13 @@ export default function Board2D({
             <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{firstWord}</text>
             <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">R.R.</text>
           </g>
-          <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(-90)`}>
+          <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(-90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.22}>{isMortgaged ? '🚫' : '🚂'}</text>
           </g>
           <g transform={`translate(${pos.w - fontSize * 1.5}, ${pos.h/2}) rotate(-90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$200</text>
           </g>
-          {isMortgaged && <g transform={`translate(${pos.w/2 - fontSize * 2}, ${pos.h/2}) rotate(-90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
+          {isMortgaged && <g transform={`translate(${colorBarHeight/2}, ${pos.h/2}) rotate(-90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
         </g>
       );
     }
@@ -589,8 +598,9 @@ export default function Board2D({
         </g>
       );
     } else if (side === 'left') {
-      // Left side: text near right edge (like property color bar position), price at left
-      const textCenterX = pos.w - fontSize * 3;
+      // Left side: text aligned with property tiles, icon centered in usable area
+      const textCenterX = pos.w - colorBarHeight - fontSize * 2.5;
+      const iconCenterX = (pos.w - colorBarHeight) / 2;
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
@@ -598,18 +608,19 @@ export default function Board2D({
             <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name}</text>
             <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">CO.</text>
           </g>
-          <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(90)`}>
+          <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.22}>{isMortgaged ? '🚫' : emoji}</text>
           </g>
           <g transform={`translate(${fontSize * 1.5}, ${pos.h/2}) rotate(90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
           </g>
-          {isMortgaged && <g transform={`translate(${pos.w/2 + fontSize * 2}, ${pos.h/2}) rotate(90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
+          {isMortgaged && <g transform={`translate(${pos.w - colorBarHeight/2}, ${pos.h/2}) rotate(90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
         </g>
       );
     } else {
-      // Right side: text near left edge (like property color bar position), price at right
-      const textCenterX = fontSize * 3;
+      // Right side: text aligned with property tiles, icon centered in usable area
+      const textCenterX = colorBarHeight + fontSize * 2.5;
+      const iconCenterX = colorBarHeight + (pos.w - colorBarHeight) / 2;
       return (
         <g>
           <rect width={pos.w} height={pos.h} fill={TILE_COLORS.background} stroke={TILE_COLORS.border} strokeWidth="1.5" rx={3}/>
@@ -617,48 +628,58 @@ export default function Board2D({
             <text x={0} y={0} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">{name}</text>
             <text x={0} y={fontSize * 1.2} textAnchor="middle" fontSize={fontSize} fill={TILE_COLORS.text} fontWeight="bold">CO.</text>
           </g>
-          <g transform={`translate(${pos.w/2}, ${pos.h/2}) rotate(-90)`}>
+          <g transform={`translate(${iconCenterX}, ${pos.h/2}) rotate(-90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={pos.w * 0.22}>{isMortgaged ? '🚫' : emoji}</text>
           </g>
           <g transform={`translate(${pos.w - fontSize * 1.5}, ${pos.h/2}) rotate(-90)`}>
             <text x={0} y={0} textAnchor="middle" fontSize={priceFontSize} fill={TILE_COLORS.price} fontWeight="bold">$150</text>
           </g>
-          {isMortgaged && <g transform={`translate(${pos.w/2 - fontSize * 2}, ${pos.h/2}) rotate(-90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
+          {isMortgaged && <g transform={`translate(${colorBarHeight/2}, ${pos.h/2}) rotate(-90)`}><text textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">MORTGAGED</text></g>}
         </g>
       );
     }
   };
 
-  // Buildings
+  // Buildings - show individual houses (1-4) or hotel, rotated for side tiles
   const renderBuildings = (propertyState, pos, side) => {
     if (!propertyState) return null;
     const hasHotel = propertyState.hotels > 0;
     const houses = propertyState.houses;
     if (!hasHotel && houses === 0) return null;
 
-    const buildingSize = colorBarHeight * 0.65;
-    let x, y;
+    const houseSize = colorBarHeight * 0.5;
+    const spacing = houseSize * 1.1;
+
+    // Position and rotation based on side
+    let x, y, rotation = 0;
     switch(side) {
-      case 'bottom': x = pos.w/2; y = colorBarHeight/2; break;
-      case 'top': x = pos.w/2; y = pos.h - colorBarHeight/2; break;
-      case 'left': x = pos.w - colorBarHeight/2; y = pos.h/2; break;
-      case 'right': x = colorBarHeight/2; y = pos.h/2; break;
+      case 'bottom': x = pos.w/2; y = colorBarHeight/2; rotation = 0; break;
+      case 'top': x = pos.w/2; y = pos.h - colorBarHeight/2; rotation = 0; break;
+      case 'left': x = pos.w - colorBarHeight/2; y = pos.h/2; rotation = 90; break;
+      case 'right': x = colorBarHeight/2; y = pos.h/2; rotation = -90; break;
       default: return null;
     }
 
     if (hasHotel) {
       return (
-        <g transform={`translate(${x}, ${y})`}>
-          <rect x={-buildingSize} y={-buildingSize/2} width={buildingSize*2} height={buildingSize} fill="#ef4444" stroke="#b91c1c" strokeWidth="1" rx={2}/>
-          <text x={0} y={buildingSize*0.25} textAnchor="middle" fontSize={buildingSize*0.7} fill="white" fontWeight="bold">H</text>
+        <g transform={`translate(${x}, ${y}) rotate(${rotation})`}>
+          <rect x={-houseSize * 1.2} y={-houseSize/2} width={houseSize * 2.4} height={houseSize} fill="#ef4444" stroke="#b91c1c" strokeWidth="1" rx={2}/>
+          <text x={0} y={houseSize * 0.3} textAnchor="middle" fontSize={houseSize * 0.7} fill="white" fontWeight="bold">H</text>
         </g>
       );
     }
 
+    // Render individual houses (1-4)
+    const totalWidth = houses * spacing;
+    const startX = -totalWidth / 2 + spacing / 2;
+
     return (
-      <g transform={`translate(${x}, ${y})`}>
-        <rect x={-buildingSize/2} y={-buildingSize/2} width={buildingSize} height={buildingSize} fill="#22c55e" stroke="#15803d" strokeWidth="1" rx={1}/>
-        {houses > 1 && <text x={buildingSize} y={buildingSize*0.3} fontSize={buildingSize*0.8} fill="#fff" fontWeight="bold">x{houses}</text>}
+      <g transform={`translate(${x}, ${y}) rotate(${rotation})`}>
+        {Array.from({ length: houses }, (_, i) => (
+          <g key={i} transform={`translate(${startX + i * spacing}, 0)`}>
+            <rect x={-houseSize/2} y={-houseSize/2} width={houseSize} height={houseSize} fill="#22c55e" stroke="#15803d" strokeWidth="1" rx={1}/>
+          </g>
+        ))}
       </g>
     );
   };

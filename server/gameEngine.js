@@ -688,6 +688,12 @@ class MonopolyGame {
     this.phase = "rolling";
   }
 
+  // Helper: Get effective house count (treats hotel as 5 houses)
+  getEffectiveHouses(propertyId) {
+    const prop = this.properties[propertyId];
+    return prop.hotels > 0 ? 5 : prop.houses;
+  }
+
   // Build house
   buildHouse(playerId, propertyId) {
     const player = this.getPlayer(playerId);
@@ -701,7 +707,7 @@ class MonopolyGame {
     if (property.ownerId !== playerId) throw new Error("You don't own this property");
     if (property.mortgaged) throw new Error("Cannot build on mortgaged property");
     if (property.hotels > 0) throw new Error("Already has a hotel");
-    if (property.houses >= 4) throw new Error("Maximum houses reached");
+    if (property.houses >= 4) throw new Error("Maximum houses reached - upgrade to hotel");
 
     // Check if owns complete color set
     const colorGroup = Object.keys(COLOR_GROUPS).find(color =>
@@ -719,9 +725,10 @@ class MonopolyGame {
     if (anyMortgaged) throw new Error("Cannot build while properties in set are mortgaged");
 
     // Check even build rule - must build on property with fewest houses first
+    // Treat hotels as 5 houses for this calculation
     if (this.settings.evenBuild) {
       const minHouses = Math.min(...COLOR_GROUPS[colorGroup].map(id =>
-        this.properties[id].houses
+        this.getEffectiveHouses(id)
       ));
       if (property.houses > minHouses) {
         throw new Error("Must build evenly across color set");
@@ -757,14 +764,21 @@ class MonopolyGame {
     if (property.hotels > 0) throw new Error("Already has a hotel");
     if (property.houses !== 4) throw new Error("Need 4 houses before building hotel");
 
-    // Check complete set has 4 houses each
+    // Check even build rule - other properties must have at least 4 houses (or hotel)
+    // This ensures upgrading to 5 (hotel) doesn't create more than 1 house gap
     const colorGroup = Object.keys(COLOR_GROUPS).find(color =>
       COLOR_GROUPS[color].includes(propertyId)
     );
-    const allHave4Houses = COLOR_GROUPS[colorGroup].every(id =>
-      this.properties[id].houses === 4
-    );
-    if (!allHave4Houses) throw new Error("All properties in set must have 4 houses");
+
+    if (this.settings.evenBuild) {
+      const minHouses = Math.min(...COLOR_GROUPS[colorGroup].map(id =>
+        this.getEffectiveHouses(id)
+      ));
+      // Can only build hotel if all properties have at least 4 houses (effective)
+      if (minHouses < 4) {
+        throw new Error("Must build evenly - other properties need 4 houses first");
+      }
+    }
 
     // Check availability
     if (this.availableHotels <= 0) throw new Error("No hotels available");
@@ -792,12 +806,13 @@ class MonopolyGame {
     if (property.houses === 0) throw new Error("No houses to sell");
 
     // Check even build rule - can only sell from properties with most houses
+    // Treat hotels as 5 houses for this calculation
     if (this.settings.evenBuild) {
       const colorGroup = Object.keys(COLOR_GROUPS).find(color =>
         COLOR_GROUPS[color].includes(propertyId)
       );
       const maxHouses = Math.max(...COLOR_GROUPS[colorGroup].map(id =>
-        this.properties[id].houses
+        this.getEffectiveHouses(id)
       ));
       if (property.houses < maxHouses) {
         throw new Error("Must sell evenly across color set");
