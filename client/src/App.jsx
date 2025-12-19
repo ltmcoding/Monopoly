@@ -8,7 +8,8 @@ import './styles/App.css';
 // Session storage keys
 const STORAGE_KEYS = {
   GAME_INFO: 'monopoly_game_info',
-  PLAYER_NAME: 'monopoly_player_name'
+  PLAYER_NAME: 'monopoly_player_name',
+  SESSION_ID: 'monopoly_session_id'
 };
 
 // Get game code from URL path
@@ -57,6 +58,7 @@ function App() {
         gameId: gameInfo.gameId,
         playerId: gameInfo.playerId,
         playerName: gameInfo.playerName,
+        sessionId: gameInfo.sessionId,
         isHost: gameInfo.isHost,
         screen: screen
       }));
@@ -69,7 +71,6 @@ function App() {
 
     const urlCode = getGameCodeFromUrl();
     const savedInfo = sessionStorage.getItem(STORAGE_KEYS.GAME_INFO);
-    const savedPlayerName = sessionStorage.getItem(STORAGE_KEYS.PLAYER_NAME);
 
     // If URL has a game code, try to join that game
     if (urlCode) {
@@ -79,14 +80,15 @@ function App() {
       if (savedInfo) {
         try {
           const info = JSON.parse(savedInfo);
-          if (info.gameId === urlCode) {
-            // Try to rejoin with saved player name
-            socket.joinGame(urlCode, info.playerName)
+          if (info.gameId === urlCode && info.sessionId) {
+            // Try to rejoin with saved session ID (reconnect as same player)
+            socket.joinGame(urlCode, info.playerName, info.sessionId)
               .then(response => {
                 setGameInfo({
                   gameId: urlCode,
                   playerId: response.player.id,
                   playerName: info.playerName,
+                  sessionId: response.sessionId,
                   isHost: response.isHost
                 });
                 setGameState(response.gameState);
@@ -95,6 +97,7 @@ function App() {
                 } else {
                   setScreen('lobby');
                 }
+                console.log(response.isReconnect ? 'Reconnected to game' : 'Joined game');
               })
               .catch(err => {
                 console.log('Failed to rejoin game:', err.message);
@@ -184,7 +187,10 @@ function App() {
 
   const handleGameCreated = (info) => {
     console.log('handleGameCreated called with:', info);
-    setGameInfo(info);
+    setGameInfo({
+      ...info,
+      sessionId: info.sessionId
+    });
     setGameState(info.gameState || null);
     setScreen('lobby');
     updateUrl(info.gameId);
@@ -194,7 +200,10 @@ function App() {
 
   const handleGameJoined = (info) => {
     console.log('handleGameJoined called with:', info);
-    setGameInfo(info);
+    setGameInfo({
+      ...info,
+      sessionId: info.sessionId
+    });
     setGameState(info.gameState || null);
     setScreen('lobby');
     updateUrl(info.gameId);

@@ -123,8 +123,8 @@ export function useSocket() {
     return emit('createGame', settings);
   };
 
-  const joinGame = async (gameId, playerName) => {
-    return emit('joinGame', { gameId, playerName });
+  const joinGame = async (gameId, playerName, sessionId = null) => {
+    return emit('joinGame', { gameId, playerName, sessionId });
   };
 
   const getGamesList = async () => {

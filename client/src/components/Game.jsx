@@ -42,6 +42,18 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
       setGameState(data.gameState);
     };
 
+    const handlePropertyUnmortgaged = (data) => {
+      setGameState(data.gameState);
+    };
+
+    const handleHouseSold = (data) => {
+      setGameState(data.gameState);
+    };
+
+    const handleHotelSold = (data) => {
+      setGameState(data.gameState);
+    };
+
     const handleBidPlaced = (data) => {
       setGameState(data.gameState);
     };
@@ -85,6 +97,9 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
     socket.on('houseBuilt', handleHouseBuilt);
     socket.on('hotelBuilt', handleHotelBuilt);
     socket.on('propertyMortgaged', handlePropertyMortgaged);
+    socket.on('propertyUnmortgaged', handlePropertyUnmortgaged);
+    socket.on('houseSold', handleHouseSold);
+    socket.on('hotelSold', handleHotelSold);
     socket.on('bidPlaced', handleBidPlaced);
     socket.on('auctionEnded', handleAuctionEnded);
     socket.on('tradeProposed', handleTradeProposed);
@@ -103,6 +118,9 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
       socket.off('houseBuilt', handleHouseBuilt);
       socket.off('hotelBuilt', handleHotelBuilt);
       socket.off('propertyMortgaged', handlePropertyMortgaged);
+      socket.off('propertyUnmortgaged', handlePropertyUnmortgaged);
+      socket.off('houseSold', handleHouseSold);
+      socket.off('hotelSold', handleHotelSold);
       socket.off('bidPlaced', handleBidPlaced);
       socket.off('auctionEnded', handleAuctionEnded);
       socket.off('tradeProposed', handleTradeProposed);

@@ -7,11 +7,18 @@ class GameRoom {
     this.game = new MonopolyGame(gameId, settings);
     this.playerSockets = new Map(); // socketId -> playerId
     this.socketToPlayer = new Map(); // socketId -> player object
+    this.sessionToPlayer = new Map(); // sessionId -> player object
+    this.playerToSession = new Map(); // playerId -> sessionId
     this.isStarted = false;
     this.settings = settings;
     this.isPrivate = settings?.isPrivate || false;
     this.chatMessages = [];
     this.maxChatMessages = 50;
+  }
+
+  // Generate unique session ID
+  generateSessionId() {
+    return `sess_${Date.now()}_${Math.random().toString(36).substr(2, 12)}`;
   }
 
   // Add a chat message from a player
@@ -68,6 +75,7 @@ class GameRoom {
       throw new Error(`Game is full (max ${maxPlayers} players)`);
     }
 
+    const sessionId = this.generateSessionId();
     const player = this.game.addPlayer({
       id: socket.id,
       name: playerName
@@ -75,8 +83,48 @@ class GameRoom {
 
     this.playerSockets.set(socket.id, player.id);
     this.socketToPlayer.set(socket.id, player);
+    this.sessionToPlayer.set(sessionId, player);
+    this.playerToSession.set(player.id, sessionId);
+
+    return { player, sessionId };
+  }
+
+  // Reconnect existing player with new socket
+  reconnectPlayer(socket, sessionId) {
+    const player = this.sessionToPlayer.get(sessionId);
+    if (!player) {
+      return null;
+    }
+
+    // Get old socket id
+    const oldSocketId = player.id;
+
+    // Update player's socket id
+    player.id = socket.id;
+
+    // Update mappings
+    this.playerSockets.delete(oldSocketId);
+    this.socketToPlayer.delete(oldSocketId);
+    this.playerSockets.set(socket.id, player.id);
+    this.socketToPlayer.set(socket.id, player);
+
+    // Update host if this was the host
+    if (this.hostSocketId === oldSocketId) {
+      this.hostSocketId = socket.id;
+    }
+
+    // Update in game players array
+    const gamePlayer = this.game.players.find(p => p.id === oldSocketId);
+    if (gamePlayer) {
+      gamePlayer.id = socket.id;
+    }
 
     return player;
+  }
+
+  // Check if session exists
+  hasSession(sessionId) {
+    return this.sessionToPlayer.has(sessionId);
   }
 
   // Remove player from room
@@ -127,21 +175,6 @@ class GameRoom {
     this.socketToPlayer.delete(targetSocketId);
 
     return { playerName, socketId: targetSocketId };
-  }
-
-  // Reconnect player
-  reconnectPlayer(socket, playerId) {
-    const player = this.game.getPlayer(playerId);
-    if (!player) {
-      throw new Error("Player not found in this game");
-    }
-
-    // Update socket mappings
-    this.playerSockets.set(socket.id, playerId);
-    this.socketToPlayer.set(socket.id, player);
-    player.disconnected = false;
-
-    return player;
   }
 
   // Start game

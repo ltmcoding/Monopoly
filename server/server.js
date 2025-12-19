@@ -134,7 +134,7 @@ io.on('connection', (socket) => {
         // Join existing game
         console.log(`[quickPlay] Joining existing game ${targetGameId}`);
         const gameRoom = games.get(targetGameId);
-        const player = gameRoom.addPlayer(socket, playerName);
+        const { player, sessionId } = gameRoom.addPlayer(socket, playerName);
         socket.join(targetGameId);
         socket.gameId = targetGameId;
 
@@ -148,6 +148,7 @@ io.on('connection', (socket) => {
             success: true,
             gameId: targetGameId,
             player,
+            sessionId,
             gameState: gameRoom.getGameState(),
             isHost: false,
             created: false
@@ -160,7 +161,7 @@ io.on('connection', (socket) => {
         const gameRoom = new GameRoom(gameId, socket.id, settings);
         games.set(gameId, gameRoom);
 
-        const player = gameRoom.addPlayer(socket, playerName);
+        const { player, sessionId } = gameRoom.addPlayer(socket, playerName);
         socket.join(gameId);
         socket.gameId = gameId;
 
@@ -171,6 +172,7 @@ io.on('connection', (socket) => {
             success: true,
             gameId,
             player,
+            sessionId,
             gameState: gameRoom.getGameState(),
             isHost: true,
             created: true
@@ -261,7 +263,7 @@ io.on('connection', (socket) => {
       const gameRoom = new GameRoom(gameId, socket.id, gameSettings);
       games.set(gameId, gameRoom);
 
-      const player = gameRoom.addPlayer(socket, playerName);
+      const { player, sessionId } = gameRoom.addPlayer(socket, playerName);
       socket.join(gameId);
       socket.gameId = gameId;
 
@@ -272,6 +274,7 @@ io.on('connection', (socket) => {
           success: true,
           gameId,
           player,
+          sessionId,
           gameState: gameRoom.getGameState(),
           isHost: true,
           created: true,
@@ -419,9 +422,9 @@ io.on('connection', (socket) => {
   });
 
   // Join game
-  socket.on('joinGame', ({ gameId, playerName }, callback) => {
+  socket.on('joinGame', ({ gameId, playerName, sessionId }, callback) => {
     try {
-      console.log(`Join attempt - gameId: "${gameId}", playerName: "${playerName}"`);
+      console.log(`Join attempt - gameId: "${gameId}", playerName: "${playerName}", sessionId: "${sessionId || 'none'}"`);
       console.log(`Active games: ${Array.from(games.keys()).join(', ')}`);
       console.log(`Total games: ${games.size}`);
 
@@ -434,28 +437,45 @@ io.on('connection', (socket) => {
 
       console.log(`Game found: ${gameId}`);
 
-      const player = gameRoom.addPlayer(socket, playerName);
+      let player;
+      let returnSessionId;
+      let isReconnect = false;
+
+      // Try to reconnect if sessionId provided
+      if (sessionId && gameRoom.hasSession(sessionId)) {
+        player = gameRoom.reconnectPlayer(socket, sessionId);
+        returnSessionId = sessionId;
+        isReconnect = true;
+        console.log(`${playerName} reconnected to game ${gameId}`);
+      } else {
+        // New player joining
+        const result = gameRoom.addPlayer(socket, playerName);
+        player = result.player;
+        returnSessionId = result.sessionId;
+        console.log(`${playerName} joined game ${gameId}`);
+
+        // Add system message for player joining (only for new players)
+        const systemMessage = gameRoom.addSystemMessage(`${playerName} joined the lobby`);
+
+        // Notify all players
+        gameRoom.broadcast(io, 'playerJoined', {
+          player,
+          systemMessage,
+          gameState: gameRoom.getGameState()
+        });
+      }
+
       socket.join(gameId);
       socket.gameId = gameId;
-
-      console.log(`${playerName} joined game ${gameId}`);
-
-      // Add system message for player joining
-      const systemMessage = gameRoom.addSystemMessage(`${playerName} joined the lobby`);
-
-      // Notify all players
-      gameRoom.broadcast(io, 'playerJoined', {
-        player,
-        systemMessage,
-        gameState: gameRoom.getGameState()
-      });
 
       if (callback) {
         callback({
           success: true,
           player,
+          sessionId: returnSessionId,
           gameState: gameRoom.getGameState(),
-          isHost: gameRoom.isHost(socket.id)
+          isHost: gameRoom.isHost(socket.id),
+          isReconnect
         });
       }
     } catch (error) {
