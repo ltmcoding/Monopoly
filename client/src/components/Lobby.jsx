@@ -489,6 +489,11 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
             </div>
           </div>
 
+          {/* Decorative Divider */}
+          <div className="section-divider">
+            <span className="divider-ornament">◆</span>
+          </div>
+
           {/* Game Edition Section */}
           <div className="edition-section compact">
             <div className="section-header">
@@ -527,6 +532,11 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Decorative Divider */}
+          <div className="section-divider">
+            <span className="divider-ornament">◆</span>
           </div>
 
           {/* Actions */}
