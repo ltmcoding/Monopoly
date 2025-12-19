@@ -143,15 +143,23 @@ export default function RoomBrowser({ socket, playerName, onJoin, onClose, disab
               </div>
             ) : (
               rooms.map(room => (
-                <div key={room.gameId} className="room-card">
+                <div key={room.gameId} className={`room-card ${room.isPrivate ? 'is-private' : ''}`}>
                   <div className="room-info">
                     {/* Room code */}
                     <div className="room-code">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
+                      {room.isPrivate ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                        </svg>
+                      )}
                       <span>{room.gameId}</span>
+                      {room.isPrivate && <span className="private-badge">Private</span>}
                     </div>
 
                     {/* Host name */}
@@ -215,17 +223,6 @@ export default function RoomBrowser({ socket, playerName, onJoin, onClose, disab
           </div>
         </div>
 
-        {/* Footer hint */}
-        {!playerName.trim() && (
-          <div className="room-browser-footer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            Enter your name to join a room
-          </div>
-        )}
       </div>
     </div>
   );

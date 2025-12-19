@@ -90,12 +90,14 @@ io.on('connection', (socket) => {
         // Only show games that haven't started yet
         if (!gameRoom.isStarted) {
           const hostPlayer = gameRoom.game.players[0];
+          const maxPlayers = gameRoom.game.settings?.maxPlayers || 6;
           gamesList.push({
             gameId,
             hostName: hostPlayer?.name || 'Unknown',
             playerCount: gameRoom.getPlayerCount(),
-            maxPlayers: 6,
-            settings: gameRoom.game.settings
+            maxPlayers: maxPlayers,
+            settings: gameRoom.game.settings,
+            isPrivate: gameRoom.isPrivate
           });
         }
       });
@@ -119,10 +121,11 @@ io.on('connection', (socket) => {
       console.log(`[quickPlay] Request from ${playerName}, socket ${socket.id}`);
       console.log(`[quickPlay] Current games: ${games.size}`);
 
-      // Find first joinable game
+      // Find first joinable game (skip private rooms)
       let targetGameId = null;
       games.forEach((gameRoom, gameId) => {
-        if (!gameRoom.isStarted && gameRoom.getPlayerCount() < 6 && !targetGameId) {
+        const maxPlayers = gameRoom.game.settings?.maxPlayers || 6;
+        if (!gameRoom.isStarted && gameRoom.getPlayerCount() < maxPlayers && !targetGameId && !gameRoom.isPrivate) {
           targetGameId = gameId;
         }
       });
@@ -248,6 +251,147 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Create private room
+  socket.on('createPrivateRoom', ({ playerName, settings }, callback) => {
+    try {
+      console.log(`[createPrivateRoom] Request from ${playerName}, socket ${socket.id}`);
+
+      const gameId = generateGameId();
+      const gameSettings = { ...settings, isPrivate: true };
+      const gameRoom = new GameRoom(gameId, socket.id, gameSettings);
+      games.set(gameId, gameRoom);
+
+      const player = gameRoom.addPlayer(socket, playerName);
+      socket.join(gameId);
+      socket.gameId = gameId;
+
+      console.log(`[createPrivateRoom] Private game ${gameId} created`);
+
+      if (callback) {
+        callback({
+          success: true,
+          gameId,
+          player,
+          gameState: gameRoom.getGameState(),
+          isHost: true,
+          created: true,
+          isPrivate: true
+        });
+      }
+    } catch (error) {
+      console.error('[createPrivateRoom] Error:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
+  // Send chat message in lobby
+  socket.on('sendChatMessage', ({ gameId, message }, callback) => {
+    try {
+      const gameRoom = games.get(gameId);
+      if (!gameRoom) throw new Error('Game not found');
+
+      const playerId = gameRoom.playerSockets.get(socket.id);
+      if (!playerId) throw new Error('Player not found');
+
+      const player = gameRoom.game.getPlayer(playerId);
+      if (!player) throw new Error('Player not found');
+
+      // Sanitize message (max 200 chars)
+      const sanitizedMessage = message.trim().slice(0, 200);
+      if (!sanitizedMessage) throw new Error('Empty message');
+
+      const chatMessage = gameRoom.addChatMessage(
+        playerId,
+        player.name,
+        player.color,
+        sanitizedMessage
+      );
+
+      // Broadcast to all players in room
+      gameRoom.broadcast(io, 'chatMessageReceived', { chatMessage });
+
+      if (callback) {
+        callback({ success: true, chatMessage });
+      }
+    } catch (error) {
+      console.error('Error sending chat message:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
+  // Toggle room privacy (host only)
+  socket.on('togglePrivacy', ({ gameId }, callback) => {
+    try {
+      const gameRoom = games.get(gameId);
+      if (!gameRoom) throw new Error('Game not found');
+      if (!gameRoom.isHost(socket.id)) throw new Error('Only host can toggle privacy');
+      if (gameRoom.isStarted) throw new Error('Cannot change privacy after game started');
+
+      const isPrivate = gameRoom.togglePrivacy();
+
+      // Add system message
+      const systemMessage = gameRoom.addSystemMessage(
+        isPrivate ? 'Room is now private' : 'Room is now public'
+      );
+
+      // Broadcast to all players
+      gameRoom.broadcast(io, 'privacyToggled', {
+        isPrivate,
+        systemMessage,
+        gameState: gameRoom.getGameState()
+      });
+
+      if (callback) {
+        callback({ success: true, isPrivate, gameState: gameRoom.getGameState() });
+      }
+    } catch (error) {
+      console.error('Error toggling privacy:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
+  // Kick player from lobby (host only)
+  socket.on('kickPlayer', ({ gameId, targetSocketId }, callback) => {
+    try {
+      const gameRoom = games.get(gameId);
+      if (!gameRoom) throw new Error('Game not found');
+      if (!gameRoom.isHost(socket.id)) throw new Error('Only host can kick players');
+      if (gameRoom.isStarted) throw new Error('Cannot kick players after game started');
+      if (targetSocketId === socket.id) throw new Error('Cannot kick yourself');
+
+      const { playerName, socketId } = gameRoom.kickPlayer(targetSocketId);
+
+      // Add system message
+      const systemMessage = gameRoom.addSystemMessage(`${playerName} was kicked from the lobby`);
+
+      // Notify the kicked player
+      io.to(socketId).emit('kicked', { reason: 'You were kicked by the host' });
+
+      // Broadcast to remaining players
+      gameRoom.broadcast(io, 'playerKicked', {
+        socketId,
+        playerName,
+        systemMessage,
+        gameState: gameRoom.getGameState()
+      });
+
+      if (callback) {
+        callback({ success: true, gameState: gameRoom.getGameState() });
+      }
+    } catch (error) {
+      console.error('Error kicking player:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
   // Create new game
   socket.on('createGame', (settings, callback) => {
     try {
@@ -296,9 +440,13 @@ io.on('connection', (socket) => {
 
       console.log(`${playerName} joined game ${gameId}`);
 
+      // Add system message for player joining
+      const systemMessage = gameRoom.addSystemMessage(`${playerName} joined the lobby`);
+
       // Notify all players
       gameRoom.broadcast(io, 'playerJoined', {
         player,
+        systemMessage,
         gameState: gameRoom.getGameState()
       });
 
@@ -327,12 +475,19 @@ io.on('connection', (socket) => {
         throw new Error('Game not found');
       }
 
-      gameRoom.removePlayer(socket.id);
+      const playerName = gameRoom.removePlayer(socket.id);
       socket.leave(gameId);
+
+      // Add system message for player leaving (only if game still has players)
+      let systemMessage = null;
+      if (gameRoom.getPlayerCount() > 0 && playerName) {
+        systemMessage = gameRoom.addSystemMessage(`${playerName} left the lobby`);
+      }
 
       // Notify remaining players
       gameRoom.broadcast(io, 'playerLeft', {
         socketId: socket.id,
+        systemMessage,
         gameState: gameRoom.getGameState()
       });
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import RoomBrowser from './RoomBrowser';
+import { generateRandomName } from '../utils/nameGenerator';
 
 // Default settings for new games
 const DEFAULT_SETTINGS = {
@@ -9,34 +10,36 @@ const DEFAULT_SETTINGS = {
   evenBuild: true,
   unlimitedProperties: false,
   startingCash: 1500,
-  speedDie: false,
-  doubleGoBonus: false
+  doubleGoBonus: false,
+  freeParking: false,
+  maxPlayers: 6
 };
 
 export default function Home({ socket, onGameCreated, onGameJoined }) {
   const [playerName, setPlayerName] = useState('');
+  const [placeholderName, setPlaceholderName] = useState(() => generateRandomName());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showRoomBrowser, setShowRoomBrowser] = useState(false);
 
+  // Get the name to use (user input or generated placeholder)
+  const getNameToUse = () => playerName.trim() || placeholderName;
+
   const handleQuickPlay = async () => {
-    if (!playerName.trim()) {
-      setError('Please enter your name');
-      return;
-    }
+    const nameToUse = getNameToUse();
 
     setLoading(true);
     setError('');
 
     try {
-      const response = await socket.quickPlay(playerName.trim(), DEFAULT_SETTINGS);
+      const response = await socket.quickPlay(nameToUse, DEFAULT_SETTINGS);
 
       if (response.created) {
         // Created new game
         onGameCreated({
           gameId: response.gameId,
           playerId: response.player.id,
-          playerName: playerName.trim(),
+          playerName: nameToUse,
           isHost: true,
           gameState: response.gameState
         });
@@ -45,7 +48,7 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
         onGameJoined({
           gameId: response.gameId,
           playerId: response.player.id,
-          playerName: playerName.trim(),
+          playerName: nameToUse,
           isHost: false,
           gameState: response.gameState
         });
@@ -58,22 +61,44 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
     }
   };
 
-  const handleJoinFromBrowser = async (gameId) => {
-    if (!playerName.trim()) {
-      setError('Please enter your name');
-      return;
-    }
+  const handleCreatePrivateRoom = async () => {
+    const nameToUse = getNameToUse();
 
     setLoading(true);
     setError('');
 
     try {
-      const response = await socket.joinGame(gameId, playerName.trim());
+      const response = await socket.createPrivateRoom(nameToUse, DEFAULT_SETTINGS);
+
+      onGameCreated({
+        gameId: response.gameId,
+        playerId: response.player.id,
+        playerName: nameToUse,
+        isHost: true,
+        gameState: response.gameState,
+        isPrivate: true
+      });
+    } catch (err) {
+      console.error('Create private room error:', err);
+      setError(err.message || 'Failed to create private room');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleJoinFromBrowser = async (gameId) => {
+    const nameToUse = getNameToUse();
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await socket.joinGame(gameId, nameToUse);
 
       onGameJoined({
         gameId: gameId,
         playerId: response.player.id,
-        playerName: playerName.trim(),
+        playerName: nameToUse,
         isHost: response.isHost,
         gameState: response.gameState
       });
@@ -133,11 +158,23 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
               <circle cx="12" cy="7" r="4"/>
             </svg>
             Your Name
+            <button
+              type="button"
+              className="btn-refresh-name"
+              onClick={() => setPlaceholderName(generateRandomName())}
+              title="Generate new random name"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M23 4v6h-6"/>
+                <path d="M1 20v-6h6"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+            </button>
           </label>
           <input
             type="text"
             className="player-name-input"
-            placeholder="Enter your name..."
+            placeholder={placeholderName}
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             maxLength={20}
@@ -151,7 +188,7 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
           <button
             className="btn btn-play"
             onClick={handleQuickPlay}
-            disabled={!socket.connected || loading || !playerName.trim()}
+            disabled={!socket.connected || loading}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="5,3 19,12 5,21"/>
@@ -164,6 +201,17 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
 
           {/* Secondary Buttons */}
           <div className="home-secondary-actions">
+            <button
+              className="btn btn-secondary-action"
+              onClick={handleCreatePrivateRoom}
+              disabled={!socket.connected || loading}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Private Room
+            </button>
             <button
               className="btn btn-secondary-action"
               onClick={() => setShowRoomBrowser(true)}
@@ -179,21 +227,16 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
             </button>
           </div>
         </div>
-
-        {/* Footer hint */}
-        <div className="home-footer">
-          <p>2-6 Players</p>
-        </div>
       </div>
 
       {/* Room Browser Modal */}
       {showRoomBrowser && (
         <RoomBrowser
           socket={socket}
-          playerName={playerName}
+          playerName={getNameToUse()}
           onJoin={handleJoinFromBrowser}
           onClose={() => setShowRoomBrowser(false)}
-          disabled={loading || !playerName.trim()}
+          disabled={loading}
         />
       )}
     </div>

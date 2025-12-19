@@ -135,8 +135,24 @@ export function useSocket() {
     return emit('quickPlay', { playerName, settings });
   };
 
+  const createPrivateRoom = async (playerName, settings) => {
+    return emit('createPrivateRoom', { playerName, settings });
+  };
+
   const updateSettings = async (gameId, settings) => {
     return emit('updateSettings', { gameId, settings });
+  };
+
+  const sendChatMessage = async (gameId, message) => {
+    return emit('sendChatMessage', { gameId, message });
+  };
+
+  const togglePrivacy = async (gameId) => {
+    return emit('togglePrivacy', { gameId });
+  };
+
+  const kickPlayer = async (gameId, targetSocketId) => {
+    return emit('kickPlayer', { gameId, targetSocketId });
   };
 
   const changePlayerColor = async (gameId, color) => {
@@ -235,7 +251,11 @@ export function useSocket() {
     joinGame,
     getGamesList,
     quickPlay,
+    createPrivateRoom,
     updateSettings,
+    sendChatMessage,
+    togglePrivacy,
+    kickPlayer,
     changePlayerColor,
     leaveGame,
     startGame,

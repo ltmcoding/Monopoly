@@ -12,8 +12,9 @@ class MonopolyGame {
       evenBuild: settings.evenBuild !== undefined ? settings.evenBuild : true,
       unlimitedProperties: settings.unlimitedProperties !== undefined ? settings.unlimitedProperties : false,
       startingCash: settings.startingCash || 1500,
-      speedDie: settings.speedDie !== undefined ? settings.speedDie : false,
-      doubleGoBonus: settings.doubleGoBonus !== undefined ? settings.doubleGoBonus : false
+      doubleGoBonus: settings.doubleGoBonus !== undefined ? settings.doubleGoBonus : false,
+      freeParking: settings.freeParking !== undefined ? settings.freeParking : false,
+      maxPlayers: settings.maxPlayers || 6
     };
 
     // Initialize game state
@@ -35,6 +36,7 @@ class MonopolyGame {
     this.hasRolledThisTurn = false;
     this.canRollAgain = false; // True when doubles are rolled
     this.hostId = null; // Set when first player joins
+    this.freeParkingPot = 0; // Free Parking jackpot
 
     // Initialize properties
     BOARD_SPACES.forEach(space => {
@@ -120,20 +122,7 @@ class MonopolyGame {
     const die2 = Math.floor(Math.random() * 6) + 1;
     const isDoubles = die1 === die2;
 
-    let speedDieFace = null;
-    if (this.settings.speedDie && player.position > 0) {
-      // Speed die: 1, 2, 3, Mr. Monopoly, Mr. Monopoly, Bus
-      const roll = Math.floor(Math.random() * 6);
-      if (roll < 3) {
-        speedDieFace = roll + 1; // 1, 2, or 3
-      } else if (roll < 5) {
-        speedDieFace = "Mr. Monopoly";
-      } else {
-        speedDieFace = "Bus";
-      }
-    }
-
-    this.dice = speedDieFace !== null ? [die1, die2, speedDieFace] : [die1, die2];
+    this.dice = [die1, die2];
     this.lastDiceRoll = die1 + die2;
     this.hasRolledThisTurn = true;
 
@@ -158,13 +147,7 @@ class MonopolyGame {
     }
 
     // Calculate movement
-    let totalMove = die1 + die2;
-    if (speedDieFace === "Bus") {
-      // Player can choose either die
-      totalMove = Math.max(die1, die2); // For now, auto-choose the higher value
-    } else if (typeof speedDieFace === 'number') {
-      totalMove += speedDieFace;
-    }
+    const totalMove = die1 + die2;
 
     // Move player
     this.movePlayerBySpaces(player, totalMove);
@@ -174,11 +157,6 @@ class MonopolyGame {
 
     // Handle landing on space
     this.handleLanding(player);
-
-    // Handle Speed Die Mr. Monopoly
-    if (speedDieFace === "Mr. Monopoly") {
-      this.handleMrMonopoly(player);
-    }
 
     // Set canRollAgain for doubles (player can roll again after completing current action)
     // Reset to false if tripled out (sent to jail) or phase ended
@@ -318,6 +296,9 @@ class MonopolyGame {
         }
         this.phase = "rolling";
         break;
+      case 'free_parking':
+        this.handleFreeParking(player);
+        break;
       default:
         this.phase = "rolling";
         break;
@@ -346,38 +327,37 @@ class MonopolyGame {
     }
   }
 
-  // Handle Mr. Monopoly (Speed Die)
-  handleMrMonopoly(player) {
-    // Find next unowned property or property where rent is owed
-    for (let i = 1; i <= 40; i++) {
-      const checkPos = (player.position + i) % 40;
-      const space = BOARD_SPACES[checkPos];
-
-      if ((space.type === 'property' || space.type === 'railroad' || space.type === 'utility')) {
-        const property = this.properties[space.id];
-
-        if (!property.ownerId) {
-          // Unowned property
-          this.movePlayerToSpace(player, checkPos, false);
-          this.handleLanding(player);
-          this.logAction('mr_monopoly', player.id, { propertyId: space.id },
-            `Mr. Monopoly moved ${player.name} to ${space.name}`);
-          return;
-        } else if (property.ownerId !== player.id && !property.mortgaged) {
-          // Owe rent
-          this.movePlayerToSpace(player, checkPos, false);
-          this.collectRent(player.id, property.ownerId, space.id);
-          this.logAction('mr_monopoly', player.id, { propertyId: space.id },
-            `Mr. Monopoly moved ${player.name} to ${space.name}`);
-          return;
-        }
-      }
+  // Add money to Free Parking pot (if setting enabled)
+  addToFreeParkingPot(amount) {
+    if (this.settings.freeParking && amount > 0) {
+      this.freeParkingPot += amount;
+      this.logAction('free_parking_pot', null, { amount, total: this.freeParkingPot },
+        `$${amount} added to Free Parking pot (Total: $${this.freeParkingPot})`);
     }
+  }
+
+  // Handle Free Parking landing
+  handleFreeParking(player) {
+    if (this.settings.freeParking && this.freeParkingPot > 0) {
+      const potAmount = this.freeParkingPot;
+      player.cash += potAmount;
+      this.freeParkingPot = 0;
+      this.logAction('free_parking_collected', player.id, { amount: potAmount },
+        `${player.name} collected $${potAmount} from Free Parking!`);
+    } else {
+      this.logAction('landed_on_free_parking', player.id, {},
+        `${player.name} landed on Free Parking`);
+    }
+    this.phase = "rolling";
   }
 
   // Handle tax
   handleTax(player, space) {
     player.cash -= space.amount;
+
+    // Add tax to Free Parking pot if enabled
+    this.addToFreeParkingPot(space.amount);
+
     this.logAction('paid_tax', player.id, { amount: space.amount },
       `${player.name} paid $${space.amount} in ${space.name}`);
 
@@ -422,6 +402,8 @@ class MonopolyGame {
         break;
       case 'payMoney':
         player.cash -= card.data.amount;
+        // Add payment to Free Parking pot if enabled
+        this.addToFreeParkingPot(card.data.amount);
         if (player.cash < 0) {
           this.handleBankruptcy(player.id, null);
         }
@@ -453,6 +435,8 @@ class MonopolyGame {
           totalCost += prop.houses * perHouse + prop.hotels * perHotel;
         });
         player.cash -= totalCost;
+        // Add repairs cost to Free Parking pot if enabled
+        this.addToFreeParkingPot(totalCost);
         if (player.cash < 0) {
           this.handleBankruptcy(player.id, null);
         }
@@ -1128,7 +1112,8 @@ class MonopolyGame {
       actionLog: this.actionLog.slice(-20), // Last 20 actions
       hasRolledThisTurn: this.hasRolledThisTurn,
       canRollAgain: this.canRollAgain,
-      hostId: this.hostId
+      hostId: this.hostId,
+      freeParkingPot: this.freeParkingPot
     };
   }
 

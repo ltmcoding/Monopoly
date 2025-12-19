@@ -9,6 +9,52 @@ class GameRoom {
     this.socketToPlayer = new Map(); // socketId -> player object
     this.isStarted = false;
     this.settings = settings;
+    this.isPrivate = settings?.isPrivate || false;
+    this.chatMessages = [];
+    this.maxChatMessages = 50;
+  }
+
+  // Add a chat message from a player
+  addChatMessage(playerId, playerName, playerColor, message) {
+    const chatMessage = {
+      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'player',
+      playerId,
+      playerName,
+      playerColor,
+      message,
+      timestamp: Date.now()
+    };
+
+    this.chatMessages.push(chatMessage);
+    if (this.chatMessages.length > this.maxChatMessages) {
+      this.chatMessages = this.chatMessages.slice(-this.maxChatMessages);
+    }
+
+    return chatMessage;
+  }
+
+  // Add a system message (player joined, left, kicked)
+  addSystemMessage(message) {
+    const systemMessage = {
+      id: `sys_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'system',
+      message,
+      timestamp: Date.now()
+    };
+
+    this.chatMessages.push(systemMessage);
+    if (this.chatMessages.length > this.maxChatMessages) {
+      this.chatMessages = this.chatMessages.slice(-this.maxChatMessages);
+    }
+
+    return systemMessage;
+  }
+
+  // Toggle privacy setting
+  togglePrivacy() {
+    this.isPrivate = !this.isPrivate;
+    return this.isPrivate;
   }
 
   // Add player to room
@@ -17,8 +63,9 @@ class GameRoom {
       throw new Error("Game already started");
     }
 
-    if (this.game.players.length >= 6) {
-      throw new Error("Game is full (max 6 players)");
+    const maxPlayers = this.game.settings?.maxPlayers || 6;
+    if (this.game.players.length >= maxPlayers) {
+      throw new Error(`Game is full (max ${maxPlayers} players)`);
     }
 
     const player = this.game.addPlayer({
@@ -35,7 +82,10 @@ class GameRoom {
   // Remove player from room
   removePlayer(socketId) {
     const playerId = this.playerSockets.get(socketId);
-    if (!playerId) return;
+    if (!playerId) return null;
+
+    const player = this.socketToPlayer.get(socketId);
+    const playerName = player?.name || 'Unknown';
 
     if (!this.isStarted) {
       // Remove from game if not started
@@ -54,6 +104,29 @@ class GameRoom {
         player.disconnected = true;
       }
     }
+
+    return playerName;
+  }
+
+  // Kick a player (host only, lobby only)
+  kickPlayer(targetSocketId) {
+    if (this.isStarted) {
+      throw new Error("Cannot kick players after game started");
+    }
+
+    const player = this.socketToPlayer.get(targetSocketId);
+    if (!player) {
+      throw new Error("Player not found");
+    }
+
+    const playerName = player.name;
+
+    // Remove from game
+    this.game.players = this.game.players.filter(p => p.id !== player.id);
+    this.playerSockets.delete(targetSocketId);
+    this.socketToPlayer.delete(targetSocketId);
+
+    return { playerName, socketId: targetSocketId };
   }
 
   // Reconnect player
@@ -187,7 +260,12 @@ class GameRoom {
 
   // Get game state
   getGameState() {
-    return this.game.getGameState();
+    return {
+      ...this.game.getGameState(),
+      chatMessages: this.chatMessages,
+      isPrivate: this.isPrivate,
+      maxPlayers: this.game.settings?.maxPlayers || 6
+    };
   }
 
   // Get player count
