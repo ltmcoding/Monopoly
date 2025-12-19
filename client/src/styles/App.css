@@ -1249,13 +1249,13 @@ body {
   color: var(--color-text-primary);
 }
 
-/* Compact section headers for lobby main panel */
+/* Section headers for lobby main panel */
 .lobby-main-panel .section-header {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .lobby-main-panel .section-header h2 {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-lg);
 }
 
 .edit-hint {
@@ -1275,27 +1275,27 @@ body {
 }
 
 .players-list.compact {
-  gap: var(--space-1);
-}
-
-.players-list.compact .player-item {
-  padding: var(--space-2);
   gap: var(--space-2);
 }
 
+.players-list.compact .player-item {
+  padding: var(--space-3);
+  gap: var(--space-3);
+}
+
 .players-list.compact .player-color-indicator {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
 }
 
 .players-list.compact .player-name {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
 }
 
 .players-list.compact .host-badge,
 .players-list.compact .you-badge {
-  font-size: 9px;
-  padding: 2px 6px;
+  font-size: 10px;
+  padding: 3px 8px;
 }
 
 .player-item {
@@ -1625,8 +1625,9 @@ body {
 .lobby-actions {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-6);
+  gap: var(--space-4);
+  margin-top: auto;
+  padding-top: var(--space-4);
 }
 
 .waiting-message {
@@ -3436,8 +3437,8 @@ body {
 }
 
 .lobby-rules-panel .section-header {
-  margin-bottom: var(--space-3);
-  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   background: linear-gradient(180deg,
     rgba(45, 38, 28, 0.9) 0%,
     rgba(35, 30, 22, 0.95) 100%);
@@ -3453,7 +3454,7 @@ body {
 
 .lobby-rules-panel .section-header h2 {
   font-family: var(--font-family-display);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   letter-spacing: 2px;
   text-transform: uppercase;
   color: rgba(245, 197, 66, 0.9);
@@ -3463,24 +3464,25 @@ body {
 .lobby-rules-panel .settings-list.compact {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
   overflow-y: auto;
+  padding: var(--space-4);
 }
 
 .lobby-rules-panel .setting-toggle-row.compact {
-  padding: var(--space-2);
+  padding: var(--space-3);
   background: var(--panel-bg-base);
   border-radius: var(--radius-md);
 }
 
 .lobby-rules-panel .setting-label {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
 }
 
 .lobby-rules-panel .setting-select.compact {
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--font-size-xs);
-  min-width: 60px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  min-width: 70px;
 }
 
 /* Custom cash display for rules panel */
@@ -3752,14 +3754,14 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
   min-width: 0;
   background: var(--glass-bg-elevated);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-radius: var(--radius-lg);
   border: 1px solid var(--glass-border);
-  padding: var(--space-4);
+  padding: var(--space-6);
   overflow-y: auto;
   overflow-x: hidden;
   box-shadow: var(--shadow-glass);
@@ -3794,7 +3796,7 @@ body {
   align-items: center;
   justify-content: space-between;
   position: relative;
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-5) var(--space-6);
   background: linear-gradient(135deg,
     rgba(45, 38, 28, 0.95) 0%,
     rgba(35, 30, 22, 0.98) 50%,
@@ -3826,7 +3828,7 @@ body {
 
 .lobby-main-panel .game-code-label {
   font-family: var(--font-family-elegant);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   letter-spacing: 3px;
   text-transform: uppercase;
   color: rgba(212, 175, 55, 0.7);
@@ -3834,8 +3836,8 @@ body {
 
 .lobby-main-panel .game-code-value {
   font-family: var(--font-family-display);
-  font-size: var(--font-size-2xl);
-  letter-spacing: 6px;
+  font-size: var(--font-size-3xl);
+  letter-spacing: 8px;
   color: #ffd700;
   text-shadow:
     0 0 20px rgba(255, 215, 0, 0.4),
@@ -4253,19 +4255,19 @@ body {
 }
 
 .edition-card.compact {
-  width: 120px;
+  width: 160px;
 }
 
 .edition-card.compact .edition-card-image {
-  height: 60px;
+  height: 80px;
 }
 
 .edition-card.compact .edition-card-content {
-  padding: var(--space-2);
+  padding: var(--space-3);
 }
 
 .edition-card.compact .edition-card-content h4 {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   margin-bottom: 0;
 }
 
@@ -4274,12 +4276,12 @@ body {
 }
 
 .edition-card.compact .coming-soon-badge {
-  font-size: 9px;
-  padding: 2px 4px;
+  font-size: 10px;
+  padding: 3px 6px;
 }
 
 .edition-section.compact .section-header h2 {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-lg);
 }
 
 .edition-card:hover:not(.disabled) {
