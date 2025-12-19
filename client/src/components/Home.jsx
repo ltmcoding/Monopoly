@@ -41,6 +41,7 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
           gameId: response.gameId,
           playerId: response.player.id,
           playerName: nameToUse,
+          sessionId: response.sessionId,
           isHost: true,
           gameState: response.gameState
         });
@@ -50,6 +51,7 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
           gameId: response.gameId,
           playerId: response.player.id,
           playerName: nameToUse,
+          sessionId: response.sessionId,
           isHost: false,
           gameState: response.gameState
         });
@@ -75,6 +77,7 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
         gameId: response.gameId,
         playerId: response.player.id,
         playerName: nameToUse,
+        sessionId: response.sessionId,
         isHost: true,
         gameState: response.gameState,
         isPrivate: true
@@ -100,6 +103,7 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
         gameId: gameId,
         playerId: response.player.id,
         playerName: nameToUse,
+        sessionId: response.sessionId,
         isHost: response.isHost,
         gameState: response.gameState
       });
