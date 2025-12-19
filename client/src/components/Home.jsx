@@ -15,12 +15,13 @@ const DEFAULT_SETTINGS = {
   maxPlayers: 6
 };
 
-export default function Home({ socket, onGameCreated, onGameJoined }) {
+export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode, onUrlGameCodeCleared }) {
   const [playerName, setPlayerName] = useState('');
   const [placeholderName, setPlaceholderName] = useState(() => generateRandomName());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showRoomBrowser, setShowRoomBrowser] = useState(false);
+  const [showJoinPrompt, setShowJoinPrompt] = useState(!!urlGameCode);
 
   // Get the name to use (user input or generated placeholder)
   const getNameToUse = () => playerName.trim() || placeholderName;
@@ -107,6 +108,18 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleJoinFromUrl = async () => {
+    if (!urlGameCode) return;
+    await handleJoinFromBrowser(urlGameCode);
+  };
+
+  const handleCancelJoinFromUrl = () => {
+    setShowJoinPrompt(false);
+    if (onUrlGameCodeCleared) onUrlGameCodeCleared();
+    // Clear the URL
+    window.history.pushState({}, '', '/');
   };
 
   return (
@@ -238,6 +251,62 @@ export default function Home({ socket, onGameCreated, onGameJoined }) {
           onClose={() => setShowRoomBrowser(false)}
           disabled={loading}
         />
+      )}
+
+      {/* Join from URL Prompt */}
+      {showJoinPrompt && urlGameCode && (
+        <div className="modal-overlay" onClick={handleCancelJoinFromUrl}>
+          <div className="join-prompt-modal" onClick={e => e.stopPropagation()}>
+            <div className="join-prompt-header">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                <polyline points="10 17 15 12 10 7"/>
+                <line x1="15" y1="12" x2="3" y2="12"/>
+              </svg>
+              <h2>Join Game</h2>
+            </div>
+            <p>You've been invited to join game:</p>
+            <div className="join-prompt-code">{urlGameCode}</div>
+            <div className="join-prompt-name">
+              <label>Your Name</label>
+              <input
+                type="text"
+                className="player-name-input"
+                placeholder={placeholderName}
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                maxLength={20}
+                disabled={loading}
+              />
+            </div>
+            {error && (
+              <div className="error-message">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                {error}
+              </div>
+            )}
+            <div className="join-prompt-actions">
+              <button
+                className="btn btn-primary"
+                onClick={handleJoinFromUrl}
+                disabled={!socket.connected || loading}
+              >
+                {loading ? 'Joining...' : 'Join Game'}
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={handleCancelJoinFromUrl}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

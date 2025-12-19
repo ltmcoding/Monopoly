@@ -1,9 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSocket } from './hooks/useSocket';
 import Home from './components/Home';
 import Lobby from './components/Lobby';
 import Game from './components/Game';
 import './styles/App.css';
+
+// Session storage keys
+const STORAGE_KEYS = {
+  GAME_INFO: 'monopoly_game_info',
+  PLAYER_NAME: 'monopoly_player_name'
+};
+
+// Get game code from URL path
+const getGameCodeFromUrl = () => {
+  const path = window.location.pathname;
+  const match = path.match(/^\/([A-Z0-9]{6})$/i);
+  return match ? match[1].toUpperCase() : null;
+};
+
+// Update browser URL
+const updateUrl = (gameId) => {
+  if (gameId) {
+    window.history.pushState({ gameId }, '', `/${gameId}`);
+  } else {
+    window.history.pushState({}, '', '/');
+  }
+};
 
 function App() {
   const socket = useSocket();
@@ -12,6 +34,8 @@ function App() {
   const [gameState, setGameState] = useState(null);
   const [showConnectionOverlay, setShowConnectionOverlay] = useState(false);
   const [lobbyDeletedMessage, setLobbyDeletedMessage] = useState(null);
+  const [urlGameCode, setUrlGameCode] = useState(() => getGameCodeFromUrl());
+  const [attemptingReconnect, setAttemptingReconnect] = useState(false);
 
   // Only show connection overlay after being disconnected for 3+ seconds
   useEffect(() => {
@@ -25,6 +49,86 @@ function App() {
     }
     return () => clearTimeout(timer);
   }, [socket.connected]);
+
+  // Save game info to session storage when it changes
+  useEffect(() => {
+    if (gameInfo && gameState) {
+      sessionStorage.setItem(STORAGE_KEYS.GAME_INFO, JSON.stringify({
+        gameId: gameInfo.gameId,
+        playerId: gameInfo.playerId,
+        playerName: gameInfo.playerName,
+        isHost: gameInfo.isHost,
+        screen: screen
+      }));
+    }
+  }, [gameInfo, gameState, screen]);
+
+  // Attempt to reconnect on page load if there's a game code in URL or session storage
+  useEffect(() => {
+    if (!socket.connected || attemptingReconnect) return;
+
+    const urlCode = getGameCodeFromUrl();
+    const savedInfo = sessionStorage.getItem(STORAGE_KEYS.GAME_INFO);
+    const savedPlayerName = sessionStorage.getItem(STORAGE_KEYS.PLAYER_NAME);
+
+    // If URL has a game code, try to join that game
+    if (urlCode) {
+      setAttemptingReconnect(true);
+
+      // Check if we have saved info for this game
+      if (savedInfo) {
+        try {
+          const info = JSON.parse(savedInfo);
+          if (info.gameId === urlCode) {
+            // Try to rejoin with saved player name
+            socket.joinGame(urlCode, info.playerName)
+              .then(response => {
+                setGameInfo({
+                  gameId: urlCode,
+                  playerId: response.player.id,
+                  playerName: info.playerName,
+                  isHost: response.isHost
+                });
+                setGameState(response.gameState);
+                if (response.gameState.status === 'playing') {
+                  setScreen('game');
+                } else {
+                  setScreen('lobby');
+                }
+              })
+              .catch(err => {
+                console.log('Failed to rejoin game:', err.message);
+                // Clear saved info and stay on home
+                sessionStorage.removeItem(STORAGE_KEYS.GAME_INFO);
+                setUrlGameCode(urlCode); // Pass to Home component
+              })
+              .finally(() => setAttemptingReconnect(false));
+            return;
+          }
+        } catch (e) {
+          console.error('Error parsing saved game info:', e);
+        }
+      }
+
+      // No saved info, just pass the game code to Home to prompt join
+      setUrlGameCode(urlCode);
+      setAttemptingReconnect(false);
+    }
+  }, [socket.connected]);
+
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const gameCode = getGameCodeFromUrl();
+      if (!gameCode && screen !== 'home') {
+        // User navigated back to home
+        handleLeaveLobby();
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [screen]);
 
   useEffect(() => {
     // Listen for game started event
@@ -83,6 +187,9 @@ function App() {
     setGameInfo(info);
     setGameState(info.gameState || null);
     setScreen('lobby');
+    updateUrl(info.gameId);
+    // Save player name for reconnection
+    sessionStorage.setItem(STORAGE_KEYS.PLAYER_NAME, info.playerName);
   };
 
   const handleGameJoined = (info) => {
@@ -90,6 +197,11 @@ function App() {
     setGameInfo(info);
     setGameState(info.gameState || null);
     setScreen('lobby');
+    updateUrl(info.gameId);
+    // Save player name for reconnection
+    sessionStorage.setItem(STORAGE_KEYS.PLAYER_NAME, info.playerName);
+    // Clear URL game code since we've joined
+    setUrlGameCode(null);
   };
 
   const handleGameStarted = () => {
@@ -100,12 +212,16 @@ function App() {
     setScreen('home');
     setGameInfo(null);
     setGameState(null);
+    updateUrl(null);
+    sessionStorage.removeItem(STORAGE_KEYS.GAME_INFO);
   };
 
   const handleExitGame = () => {
     setScreen('home');
     setGameInfo(null);
     setGameState(null);
+    updateUrl(null);
+    sessionStorage.removeItem(STORAGE_KEYS.GAME_INFO);
   };
 
   // Clear lobby deleted message when user dismisses it
@@ -120,6 +236,8 @@ function App() {
           socket={socket}
           onGameCreated={handleGameCreated}
           onGameJoined={handleGameJoined}
+          urlGameCode={urlGameCode}
+          onUrlGameCodeCleared={() => setUrlGameCode(null)}
         />
       )}
 

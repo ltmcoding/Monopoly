@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { formatCurrency, copyToClipboard } from '../utils/formatters';
+import { formatCurrency } from '../utils/formatters';
 
 // 16 player token colors
 const TOKEN_COLORS = [
@@ -54,7 +54,8 @@ const GAME_EDITIONS = [
 ];
 
 export default function Lobby({ socket, gameId, playerId, gameState, isHost, onGameStarted, onLeave }) {
-  const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
   const [starting, setStarting] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [settings, setSettings] = useState(gameState.settings);
@@ -64,11 +65,18 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
   const [showCustomCash, setShowCustomCash] = useState(false);
   const [customCashValue, setCustomCashValue] = useState('');
   const [kickConfirm, setKickConfirm] = useState(null);
+  const [isPrivate, setIsPrivate] = useState(gameState.isPrivate || false);
   const chatEndRef = useRef(null);
 
   const currentPlayer = gameState.players.find(p => p.id === playerId);
   const usedColors = gameState.players.map(p => p.color);
   const maxPlayers = settings.maxPlayers || 6;
+
+  // Get full game link
+  const getGameLink = () => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/${gameId}`;
+  };
 
   // Chat message listener
   useEffect(() => {
@@ -76,11 +84,12 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
       setChatMessages(prev => [...prev.slice(-49), chatMessage]);
     };
 
-    const handlePrivacyToggled = ({ systemMessage, gameState: newState }) => {
+    const handlePrivacyToggled = ({ systemMessage, gameState: newState, isPrivate: newPrivacy }) => {
       if (systemMessage) {
         setChatMessages(prev => [...prev.slice(-49), systemMessage]);
       }
       setSettings(newState.settings);
+      setIsPrivate(newPrivacy);
     };
 
     const handlePlayerJoined = ({ systemMessage }) => {
@@ -133,13 +142,23 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
     setSettings(gameState.settings);
   }, [gameState.settings]);
 
-  const handleCopyGameCode = async () => {
+  const handleCopyLink = async () => {
     try {
-      await copyToClipboard(gameId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(getGameLink());
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error('Failed to copy link:', err);
+    }
+  };
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(gameId);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy code:', err);
     }
   };
 
@@ -267,117 +286,158 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
 
   return (
     <div className="lobby-container lobby-revamp">
-      {/* Left Panel - Chat */}
-      <div className="lobby-chat-panel">
-        <div className="chat-header">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      {/* Header at top */}
+      <div className="lobby-header-top">
+        <div className="lobby-title-row">
+          <svg width="40" height="40" viewBox="0 0 100 100">
+            <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
+            <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
+            <rect x="70" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
+            <rect x="10" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
+            <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
+            <circle cx="50" cy="50" r="12" fill="currentColor"/>
           </svg>
-          <h3>Lobby Chat</h3>
+          <h1>Game Lobby</h1>
         </div>
-        <div className="chat-messages">
-          {chatMessages.map((msg) => (
-            <div key={msg.id} className={`chat-message ${msg.type === 'system' ? 'system' : ''}`}>
-              {msg.type === 'player' ? (
-                <>
-                  <span className="chat-player-name" style={{ color: msg.playerColor }}>
-                    {msg.playerName}:
-                  </span>
-                  <span className="chat-text">{msg.message}</span>
-                </>
-              ) : (
-                <span className="chat-system-text">{msg.message}</span>
-              )}
-            </div>
-          ))}
-          <div ref={chatEndRef} />
-        </div>
-        <form className="chat-input-form" onSubmit={handleSendMessage}>
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            placeholder="Type a message..."
-            maxLength={200}
-            className="chat-input"
-          />
-          <button type="submit" className="chat-send-btn" disabled={!chatInput.trim()}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="22" y1="2" x2="11" y2="13"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
+        {isHost && (
+          <button
+            className={`privacy-toggle-btn ${isPrivate ? 'is-private' : ''}`}
+            onClick={handleTogglePrivacy}
+            title={isPrivate ? 'Room is private' : 'Room is public'}
+          >
+            {isPrivate ? (
+              <>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Private
+              </>
+            ) : (
+              <>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                </svg>
+                Public
+              </>
+            )}
           </button>
-        </form>
+        )}
+        {!isHost && isPrivate && (
+          <span className="privacy-badge private">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Private Room
+          </span>
+        )}
       </div>
 
-      {/* Right Panel - Main Content */}
-      <div className="lobby-main-panel">
-        <div className="lobby-card">
-          {/* Header */}
-          <div className="lobby-header">
-            <svg width="32" height="32" viewBox="0 0 100 100">
-              <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
-              <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
-              <rect x="70" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
-              <rect x="10" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
-              <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
-              <circle cx="50" cy="50" r="12" fill="currentColor"/>
+      {/* Main content area */}
+      <div className="lobby-content">
+        {/* Left Panel - Chat */}
+        <div className="lobby-chat-panel">
+          <div className="chat-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
-            <h1>Game Lobby</h1>
+            <h3>Lobby Chat</h3>
           </div>
-
-          {/* Game Code with Privacy Toggle */}
-          <div className="game-code-section">
-            <div className="game-code-row">
-              <div className="game-code-box" onClick={handleCopyGameCode}>
-                <div className="game-code-label">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                  </svg>
-                  Room Code
-                </div>
-                <div className="game-code-value">{gameId}</div>
-                <button className="copy-btn" title="Copy to clipboard">
-                  {copied ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
+          <div className="chat-messages">
+            {chatMessages.length === 0 ? (
+              <div className="chat-empty">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <p>No messages yet</p>
+              </div>
+            ) : (
+              chatMessages.map((msg) => (
+                <div key={msg.id} className={`chat-message ${msg.type === 'system' ? 'system' : ''}`}>
+                  {msg.type === 'player' ? (
+                    <>
+                      <span className="chat-player-name" style={{ color: msg.playerColor }}>
+                        {msg.playerName}
+                      </span>
+                      <span className="chat-text">{msg.message}</span>
+                    </>
                   ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="9" y="9" width="13" height="13" rx="2"/>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                    </svg>
+                    <span className="chat-system-text">{msg.message}</span>
+                  )}
+                </div>
+              ))
+            )}
+            <div ref={chatEndRef} />
+          </div>
+          <form className="chat-input-form" onSubmit={handleSendMessage}>
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="Type a message..."
+              maxLength={200}
+              className="chat-input"
+            />
+            <button type="submit" className="chat-send-btn" disabled={!chatInput.trim()}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+
+        {/* Right Panel - Main Content */}
+        <div className="lobby-main-panel">
+          {/* Game Code Section */}
+          <div className="game-code-section">
+            <div className="game-code-box">
+              <div className="game-code-info">
+                <div className="game-code-label">Room Code</div>
+                <div className="game-code-value">{gameId}</div>
+              </div>
+              <div className="game-code-actions">
+                <button className="copy-btn" onClick={handleCopyLink} title="Copy game link">
+                  {copiedLink ? (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                      </svg>
+                      Copy Link
+                    </>
+                  )}
+                </button>
+                <button className="copy-btn secondary" onClick={handleCopyCode} title="Copy code only">
+                  {copiedCode ? (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                      </svg>
+                      Code Only
+                    </>
                   )}
                 </button>
               </div>
-              {isHost && (
-                <button
-                  className={`privacy-toggle-btn ${gameState.isPrivate ? 'private' : 'public'}`}
-                  onClick={handleTogglePrivacy}
-                  title={gameState.isPrivate ? 'Room is private' : 'Room is public'}
-                >
-                  {gameState.isPrivate ? (
-                    <>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
-                      Private
-                    </>
-                  ) : (
-                    <>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-                      </svg>
-                      Public
-                    </>
-                  )}
-                </button>
-              )}
             </div>
-            <p className="game-code-hint">Share this code with friends to join</p>
+            <p className="game-code-hint">Share this link with friends to join</p>
           </div>
 
           {/* Players Section */}
@@ -389,7 +449,7 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
-              <h2>Players ({gameState.players.length}/{maxPlayers})</h2>
+              <h2>Players</h2>
             </div>
             <div className="players-list dynamic">
               {gameState.players.map((player, index) => (
