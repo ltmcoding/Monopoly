@@ -297,7 +297,8 @@ class GameRoom {
       ...this.game.getGameState(),
       chatMessages: this.chatMessages,
       isPrivate: this.isPrivate,
-      maxPlayers: this.game.settings?.maxPlayers || 6
+      maxPlayers: this.game.settings?.maxPlayers || 6,
+      status: this.isStarted ? 'playing' : 'lobby'
     };
   }
 

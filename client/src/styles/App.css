@@ -3214,8 +3214,8 @@ body {
    ============================================ */
 
 .lobby-chat-panel {
-  width: 280px;
-  min-width: 240px;
+  width: 340px;
+  min-width: 300px;
   display: flex;
   flex-direction: column;
   background: var(--glass-bg-elevated);
@@ -3231,8 +3231,8 @@ body {
 
 /* Rules Panel - right side */
 .lobby-rules-panel {
-  width: 280px;
-  min-width: 240px;
+  width: 340px;
+  min-width: 300px;
   display: flex;
   flex-direction: column;
   background: var(--glass-bg-elevated);
@@ -3285,6 +3285,22 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+.cash-edit-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.cash-edit-btn:hover {
+  opacity: 1;
 }
 
 .current-custom-value {
