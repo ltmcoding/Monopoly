@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSocket } from './hooks/useSocket';
+import { Spinner, WarningCircle, X } from '@phosphor-icons/react';
 import Home from './components/Home';
 import Lobby from './components/Lobby';
 import Game from './components/Game';
-import './styles/App.css';
+import { Button } from './components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 
 // Session storage keys
 const STORAGE_KEYS = {
@@ -239,7 +241,7 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className="min-h-screen bg-background">
       {screen === 'home' && (
         <Home
           socket={socket}
@@ -272,29 +274,35 @@ function App() {
         />
       )}
 
-      {/* Only show connection overlay after 3 seconds of disconnection */}
+      {/* Connection overlay */}
       {showConnectionOverlay && (
-        <div className="connection-overlay">
-          <div className="connection-message">
-            Connecting to server...
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 text-foreground">
+            <div className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            <span className="text-lg font-medium">Connecting to server...</span>
           </div>
         </div>
       )}
 
       {/* Lobby deleted notification */}
       {lobbyDeletedMessage && (
-        <div className="modal-overlay" onClick={dismissLobbyDeletedMessage}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2>Lobby Closed</h2>
-            <p style={{ textAlign: 'center', marginBottom: '24px', color: 'var(--color-text-secondary)' }}>
-              {lobbyDeletedMessage}
-            </p>
-            <div className="modal-actions" style={{ justifyContent: 'center' }}>
-              <button className="btn btn-primary" onClick={dismissLobbyDeletedMessage}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={dismissLobbyDeletedMessage}>
+          <Card className="w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-2">
+                <WarningCircle size={48} className="text-amber-500" />
+              </div>
+              <CardTitle>Lobby Closed</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <p className="text-muted-foreground">
+                {lobbyDeletedMessage}
+              </p>
+              <Button onClick={dismissLobbyDeletedMessage} className="w-full">
                 OK
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

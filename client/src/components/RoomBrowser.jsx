@@ -1,4 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import {
+  SquaresFour,
+  X,
+  ArrowClockwise,
+  WarningCircle,
+  Lock,
+  LockOpen,
+  User,
+  Users,
+  SignIn,
+  XSquare
+} from '@phosphor-icons/react';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 
 export default function RoomBrowser({ socket, playerName, onJoin, onClose, disabled }) {
   const [rooms, setRooms] = useState([]);
@@ -6,14 +26,12 @@ export default function RoomBrowser({ socket, playerName, onJoin, onClose, disab
   const [error, setError] = useState('');
 
   const fetchRooms = async () => {
-    // Don't fetch if socket is not connected
     if (!socket.connected) {
       setError('Not connected to server');
       setLoading(false);
       return;
     }
 
-    // Don't show loading spinner on refresh, only on initial load
     if (rooms.length === 0) {
       setLoading(true);
     }
@@ -21,9 +39,8 @@ export default function RoomBrowser({ socket, playerName, onJoin, onClose, disab
     try {
       const response = await socket.getGamesList();
       setRooms(response.games || []);
-      setError(''); // Clear error on success
+      setError('');
     } catch (err) {
-      // Show appropriate error message
       if (err.message === 'Socket not connected') {
         setError('Not connected to server');
       } else if (err.message === 'Request timed out') {
@@ -38,12 +55,10 @@ export default function RoomBrowser({ socket, playerName, onJoin, onClose, disab
   };
 
   useEffect(() => {
-    // Fetch immediately when connected
     if (socket.connected) {
       fetchRooms();
     }
 
-    // Refresh every 5 seconds only when connected
     const interval = setInterval(() => {
       if (socket.connected) {
         fetchRooms();
@@ -62,168 +77,128 @@ export default function RoomBrowser({ socket, playerName, onJoin, onClose, disab
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="room-browser-modal" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="room-browser-header">
-          <div className="room-browser-title">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="7" height="7" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/>
-              <rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-            <h2>Room Browser</h2>
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-xl max-h-[85vh] flex flex-col">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <SquaresFour size={24} className="text-primary" />
+            <DialogTitle>Room Browser</DialogTitle>
           </div>
-          <button className="btn-close" onClick={onClose}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
+        </DialogHeader>
 
-        {/* Content */}
-        <div className="room-browser-content">
-          {/* Refresh button */}
-          <div className="room-browser-actions">
-            <button
-              className="btn btn-refresh"
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {/* Actions Bar */}
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={fetchRooms}
               disabled={loading}
+              className="gap-2"
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className={loading ? 'spinning' : ''}
-              >
-                <path d="M23 4v6h-6"/>
-                <path d="M1 20v-6h6"/>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-              </svg>
+              <ArrowClockwise size={18} className={loading ? 'animate-spin' : ''} />
               {loading ? 'Refreshing...' : 'Refresh'}
-            </button>
-            <span className="room-count">
+            </Button>
+            <span className="text-sm text-muted-foreground">
               {rooms.length} {rooms.length === 1 ? 'room' : 'rooms'} available
             </span>
           </div>
 
-          {/* Error message */}
+          {/* Error Message */}
           {error && (
-            <div className="room-browser-error">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              {error}
+            <div className="flex items-center gap-2 p-3 mb-4 rounded-md bg-destructive/10 text-destructive border border-destructive/20">
+              <WarningCircle size={16} />
+              <span className="text-sm">{error}</span>
             </div>
           )}
 
-          {/* Room list */}
-          <div className="room-list">
+          {/* Room List */}
+          <div className="flex-1 overflow-y-auto space-y-2">
             {loading && rooms.length === 0 ? (
-              <div className="room-list-empty">
-                <div className="loading-spinner"></div>
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin mb-4" />
                 <p>Loading rooms...</p>
               </div>
             ) : rooms.length === 0 ? (
-              <div className="room-list-empty">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.5">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/>
-                  <line x1="9" y1="9" x2="15" y2="15"/>
-                  <line x1="15" y1="9" x2="9" y2="15"/>
-                </svg>
-                <p>No rooms available</p>
-                <span>Click Play to create a new room</span>
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <XSquare size={48} className="mb-4 opacity-50" />
+                <p className="text-lg mb-1">No rooms available</p>
+                <span className="text-sm">Click Play to create a new room</span>
               </div>
             ) : (
               rooms.map(room => (
-                <div key={room.gameId} className={`room-card ${room.isPrivate ? 'is-private' : ''}`}>
-                  <div className="room-info">
-                    {/* Room code */}
-                    <div className="room-code">
+                <div
+                  key={room.gameId}
+                  className="flex items-center justify-between p-4 rounded-lg bg-secondary/50 border border-border hover:border-primary/30 hover:bg-secondary transition-colors"
+                >
+                  <div className="space-y-2">
+                    {/* Room Code */}
+                    <div className="flex items-center gap-2">
                       {room.isPrivate ? (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
+                        <Lock size={16} className="text-muted-foreground" />
                       ) : (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                          <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-                        </svg>
+                        <LockOpen size={16} className="text-muted-foreground" />
                       )}
-                      <span>{room.gameId}</span>
-                      {room.isPrivate && <span className="private-badge">Private</span>}
+                      <span className="font-mono font-bold text-primary tracking-wider">
+                        {room.gameId}
+                      </span>
+                      {room.isPrivate && (
+                        <Badge variant="secondary" className="text-xs">Private</Badge>
+                      )}
                     </div>
 
-                    {/* Host name */}
-                    <div className="room-host">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
-                      </svg>
+                    {/* Host Name */}
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <User size={16} />
                       <span>{room.hostName}</span>
-                      <span className="host-badge">Host</span>
+                      <Badge variant="outline" className="text-xs">Host</Badge>
                     </div>
 
-                    {/* Player count */}
-                    <div className="room-players">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                      </svg>
+                    {/* Player Count */}
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users size={16} />
                       <span>{room.playerCount} / {room.maxPlayers}</span>
-                      <div className="player-dots">
+                      <div className="flex gap-1 ml-1">
                         {Array.from({ length: room.maxPlayers }, (_, i) => (
                           <span
                             key={i}
-                            className={`player-dot ${i < room.playerCount ? 'filled' : ''}`}
+                            className={`w-2 h-2 rounded-full ${
+                              i < room.playerCount
+                                ? 'bg-green-500'
+                                : 'bg-muted'
+                            }`}
                           />
                         ))}
                       </div>
                     </div>
                   </div>
 
-                  {/* Join button */}
-                  <button
-                    className="btn btn-join"
+                  {/* Join Button */}
+                  <Button
+                    variant={room.playerCount >= room.maxPlayers ? 'secondary' : 'success'}
+                    size="sm"
                     onClick={() => handleJoin(room.gameId)}
                     disabled={disabled || room.playerCount >= room.maxPlayers}
+                    className="gap-2"
                   >
                     {room.playerCount >= room.maxPlayers ? (
                       <>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
+                        <Lock size={18} />
                         Full
                       </>
                     ) : (
                       <>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                          <polyline points="10 17 15 12 10 7"/>
-                          <line x1="15" y1="12" x2="3" y2="12"/>
-                        </svg>
+                        <SignIn size={18} />
                         Join
                       </>
                     )}
-                  </button>
+                  </Button>
                 </div>
               ))
             )}
           </div>
         </div>
-
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

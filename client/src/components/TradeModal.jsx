@@ -1,6 +1,27 @@
 import React, { useState } from 'react';
+import {
+  Handshake,
+  X,
+  CurrencyDollar,
+  Buildings,
+  Key,
+  Check,
+  ArrowRight,
+  House
+} from '@phosphor-icons/react';
 import { getSpaceById } from '../utils/boardData';
 import { formatCurrency } from '../utils/formatters';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Badge } from './ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from './ui/dialog';
 
 export default function TradeModal({ socket, gameId, gameState, myPlayer, onClose }) {
   const [selectedPlayer, setSelectedPlayer] = useState('');
@@ -108,195 +129,298 @@ export default function TradeModal({ socket, gameId, gameState, myPlayer, onClos
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content trade-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>×</button>
-
-        <h2>Trade</h2>
-
-        {pendingTradesForMe.length > 0 && (
-          <div className="pending-trades">
-            <h3>Pending Offers for You:</h3>
-            {pendingTradesForMe.map(trade => {
-              const fromPlayer = gameState.players.find(p => p.id === trade.fromPlayerId);
-              return (
-                <div key={trade.id} className="trade-offer">
-                  <div className="trade-from">
-                    <strong>{fromPlayer?.name} offers:</strong>
-                    <div>Cash: {formatCurrency(trade.offer.cash)}</div>
-                    <div>Properties: {trade.offer.properties.length}</div>
-                    {trade.offer.jailCards > 0 && <div>Jail Cards: {trade.offer.jailCards}</div>}
-                  </div>
-                  <div className="trade-for">
-                    <strong>For:</strong>
-                    <div>Cash: {formatCurrency(trade.request.cash)}</div>
-                    <div>Properties: {trade.request.properties.length}</div>
-                    {trade.request.jailCards > 0 && <div>Jail Cards: {trade.request.jailCards}</div>}
-                  </div>
-                  <div className="trade-actions">
-                    <button
-                      className="btn btn-success btn-small"
-                      onClick={() => handleAcceptTrade(trade.id)}
-                      disabled={loading}
-                    >
-                      Accept
-                    </button>
-                    <button
-                      className="btn btn-danger btn-small"
-                      onClick={() => handleRejectTrade(trade.id)}
-                      disabled={loading}
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <Handshake size={24} className="text-primary" />
+            <DialogTitle>Trade</DialogTitle>
           </div>
-        )}
+        </DialogHeader>
 
-        <div className="trade-propose">
-          <h3>Propose New Trade:</h3>
+        <div className="flex-1 overflow-y-auto space-y-6">
+          {/* Pending Trades */}
+          {pendingTradesForMe.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                <Badge variant="warning">{pendingTradesForMe.length}</Badge>
+                Pending Offers for You
+              </h3>
+              {pendingTradesForMe.map(trade => {
+                const fromPlayer = gameState.players.find(p => p.id === trade.fromPlayerId);
+                return (
+                  <div key={trade.id} className="p-4 rounded-lg bg-secondary/50 border border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: fromPlayer?.color }}
+                      />
+                      <span className="font-semibold">{fromPlayer?.name}</span>
+                      <span className="text-muted-foreground">offers:</span>
+                    </div>
 
-          <div className="trade-section">
-            <label>Trade with:</label>
-            <select
-              value={selectedPlayer}
-              onChange={(e) => setSelectedPlayer(e.target.value)}
-              className="trade-select"
-            >
-              <option value="">Select a player</option>
-              {otherPlayers.map(player => (
-                <option key={player.id} value={player.id}>
-                  {player.name}
-                </option>
-              ))}
-            </select>
-          </div>
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-1 text-sm">
+                        <div className="text-muted-foreground">They offer:</div>
+                        <div className="flex items-center gap-1">
+                          <CurrencyDollar size={14} className="text-primary" />
+                          {formatCurrency(trade.offer.cash)}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Buildings size={14} />
+                          {trade.offer.properties.length} properties
+                        </div>
+                        {trade.offer.jailCards > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Key size={14} />
+                            {trade.offer.jailCards} jail cards
+                          </div>
+                        )}
+                      </div>
 
-          <div className="trade-columns">
-            <div className="trade-column">
-              <h4>You Offer:</h4>
+                      <div className="space-y-1 text-sm">
+                        <div className="text-muted-foreground">They want:</div>
+                        <div className="flex items-center gap-1">
+                          <CurrencyDollar size={14} className="text-primary" />
+                          {formatCurrency(trade.request.cash)}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Buildings size={14} />
+                          {trade.request.properties.length} properties
+                        </div>
+                        {trade.request.jailCards > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Key size={14} />
+                            {trade.request.jailCards} jail cards
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-              <div className="trade-section">
-                <label>Cash: {formatCurrency(offerCash)}</label>
-                <input
-                  type="number"
-                  min="0"
-                  max={myPlayer.cash}
-                  value={offerCash}
-                  onChange={(e) => setOfferCash(parseInt(e.target.value) || 0)}
-                  className="trade-input"
-                />
-              </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="success"
+                        size="sm"
+                        onClick={() => handleAcceptTrade(trade.id)}
+                        disabled={loading}
+                        className="gap-1"
+                      >
+                        <Check size={16} />
+                        Accept
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRejectTrade(trade.id)}
+                        disabled={loading}
+                        className="gap-1"
+                      >
+                        <X size={16} />
+                        Reject
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
-              <div className="trade-section">
-                <label>Your Properties:</label>
-                <div className="property-checkboxes">
-                  {myPlayer.properties.map(propId => {
-                    const space = getSpaceById(propId);
-                    const property = gameState.properties[propId];
-                    const hasBuildings = property.houses > 0 || property.hotels > 0;
-                    return (
-                      <label key={propId} className="property-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={offerProperties.includes(propId)}
-                          onChange={() => toggleOfferProperty(propId)}
-                          disabled={hasBuildings}
-                        />
-                        <span>{space.name}</span>
-                        {hasBuildings && <span className="has-buildings">(has buildings)</span>}
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
+          {/* Propose New Trade */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold">Propose New Trade</h3>
 
-              {myPlayer.getOutOfJailCards > 0 && (
-                <div className="trade-section">
-                  <label>Jail Cards:</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max={myPlayer.getOutOfJailCards}
-                    value={offerJailCards}
-                    onChange={(e) => setOfferJailCards(parseInt(e.target.value) || 0)}
-                    className="trade-input"
-                  />
-                </div>
-              )}
+            {/* Player Selection */}
+            <div className="space-y-2">
+              <Label>Trade with:</Label>
+              <select
+                value={selectedPlayer}
+                onChange={(e) => setSelectedPlayer(e.target.value)}
+                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">Select a player</option>
+                {otherPlayers.map(player => (
+                  <option key={player.id} value={player.id}>
+                    {player.name} ({formatCurrency(player.cash)})
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div className="trade-column">
-              <h4>You Request:</h4>
+            {/* Trade Columns */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* You Offer */}
+              <div className="space-y-4 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                <h4 className="font-semibold text-green-500 flex items-center gap-2">
+                  <ArrowRight size={16} />
+                  You Offer
+                </h4>
 
-              <div className="trade-section">
-                <label>Cash: {formatCurrency(requestCash)}</label>
-                <input
-                  type="number"
-                  min="0"
-                  max={selectedPlayerData?.cash || 0}
-                  value={requestCash}
-                  onChange={(e) => setRequestCash(parseInt(e.target.value) || 0)}
-                  className="trade-input"
-                  disabled={!selectedPlayer}
-                />
-              </div>
-
-              <div className="trade-section">
-                <label>Their Properties:</label>
-                <div className="property-checkboxes">
-                  {selectedPlayerData?.properties.map(propId => {
-                    const space = getSpaceById(propId);
-                    const property = gameState.properties[propId];
-                    const hasBuildings = property.houses > 0 || property.hotels > 0;
-                    return (
-                      <label key={propId} className="property-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={requestProperties.includes(propId)}
-                          onChange={() => toggleRequestProperty(propId)}
-                          disabled={hasBuildings}
-                        />
-                        <span>{space.name}</span>
-                        {hasBuildings && <span className="has-buildings">(has buildings)</span>}
-                      </label>
-                    );
-                  }) || <div>Select a player first</div>}
-                </div>
-              </div>
-
-              {selectedPlayerData && selectedPlayerData.getOutOfJailCards > 0 && (
-                <div className="trade-section">
-                  <label>Jail Cards:</label>
-                  <input
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1">
+                    <CurrencyDollar size={14} />
+                    Cash: {formatCurrency(offerCash)}
+                  </Label>
+                  <Input
                     type="number"
                     min="0"
-                    max={selectedPlayerData.getOutOfJailCards}
-                    value={requestJailCards}
-                    onChange={(e) => setRequestJailCards(parseInt(e.target.value) || 0)}
-                    className="trade-input"
+                    max={myPlayer.cash}
+                    value={offerCash}
+                    onChange={(e) => setOfferCash(parseInt(e.target.value) || 0)}
                   />
                 </div>
-              )}
-            </div>
-          </div>
 
-          <div className="modal-actions">
-            <button className="btn btn-secondary" onClick={onClose} disabled={loading}>
-              Cancel
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={handleProposeTrade}
-              disabled={loading || !selectedPlayer}
-            >
-              Propose Trade
-            </button>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1">
+                    <Buildings size={14} />
+                    Your Properties
+                  </Label>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {myPlayer.properties.map(propId => {
+                      const space = getSpaceById(propId);
+                      const property = gameState.properties[propId];
+                      const hasBuildings = property.houses > 0 || property.hotels > 0;
+                      return (
+                        <label
+                          key={propId}
+                          className={`flex items-center gap-2 p-2 rounded text-sm cursor-pointer transition-colors ${
+                            offerProperties.includes(propId)
+                              ? 'bg-green-500/20'
+                              : 'hover:bg-secondary/50'
+                          } ${hasBuildings ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={offerProperties.includes(propId)}
+                            onChange={() => toggleOfferProperty(propId)}
+                            disabled={hasBuildings}
+                            className="rounded border-input"
+                          />
+                          <span className="truncate">{space.name}</span>
+                          {hasBuildings && (
+                            <House size={12} className="text-green-500" />
+                          )}
+                        </label>
+                      );
+                    })}
+                    {myPlayer.properties.length === 0 && (
+                      <span className="text-muted-foreground text-xs">No properties</span>
+                    )}
+                  </div>
+                </div>
+
+                {myPlayer.getOutOfJailCards > 0 && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1">
+                      <Key size={14} />
+                      Jail Cards ({myPlayer.getOutOfJailCards} available)
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max={myPlayer.getOutOfJailCards}
+                      value={offerJailCards}
+                      onChange={(e) => setOfferJailCards(parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* You Request */}
+              <div className="space-y-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                <h4 className="font-semibold text-amber-500 flex items-center gap-2">
+                  <ArrowRight size={16} className="rotate-180" />
+                  You Request
+                </h4>
+
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1">
+                    <CurrencyDollar size={14} />
+                    Cash: {formatCurrency(requestCash)}
+                  </Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max={selectedPlayerData?.cash || 0}
+                    value={requestCash}
+                    onChange={(e) => setRequestCash(parseInt(e.target.value) || 0)}
+                    disabled={!selectedPlayer}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1">
+                    <Buildings size={14} />
+                    Their Properties
+                  </Label>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {selectedPlayerData?.properties.map(propId => {
+                      const space = getSpaceById(propId);
+                      const property = gameState.properties[propId];
+                      const hasBuildings = property.houses > 0 || property.hotels > 0;
+                      return (
+                        <label
+                          key={propId}
+                          className={`flex items-center gap-2 p-2 rounded text-sm cursor-pointer transition-colors ${
+                            requestProperties.includes(propId)
+                              ? 'bg-amber-500/20'
+                              : 'hover:bg-secondary/50'
+                          } ${hasBuildings ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={requestProperties.includes(propId)}
+                            onChange={() => toggleRequestProperty(propId)}
+                            disabled={hasBuildings}
+                            className="rounded border-input"
+                          />
+                          <span className="truncate">{space.name}</span>
+                          {hasBuildings && (
+                            <House size={12} className="text-green-500" />
+                          )}
+                        </label>
+                      );
+                    }) || (
+                      <span className="text-muted-foreground text-xs">
+                        {selectedPlayer ? 'No properties' : 'Select a player first'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {selectedPlayerData && selectedPlayerData.getOutOfJailCards > 0 && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1">
+                      <Key size={14} />
+                      Jail Cards ({selectedPlayerData.getOutOfJailCards} available)
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max={selectedPlayerData.getOutOfJailCards}
+                      value={requestJailCards}
+                      onChange={(e) => setRequestJailCards(parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+
+        <DialogFooter className="gap-2">
+          <Button variant="secondary" onClick={onClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleProposeTrade}
+            disabled={loading || !selectedPlayer}
+            className="gap-2"
+          >
+            <Handshake size={18} />
+            Propose Trade
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

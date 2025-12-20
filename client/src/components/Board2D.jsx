@@ -1004,39 +1004,48 @@ export default function Board2D({
     );
 
     return (
-      <div className="debug-menu">
-        <div className="debug-menu-header">
-          <h3>Debug Menu</h3>
-          <button onClick={() => setShowDebugMenu(false)}>x</button>
+      <div className="absolute top-2 right-2 w-64 bg-card border border-border rounded-lg shadow-lg z-50">
+        <div className="flex items-center justify-between p-3 border-b border-border">
+          <h3 className="text-sm font-semibold">Debug Menu</h3>
+          <button
+            onClick={() => setShowDebugMenu(false)}
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground hover:text-foreground"
+          >
+            ×
+          </button>
         </div>
-        <div className="debug-menu-content">
-          <div className="debug-section">
-            <h4>Add Cash</h4>
-            <div className="debug-buttons">
-              <button onClick={() => handleDebugAddCash(100)}>+$100</button>
-              <button onClick={() => handleDebugAddCash(500)}>+$500</button>
-              <button onClick={() => handleDebugAddCash(1000)}>+$1000</button>
-              <button onClick={() => handleDebugAddCash(5000)}>+$5000</button>
+        <div className="p-3 space-y-4 max-h-80 overflow-y-auto">
+          <div className="space-y-2">
+            <h4 className="text-xs font-medium text-muted-foreground">Add Cash</h4>
+            <div className="grid grid-cols-2 gap-1">
+              <button onClick={() => handleDebugAddCash(100)} className="px-2 py-1 text-xs rounded bg-secondary hover:bg-secondary/80 transition-colors">+$100</button>
+              <button onClick={() => handleDebugAddCash(500)} className="px-2 py-1 text-xs rounded bg-secondary hover:bg-secondary/80 transition-colors">+$500</button>
+              <button onClick={() => handleDebugAddCash(1000)} className="px-2 py-1 text-xs rounded bg-secondary hover:bg-secondary/80 transition-colors">+$1000</button>
+              <button onClick={() => handleDebugAddCash(5000)} className="px-2 py-1 text-xs rounded bg-secondary hover:bg-secondary/80 transition-colors">+$5000</button>
             </div>
           </div>
-          <div className="debug-section">
-            <h4>Quick Add Properties</h4>
-            <div className="debug-property-list">
+          <div className="space-y-2">
+            <h4 className="text-xs font-medium text-muted-foreground">Quick Add Properties</h4>
+            <div className="flex flex-wrap gap-1">
               {unownedProperties.slice(0, 10).map(prop => (
-                <button key={prop.id} onClick={() => handleDebugAddProperty(prop.id)} className="debug-property-btn">
-                  {prop.name.substring(0, 18)}
+                <button
+                  key={prop.id}
+                  onClick={() => handleDebugAddProperty(prop.id)}
+                  className="px-2 py-1 text-xs rounded bg-primary/20 text-primary hover:bg-primary/30 transition-colors truncate max-w-full"
+                >
+                  {prop.name.substring(0, 12)}
                 </button>
               ))}
             </div>
           </div>
-          <div className="debug-section">
-            <h4>Current State</h4>
-            <div className="debug-info">
-              <p>Phase: {gameState.phase}</p>
-              <p>Current Player: {currentPlayer?.name}</p>
-              <p>My Cash: ${myPlayer?.cash || 0}</p>
-              <p>Has Rolled: {gameState.hasRolledThisTurn ? 'Yes' : 'No'}</p>
-              <p>Can Roll Again: {gameState.canRollAgain ? 'Yes' : 'No'}</p>
+          <div className="space-y-2">
+            <h4 className="text-xs font-medium text-muted-foreground">Current State</h4>
+            <div className="text-xs space-y-1 text-muted-foreground">
+              <p>Phase: <span className="text-foreground">{gameState.phase}</span></p>
+              <p>Current Player: <span className="text-foreground">{currentPlayer?.name}</span></p>
+              <p>My Cash: <span className="text-primary">${myPlayer?.cash || 0}</span></p>
+              <p>Has Rolled: <span className="text-foreground">{gameState.hasRolledThisTurn ? 'Yes' : 'No'}</span></p>
+              <p>Can Roll Again: <span className="text-foreground">{gameState.canRollAgain ? 'Yes' : 'No'}</span></p>
             </div>
           </div>
         </div>
@@ -1050,7 +1059,7 @@ export default function Board2D({
   };
 
   return (
-    <div className="board-2d" ref={containerRef} style={{ position: 'relative' }} onMouseLeave={handleBoardMouseLeave}>
+    <div className="relative" ref={containerRef} onMouseLeave={handleBoardMouseLeave}>
       <svg width={boardSize} height={boardSize} viewBox={`0 0 ${boardSize} ${boardSize}`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px' }}>
         <defs>
           <pattern id="woodGrain" patternUnits="userSpaceOnUse" width="100" height="100">
@@ -1136,7 +1145,12 @@ export default function Board2D({
         {renderHoverCard()}
       </svg>
 
-      <button className="debug-button" onClick={() => setShowDebugMenu(!showDebugMenu)}>Debug</button>
+      <button
+        className="absolute bottom-2 right-2 px-3 py-1.5 text-xs font-medium rounded bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
+        onClick={() => setShowDebugMenu(!showDebugMenu)}
+      >
+        Debug
+      </button>
       {renderDebugMenu()}
     </div>
   );

@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
+import { ClockCounterClockwise, ChatCircleDots } from '@phosphor-icons/react';
 import { formatTime } from '../utils/formatters';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 export default function GameLog({ actionLog }) {
   const logEndRef = useRef(null);
@@ -10,21 +12,36 @@ export default function GameLog({ actionLog }) {
   }, [actionLog]);
 
   return (
-    <div className="game-log">
-      <h3>Game Log</h3>
-      <div className="log-messages">
-        {actionLog && actionLog.length > 0 ? (
-          actionLog.map((entry, index) => (
-            <div key={`${entry.timestamp}-${index}`} className="log-entry">
-              <span className="log-time">{formatTime(entry.timestamp)}</span>
-              <span className="log-message">{entry.message}</span>
+    <Card className="flex-1 min-h-0 flex flex-col">
+      <CardHeader className="py-3 px-4">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <ClockCounterClockwise size={18} className="text-primary" />
+          Game Log
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 overflow-y-auto p-2 pt-0">
+        <div className="space-y-1">
+          {actionLog && actionLog.length > 0 ? (
+            actionLog.map((entry, index) => (
+              <div
+                key={`${entry.timestamp}-${index}`}
+                className="flex gap-2 text-xs p-2 rounded bg-secondary/30 hover:bg-secondary/50 transition-colors"
+              >
+                <span className="text-muted-foreground font-mono shrink-0">
+                  {formatTime(entry.timestamp)}
+                </span>
+                <span className="text-foreground">{entry.message}</span>
+              </div>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+              <ChatCircleDots size={32} className="opacity-50 mb-2" />
+              <span className="text-sm">No actions yet</span>
             </div>
-          ))
-        ) : (
-          <div className="log-empty">No actions yet</div>
-        )}
-        <div ref={logEndRef} />
-      </div>
-    </div>
+          )}
+          <div ref={logEndRef} />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

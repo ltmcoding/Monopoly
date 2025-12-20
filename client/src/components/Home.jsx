@@ -1,6 +1,29 @@
 import React, { useState } from 'react';
+import {
+  Play,
+  Lock,
+  SquaresFour,
+  User,
+  ArrowClockwise,
+  WarningCircle,
+  XCircle,
+  SignIn,
+  GameController
+} from '@phosphor-icons/react';
 import RoomBrowser from './RoomBrowser';
 import { generateRandomName } from '../utils/nameGenerator';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from './ui/dialog';
 
 // Default settings for new games
 const DEFAULT_SETTINGS = {
@@ -36,7 +59,6 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
       const response = await socket.quickPlay(nameToUse, DEFAULT_SETTINGS);
 
       if (response.created) {
-        // Created new game
         onGameCreated({
           gameId: response.gameId,
           playerId: response.player.id,
@@ -46,7 +68,6 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
           gameState: response.gameState
         });
       } else {
-        // Joined existing game
         onGameJoined({
           gameId: response.gameId,
           playerId: response.player.id,
@@ -122,129 +143,108 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
   const handleCancelJoinFromUrl = () => {
     setShowJoinPrompt(false);
     if (onUrlGameCodeCleared) onUrlGameCodeCleared();
-    // Clear the URL
     window.history.pushState({}, '', '/');
   };
 
   return (
-    <div className="home-container">
-      <div className="home-card">
-        {/* Logo/Title Section */}
-        <div className="home-logo">
-          <div className="logo-icon">
-            <svg viewBox="0 0 100 100" width="80" height="80">
-              <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
-              <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
-              <rect x="70" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
-              <rect x="10" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
-              <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
-              <circle cx="50" cy="50" r="12" fill="currentColor"/>
-            </svg>
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <Card className="w-full max-w-md border-border">
+        <CardHeader className="text-center pb-2">
+          {/* Logo Icon */}
+          <div className="flex justify-center mb-4">
+            <div className="text-primary">
+              <GameController size={64} weight="duotone" />
+            </div>
           </div>
-          <h1 className="game-title">MONOPOLY</h1>
-          <p className="game-subtitle">Multiplayer Edition</p>
-        </div>
+          <CardTitle className="text-4xl font-bold text-primary tracking-wider">
+            MONOPOLY
+          </CardTitle>
+          <CardDescription className="text-lg">
+            Multiplayer Edition
+          </CardDescription>
+        </CardHeader>
 
-        {!socket.connected && (
-          <div className="connection-status error">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            Connecting to server...
+        <CardContent className="space-y-6">
+          {/* Connection Status */}
+          {!socket.connected && (
+            <div className="flex items-center justify-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive border border-destructive/20">
+              <WarningCircle size={20} />
+              <span className="text-sm font-medium">Connecting to server...</span>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive border border-destructive/20">
+              <XCircle size={16} />
+              <span className="text-sm">{error}</span>
+            </div>
+          )}
+
+          {/* Name Input */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2 text-muted-foreground">
+                <User size={18} />
+                Your Name
+              </Label>
+              <button
+                type="button"
+                className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setPlaceholderName(generateRandomName())}
+                title="Generate new random name"
+              >
+                <ArrowClockwise size={16} />
+              </button>
+            </div>
+            <Input
+              type="text"
+              placeholder={placeholderName}
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              maxLength={20}
+              disabled={loading}
+              className="h-11"
+            />
           </div>
-        )}
 
-        {error && (
-          <div className="error-message">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="15" y1="9" x2="9" y2="15"/>
-              <line x1="9" y1="9" x2="15" y2="15"/>
-            </svg>
-            {error}
-          </div>
-        )}
-
-        {/* Name Input */}
-        <div className="home-name-section">
-          <label className="input-label">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            Your Name
-            <button
-              type="button"
-              className="btn-refresh-name"
-              onClick={() => setPlaceholderName(generateRandomName())}
-              title="Generate new random name"
+          {/* Main Actions */}
+          <div className="space-y-4">
+            {/* Play Button */}
+            <Button
+              size="xl"
+              className="w-full gap-3 text-lg"
+              onClick={handleQuickPlay}
+              disabled={!socket.connected || loading}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M23 4v6h-6"/>
-                <path d="M1 20v-6h6"/>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-              </svg>
-            </button>
-          </label>
-          <input
-            type="text"
-            className="player-name-input"
-            placeholder={placeholderName}
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            maxLength={20}
-            disabled={loading}
-          />
-        </div>
-
-        {/* Main Actions */}
-        <div className="home-actions">
-          {/* Play Button - Large and prominent */}
-          <button
-            className="btn btn-play"
-            onClick={handleQuickPlay}
-            disabled={!socket.connected || loading}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5,3 19,12 5,21"/>
-            </svg>
-            <span className="btn-play-text">
+              <Play size={24} weight="fill" />
               {loading ? 'Finding Game...' : 'Play'}
-            </span>
-            <span className="btn-play-hint">Join or create a game</span>
-          </button>
+            </Button>
 
-          {/* Secondary Buttons */}
-          <div className="home-secondary-actions">
-            <button
-              className="btn btn-secondary-action"
-              onClick={handleCreatePrivateRoom}
-              disabled={!socket.connected || loading}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              Private Room
-            </button>
-            <button
-              className="btn btn-secondary-action"
-              onClick={() => setShowRoomBrowser(true)}
-              disabled={!socket.connected || loading}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="7" height="7"/>
-                <rect x="14" y="3" width="7" height="7"/>
-                <rect x="3" y="14" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/>
-              </svg>
-              Room Browser
-            </button>
+            {/* Secondary Buttons */}
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                className="flex-1 gap-2"
+                onClick={handleCreatePrivateRoom}
+                disabled={!socket.connected || loading}
+              >
+                <Lock size={20} />
+                Private Room
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex-1 gap-2"
+                onClick={() => setShowRoomBrowser(true)}
+                disabled={!socket.connected || loading}
+              >
+                <SquaresFour size={20} />
+                Room Browser
+              </Button>
+            </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Room Browser Modal */}
       {showRoomBrowser && (
@@ -257,25 +257,32 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
         />
       )}
 
-      {/* Join from URL Prompt */}
-      {showJoinPrompt && urlGameCode && (
-        <div className="modal-overlay" onClick={handleCancelJoinFromUrl}>
-          <div className="join-prompt-modal" onClick={e => e.stopPropagation()}>
-            <div className="join-prompt-header">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                <polyline points="10 17 15 12 10 7"/>
-                <line x1="15" y1="12" x2="3" y2="12"/>
-              </svg>
-              <h2>Join Game</h2>
+      {/* Join from URL Dialog */}
+      <Dialog open={showJoinPrompt && !!urlGameCode} onOpenChange={(open) => !open && handleCancelJoinFromUrl()}>
+        <DialogContent>
+          <DialogHeader>
+            <div className="flex items-center gap-3 text-primary mb-2">
+              <SignIn size={32} />
+              <DialogTitle className="text-xl">Join Game</DialogTitle>
             </div>
-            <p>You've been invited to join game:</p>
-            <div className="join-prompt-code">{urlGameCode}</div>
-            <div className="join-prompt-name">
-              <label>Your Name</label>
-              <input
+            <DialogDescription>
+              You've been invited to join a game
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Game Code Display */}
+            <div className="text-center">
+              <span className="text-3xl font-mono font-bold text-primary tracking-widest">
+                {urlGameCode}
+              </span>
+            </div>
+
+            {/* Name Input */}
+            <div className="space-y-2">
+              <Label>Your Name</Label>
+              <Input
                 type="text"
-                className="player-name-input"
                 placeholder={placeholderName}
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
@@ -283,35 +290,33 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
                 disabled={loading}
               />
             </div>
+
+            {/* Error */}
             {error && (
-              <div className="error-message">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="15" y1="9" x2="9" y2="15"/>
-                  <line x1="9" y1="9" x2="15" y2="15"/>
-                </svg>
-                {error}
+              <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive border border-destructive/20">
+                <XCircle size={16} />
+                <span className="text-sm">{error}</span>
               </div>
             )}
-            <div className="join-prompt-actions">
-              <button
-                className="btn btn-primary"
-                onClick={handleJoinFromUrl}
-                disabled={!socket.connected || loading}
-              >
-                {loading ? 'Joining...' : 'Join Game'}
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={handleCancelJoinFromUrl}
-                disabled={loading}
-              >
-                Cancel
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="secondary"
+              onClick={handleCancelJoinFromUrl}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleJoinFromUrl}
+              disabled={!socket.connected || loading}
+            >
+              {loading ? 'Joining...' : 'Join Game'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
