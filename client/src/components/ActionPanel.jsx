@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   GameController,
-  Dice,
+  DiceFive,
   ShoppingCart,
   XCircle,
   Handshake,
@@ -113,7 +113,7 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
               onClick={() => handleAction('rollDice')}
               disabled={loading}
             >
-              <Dice size={20} weight="fill" />
+              <DiceFive size={20} weight="fill" />
               Roll Dice
             </Button>
           )}
