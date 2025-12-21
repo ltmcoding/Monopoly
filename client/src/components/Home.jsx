@@ -146,12 +146,12 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <Card className="w-full max-w-md border-border card-gilded">
-        <CardHeader className="text-center pb-2">
+    <div className="min-h-screen flex items-center justify-center p-8">
+      <Card className="w-full max-w-xl border-border card-gilded">
+        <CardHeader className="text-center pb-4 pt-8">
           {/* Logo Icon - Monopoly Board */}
-          <div className="flex justify-center mb-4">
-            <svg width="64" height="64" viewBox="0 0 100 100" className="text-primary">
+          <div className="flex justify-center mb-6">
+            <svg width="88" height="88" viewBox="0 0 100 100" className="text-primary">
               <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
               <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
               <rect x="70" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
@@ -160,15 +160,15 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
               <circle cx="50" cy="50" r="12" fill="currentColor"/>
             </svg>
           </div>
-          <CardTitle className="text-4xl font-bold tracking-wider game-logo" data-text="MONOPOLY">
+          <CardTitle className="text-5xl font-bold tracking-wider game-logo" data-text="MONOPOLY">
             MONOPOLY
           </CardTitle>
-          <CardDescription className="text-lg">
+          <CardDescription className="text-xl mt-2">
             Multiplayer Edition
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8 px-8 pb-8">
           {/* Connection Status */}
           {!socket.connected && (
             <div className="flex items-center justify-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive border border-destructive/20">

@@ -198,11 +198,26 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
   );
 
   return (
-    <div className="min-h-screen p-4">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-4">
+    <div className="min-h-screen flex flex-col p-4">
+      {/* Header Bar - Monopoly Branding */}
+      <header className="flex items-center gap-4 px-5 py-3 mb-4 bg-[#1a1f26] rounded-lg border-b-2 border-primary/30 shadow-lg">
+        <svg width="32" height="32" viewBox="0 0 100 100" className="text-primary">
+          <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
+          <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
+          <rect x="70" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
+          <rect x="10" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
+          <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
+          <circle cx="50" cy="50" r="12" fill="currentColor"/>
+        </svg>
+        <span className="text-2xl font-bold tracking-wider game-logo" data-text="MONOPOLY">MONOPOLY</span>
+      </header>
 
-        {/* Left Panel - Chat */}
-        <Card className="lg:col-span-1 flex flex-col h-[calc(100vh-2rem)] card-gilded">
+      {/* Main Content Grid */}
+      <div className="flex-1 flex items-start py-4">
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-4 gap-4">
+
+          {/* Left Panel - Chat */}
+          <Card className="lg:col-span-1 flex flex-col max-h-[70vh] card-gilded">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2.5 text-base">
               <ChatCircle size={20} weight="duotone" className="text-primary" />
@@ -334,11 +349,11 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
                 <Package size={20} />
                 Game Edition
               </h3>
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex gap-3 overflow-x-auto pb-2">
                 {GAME_EDITIONS.map((edition) => (
                   <button
                     key={edition.id}
-                    className={`flex-shrink-0 w-24 rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`flex-shrink-0 w-40 rounded-lg overflow-hidden border-2 transition-all ${
                       (settings.gameEdition === edition.id || (edition.id === 'classic' && !settings.gameEdition))
                         ? 'border-primary'
                         : 'border-transparent'
@@ -346,20 +361,23 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
                     onClick={() => edition.available && isHost && handleSettingChange('gameEdition', edition.id)}
                     disabled={!edition.available || !isHost}
                   >
-                    <div className="h-14 relative" style={{ background: edition.gradient }}>
+                    <div className="h-24 relative" style={{ background: edition.gradient }}>
                       {!edition.available && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                          <Lock size={16} className="text-white" />
+                          <Lock size={20} className="text-white" />
                         </div>
                       )}
                     </div>
-                    <div className="p-2 bg-card text-center">
-                      <p className="text-xs font-medium truncate">{edition.name}</p>
+                    <div className="p-3 bg-card text-center">
+                      <p className="text-sm font-medium truncate">{edition.name}</p>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Gold Divider */}
+            <div className="divider-gilded" />
 
             {/* Actions */}
             <div className="flex gap-3 pt-4 border-t border-border">

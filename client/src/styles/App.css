@@ -341,20 +341,7 @@ body {
   position: relative;
 }
 
-/* Gold glow effect behind logo */
-.game-logo::before {
-  content: attr(data-text);
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: -1;
-  background: linear-gradient(180deg, #ffd700 0%, #d4af37 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: blur(15px);
-  opacity: 0.5;
-}
+/* Gold glow removed - was misaligned. The drop-shadow on .game-logo provides the glow effect */
 
 /* Gilded Card - Gold accent top border */
 .card-gilded {
