@@ -323,20 +323,21 @@ body {
 
 /* Game Logo - Elegant Display Typography */
 .game-logo {
-  font-family: var(--font-family-display);
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  font-family: var(--font-family-display) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.15em !important;
   background: linear-gradient(180deg,
     #ffd700 0%,
     #d4af37 30%,
     #b8860b 50%,
     #d4af37 70%,
-    #ffd700 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+    #ffd700 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-  text-shadow: none;
+  text-shadow: none !important;
   position: relative;
 }
 
@@ -358,7 +359,8 @@ body {
 /* Gilded Card - Gold accent top border */
 .card-gilded {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  border-color: var(--border-gold-subtle) !important;
 }
 
 .card-gilded::before {
@@ -367,23 +369,24 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 3px;
   background: var(--gradient-gold-border);
-  z-index: 1;
+  z-index: 10;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
 }
 
 /* Corner accents for gilded cards */
 .card-gilded::after {
   content: '';
   position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 20px;
-  height: 20px;
-  border-top: 2px solid var(--border-gold);
-  border-left: 2px solid var(--border-gold);
+  top: 10px;
+  left: 10px;
+  width: 24px;
+  height: 24px;
+  border-top: 2px solid var(--gold-500);
+  border-left: 2px solid var(--gold-500);
   pointer-events: none;
-  z-index: 1;
+  z-index: 10;
 }
 
 /* Additional corner accent (bottom-right) via extra element */
