@@ -7,8 +7,7 @@ import {
   ArrowClockwise,
   WarningCircle,
   XCircle,
-  SignIn,
-  GameController
+  SignIn
 } from '@phosphor-icons/react';
 import RoomBrowser from './RoomBrowser';
 import { generateRandomName } from '../utils/nameGenerator';
@@ -150,11 +149,16 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
     <div className="min-h-screen flex items-center justify-center p-6">
       <Card className="w-full max-w-md border-border card-gilded">
         <CardHeader className="text-center pb-2">
-          {/* Logo Icon */}
+          {/* Logo Icon - Monopoly Board */}
           <div className="flex justify-center mb-4">
-            <div className="text-primary">
-              <GameController size={64} weight="duotone" />
-            </div>
+            <svg width="64" height="64" viewBox="0 0 100 100" className="text-primary">
+              <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
+              <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
+              <rect x="70" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
+              <rect x="10" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
+              <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
+              <circle cx="50" cy="50" r="12" fill="currentColor"/>
+            </svg>
           </div>
           <CardTitle className="text-4xl font-bold tracking-wider game-logo" data-text="MONOPOLY">
             MONOPOLY

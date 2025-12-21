@@ -12,20 +12,20 @@ export default function GameLog({ actionLog }) {
   }, [actionLog]);
 
   return (
-    <Card className="flex-1 min-h-0 flex flex-col">
-      <CardHeader className="py-3 px-4">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <ClockCounterClockwise size={18} className="text-primary" />
+    <Card className="flex-1 min-h-0 flex flex-col card-gilded">
+      <CardHeader className="py-4 px-5">
+        <CardTitle className="text-base flex items-center gap-2.5">
+          <ClockCounterClockwise size={22} className="text-primary" weight="duotone" />
           Game Log
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 overflow-y-auto p-2 pt-0">
-        <div className="space-y-1">
+      <CardContent className="flex-1 overflow-y-auto p-3 pt-0">
+        <div className="space-y-1.5">
           {actionLog && actionLog.length > 0 ? (
             actionLog.map((entry, index) => (
               <div
                 key={`${entry.timestamp}-${index}`}
-                className="flex gap-2 text-xs p-2 rounded bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                className="flex gap-2.5 text-sm p-2.5 rounded bg-secondary/30 hover:bg-secondary/50 transition-colors"
               >
                 <span className="text-muted-foreground font-mono shrink-0">
                   {formatTime(entry.timestamp)}

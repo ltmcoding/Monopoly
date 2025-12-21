@@ -189,10 +189,10 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-4">
 
         {/* Left Panel - Chat */}
-        <Card className="lg:col-span-1 flex flex-col h-[calc(100vh-2rem)]">
+        <Card className="lg:col-span-1 flex flex-col h-[calc(100vh-2rem)] card-gilded">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ChatCircle size={18} />
+            <CardTitle className="flex items-center gap-2.5 text-base">
+              <ChatCircle size={20} weight="duotone" className="text-primary" />
               Chat
             </CardTitle>
           </CardHeader>
@@ -232,11 +232,11 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
         </Card>
 
         {/* Middle Panel - Main Content */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 card-gilded">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3">
-                <GameController size={32} className="text-primary" />
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <GameController size={32} className="text-primary" weight="duotone" />
                 Game Lobby
               </CardTitle>
               {isHost ? (
@@ -273,10 +273,13 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
               </div>
             </div>
 
+            {/* Gold Divider */}
+            <div className="divider-gilded" />
+
             {/* Players */}
             <div>
-              <h3 className="flex items-center gap-2 text-sm font-semibold mb-3 text-muted-foreground">
-                <Users size={18} />
+              <h3 className="flex items-center gap-2.5 text-base font-semibold mb-3 text-muted-foreground">
+                <Users size={20} />
                 Players ({gameState.players.length})
               </h3>
               <div className="space-y-2">
@@ -309,10 +312,13 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
               </div>
             </div>
 
+            {/* Gold Divider */}
+            <div className="divider-gilded" />
+
             {/* Game Edition */}
             <div>
-              <h3 className="flex items-center gap-2 text-sm font-semibold mb-3 text-muted-foreground">
-                <Package size={18} />
+              <h3 className="flex items-center gap-2.5 text-base font-semibold mb-3 text-muted-foreground">
+                <Package size={20} />
                 Game Edition
               </h3>
               <div className="flex gap-2 overflow-x-auto pb-2">
@@ -382,10 +388,10 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
         </Card>
 
         {/* Right Panel - Rules */}
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 card-gilded">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Gear size={18} />
+            <CardTitle className="flex items-center gap-2.5 text-base">
+              <Gear size={20} weight="duotone" className="text-primary" />
               Rules
             </CardTitle>
           </CardHeader>

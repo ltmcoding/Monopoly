@@ -177,7 +177,7 @@ export default function Board2D({
     const updateSize = () => {
       const container = document.querySelector('.game-center');
       if (container) {
-        const maxSize = Math.min(container.clientWidth - 20, container.clientHeight - 20, 900);
+        const maxSize = Math.min(container.clientWidth - 20, container.clientHeight - 20, 1050);
         setBoardSize(Math.max(maxSize, 750));
       }
     };

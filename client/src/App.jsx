@@ -241,7 +241,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="App min-h-screen bg-background">
       {screen === 'home' && (
         <Home
           socket={socket}

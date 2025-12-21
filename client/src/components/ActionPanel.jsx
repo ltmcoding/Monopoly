@@ -67,20 +67,20 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
   };
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="py-3 px-4">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <GameController size={18} className="text-primary" />
+    <Card className="h-full flex flex-col card-gilded">
+      <CardHeader className="py-4 px-5">
+        <CardTitle className="text-base flex items-center gap-2.5">
+          <GameController size={22} className="text-primary" weight="duotone" />
           Actions
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
+      <CardContent className="flex-1 overflow-y-auto p-4 pt-0 space-y-5">
         {/* Phase Indicator */}
-        <div className="p-3 rounded-lg bg-secondary/50 border border-border">
-          <div className="flex items-center gap-2 text-sm">
-            <Timer size={16} className="text-muted-foreground" />
+        <div className="p-4 rounded-lg bg-secondary/50 border border-border">
+          <div className="flex items-center gap-2.5 text-base">
+            <Timer size={20} className="text-muted-foreground" />
             <span className="text-muted-foreground">Phase:</span>
-            <Badge variant="outline" className="font-mono">
+            <Badge variant="outline" className="font-mono text-sm py-0.5 px-2">
               {getPhaseDisplay(gameState.phase)}
             </Badge>
           </div>
@@ -88,60 +88,63 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
 
         {/* Turn Indicator */}
         {isMyTurn ? (
-          <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
-            <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-              <GameController size={18} weight="fill" />
+          <div className="p-4 rounded-lg bg-primary/10 border border-primary/30">
+            <div className="flex items-center gap-2.5 text-base font-semibold text-primary">
+              <GameController size={22} weight="fill" />
               Your Turn
             </div>
           </div>
         ) : (
-          <div className="p-3 rounded-lg bg-muted/50 border border-border">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Timer size={16} />
+          <div className="p-4 rounded-lg bg-muted/50 border border-border">
+            <div className="flex items-center gap-2.5 text-base text-muted-foreground">
+              <Timer size={20} />
               Waiting for {gameState.players[gameState.currentPlayerIndex]?.name}
             </div>
           </div>
         )}
 
+        {/* Gold Divider */}
+        <div className="divider-gilded" />
+
         {/* Action Buttons */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           {/* Roll Dice */}
           {canRollDice() && (
             <Button
-              size="lg"
-              className="w-full gap-2"
+              size="xl"
+              className="w-full gap-2.5 text-base"
               onClick={() => handleAction('rollDice')}
               disabled={loading}
             >
-              <DiceFive size={20} weight="fill" />
+              <DiceFive size={24} weight="fill" />
               Roll Dice
             </Button>
           )}
 
           {/* Jail Actions */}
           {myPlayer.inJail && isMyTurn && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {canPayJail() && (
                 <Button
                   variant="warning"
-                  size="lg"
-                  className="w-full gap-2"
+                  size="xl"
+                  className="w-full gap-2.5 text-base"
                   onClick={() => handleAction('payJailFee')}
                   disabled={loading}
                 >
-                  <CurrencyDollar size={20} />
+                  <CurrencyDollar size={24} />
                   Pay $50 to Exit Jail
                 </Button>
               )}
               {canUseJailCard() && (
                 <Button
                   variant="success"
-                  size="lg"
-                  className="w-full gap-2"
+                  size="xl"
+                  className="w-full gap-2.5 text-base"
                   onClick={() => handleAction('useJailCard')}
                   disabled={loading}
                 >
-                  <Key size={20} />
+                  <Key size={24} />
                   Use Jail Card
                 </Button>
               )}
@@ -152,12 +155,12 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
           {canBuyProperty() && (
             <Button
               variant="success"
-              size="lg"
-              className="w-full gap-2"
+              size="xl"
+              className="w-full gap-2.5 text-base"
               onClick={() => handleAction('buyProperty', { propertyId: currentSpace.id })}
               disabled={loading}
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={24} />
               Buy {currentSpace.name} ({formatCurrency(currentSpace.price)})
             </Button>
           )}
@@ -166,12 +169,12 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
           {canDeclineProperty() && (
             <Button
               variant="secondary"
-              size="lg"
-              className="w-full gap-2"
+              size="xl"
+              className="w-full gap-2.5 text-base"
               onClick={() => handleAction('declareProperty')}
               disabled={loading}
             >
-              <XCircle size={20} />
+              <XCircle size={24} />
               Decline Purchase
             </Button>
           )}
@@ -179,24 +182,24 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
           {/* Trade */}
           <Button
             variant="outline"
-            size="lg"
-            className="w-full gap-2"
+            size="xl"
+            className="w-full gap-2.5 text-base"
             onClick={onOpenTrade}
             disabled={loading || myPlayer.isBankrupt}
           >
-            <Handshake size={20} />
+            <Handshake size={24} />
             Propose Trade
           </Button>
 
           {/* End Turn */}
           {canEndTurn() && (
             <Button
-              size="lg"
-              className="w-full gap-2"
+              size="xl"
+              className="w-full gap-2.5 text-base"
               onClick={() => handleAction('endTurn')}
               disabled={loading}
             >
-              <ArrowRight size={20} />
+              <ArrowRight size={24} />
               End Turn
             </Button>
           )}
@@ -204,17 +207,19 @@ export default function ActionPanel({ socket, gameId, gameState, myPlayer, isMyT
 
         {/* Available Buildings */}
         {!gameState.settings.unlimitedProperties && (
-          <div className="mt-auto pt-4 border-t border-border">
-            <div className="text-xs text-muted-foreground mb-2">Available Buildings</div>
-            <div className="flex gap-4">
-              <div className="flex items-center gap-2 text-sm">
-                <House size={16} className="text-green-500" />
-                <span className="font-mono">{gameState.availableHouses}</span>
+          <div className="mt-auto pt-5">
+            {/* Gold Divider */}
+            <div className="divider-gilded mb-4" />
+            <div className="text-sm text-muted-foreground mb-3">Available Buildings</div>
+            <div className="flex gap-6">
+              <div className="flex items-center gap-2.5 text-base">
+                <House size={20} className="text-green-500" />
+                <span className="font-mono font-bold">{gameState.availableHouses}</span>
                 <span className="text-muted-foreground">Houses</span>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Buildings size={16} className="text-red-500" />
-                <span className="font-mono">{gameState.availableHotels}</span>
+              <div className="flex items-center gap-2.5 text-base">
+                <Buildings size={20} className="text-red-500" />
+                <span className="font-mono font-bold">{gameState.availableHotels}</span>
                 <span className="text-muted-foreground">Hotels</span>
               </div>
             </div>
