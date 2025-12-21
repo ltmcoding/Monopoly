@@ -267,7 +267,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
       {/* Main Game Layout */}
       <main className="flex-1 flex overflow-hidden">
         {/* Left Panel - Players & Log */}
-        <aside className="w-72 flex-shrink-0 flex flex-col gap-2 p-2 bg-card/50 border-r border-border overflow-hidden">
+        <aside className="w-96 flex-shrink-0 flex flex-col gap-2 p-2 bg-card/50 border-r border-border overflow-hidden">
           <PlayerPanel
             players={gameState.players}
             currentPlayerIndex={gameState.currentPlayerIndex}
@@ -291,7 +291,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
         </section>
 
         {/* Right Panel - Actions */}
-        <aside className="w-72 flex-shrink-0 p-2 bg-card/50 border-l border-border overflow-auto">
+        <aside className="w-96 flex-shrink-0 p-2 bg-card/50 border-l border-border overflow-auto">
           <ActionPanel
             socket={socket}
             gameId={gameId}

@@ -24,7 +24,7 @@ export default function PlayerPanel({ players, currentPlayerIndex, myPlayerId, g
   };
 
   return (
-    <Card className="flex-shrink-0 max-h-[50%] flex flex-col">
+    <Card className="flex-shrink-0 flex flex-col">
       <CardHeader className="py-3 px-4">
         <CardTitle className="text-sm flex items-center gap-2">
           <Users size={18} className="text-primary" />

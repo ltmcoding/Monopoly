@@ -202,6 +202,39 @@
   --shadow-accent-glow-lg: 0 0 40px rgba(245, 158, 11, 0.25);
   --shadow-success-glow: 0 0 20px rgba(56, 161, 105, 0.2);
   --shadow-danger-glow: 0 0 20px rgba(229, 62, 62, 0.2);
+
+  /* ============================================
+     GILDED LUXURY SYSTEM
+     Gold/amber embellishments for rich aesthetic
+     ============================================ */
+
+  /* Gold Color Palette */
+  --gold-50: #fffdf5;
+  --gold-100: #fff9e6;
+  --gold-200: #fef0c3;
+  --gold-300: #fde68a;
+  --gold-400: #fcd34d;
+  --gold-500: #fbbf24;
+  --gold-600: #d4af37;      /* Classic gold */
+  --gold-700: #b8860b;      /* Goldenrod */
+  --gold-800: #92681a;
+  --gold-900: #6b4c12;
+
+  /* Gold Glow Shadows */
+  --shadow-gold-sm: 0 0 10px rgba(212, 175, 55, 0.2);
+  --shadow-gold-md: 0 0 20px rgba(212, 175, 55, 0.3);
+  --shadow-gold-lg: 0 0 40px rgba(212, 175, 55, 0.25);
+  --shadow-gold-intense: 0 0 30px rgba(255, 215, 0, 0.4);
+
+  /* Gold Gradients */
+  --gradient-gold: linear-gradient(135deg, #b8860b 0%, #d4af37 25%, #ffd700 50%, #d4af37 75%, #b8860b 100%);
+  --gradient-gold-subtle: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.3) 20%, rgba(255, 215, 0, 0.5) 50%, rgba(212, 175, 55, 0.3) 80%, transparent 100%);
+  --gradient-gold-border: linear-gradient(90deg, transparent 0%, #8b5a2b 15%, #d4af37 35%, #ffd700 50%, #d4af37 65%, #8b5a2b 85%, transparent 100%);
+
+  /* Gold Border Colors */
+  --border-gold: rgba(212, 175, 55, 0.4);
+  --border-gold-strong: rgba(212, 175, 55, 0.6);
+  --border-gold-subtle: rgba(212, 175, 55, 0.2);
 }
 
 /* ============================================
@@ -240,6 +273,7 @@ body {
   position: relative;
 }
 
+/* Art Deco Background Embellishments */
 .App::before {
   content: '';
   position: absolute;
@@ -248,10 +282,165 @@ body {
   right: 0;
   bottom: 0;
   background-image:
-    radial-gradient(ellipse at 20% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(245, 158, 11, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(22, 27, 34, 0.4) 0%, transparent 70%);
+    /* Gold spotlight from top center */
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+    /* Amber glow from corners */
+    radial-gradient(ellipse at 0% 0%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 100% 0%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 0% 100%, rgba(212, 175, 55, 0.04) 0%, transparent 40%),
+    radial-gradient(ellipse at 100% 100%, rgba(212, 175, 55, 0.04) 0%, transparent 40%),
+    /* Art deco fan pattern from bottom */
+    repeating-conic-gradient(
+      from 0deg at 50% 100%,
+      transparent 0deg 12deg,
+      rgba(212, 175, 55, 0.015) 12deg 24deg
+    ),
+    /* Subtle center vignette */
+    radial-gradient(ellipse at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100px 60px, 100% 100%;
   pointer-events: none;
+  z-index: 0;
+}
+
+/* Noise texture overlay for sophistication */
+.App::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================
+   GILDED LUXURY COMPONENTS
+   Gold embellishments and art deco elements
+   ============================================ */
+
+/* Game Logo - Elegant Display Typography */
+.game-logo {
+  font-family: var(--font-family-display);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  background: linear-gradient(180deg,
+    #ffd700 0%,
+    #d4af37 30%,
+    #b8860b 50%,
+    #d4af37 70%,
+    #ffd700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  text-shadow: none;
+  position: relative;
+}
+
+/* Gold glow effect behind logo */
+.game-logo::before {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, #ffd700 0%, #d4af37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: blur(15px);
+  opacity: 0.5;
+}
+
+/* Gilded Card - Gold accent top border */
+.card-gilded {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-gilded::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--gradient-gold-border);
+  z-index: 1;
+}
+
+/* Corner accents for gilded cards */
+.card-gilded::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 20px;
+  height: 20px;
+  border-top: 2px solid var(--border-gold);
+  border-left: 2px solid var(--border-gold);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Additional corner accent (bottom-right) via extra element */
+.card-gilded .corner-br {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-bottom: 2px solid var(--border-gold);
+  border-right: 2px solid var(--border-gold);
+  pointer-events: none;
+}
+
+/* Gilded Divider - Decorative gold line */
+.divider-gilded {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 1.5rem 0;
+}
+
+.divider-gilded::before,
+.divider-gilded::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.4) 30%,
+    rgba(255, 215, 0, 0.6) 50%,
+    rgba(212, 175, 55, 0.4) 70%,
+    transparent 100%);
+}
+
+.divider-gilded .ornament {
+  width: 8px;
+  height: 8px;
+  background: var(--gold-600);
+  transform: rotate(45deg);
+  box-shadow: var(--shadow-gold-sm);
+}
+
+/* Gold text highlight */
+.text-gold {
+  color: var(--gold-500);
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+/* Gold glow on focus for inputs */
+.input-gilded:focus {
+  border-color: var(--gold-500);
+  box-shadow:
+    var(--shadow-inset-dark),
+    0 0 0 2px rgba(212, 175, 55, 0.2),
+    var(--shadow-gold-sm);
 }
 
 /* ============================================

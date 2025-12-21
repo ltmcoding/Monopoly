@@ -148,7 +148,7 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <Card className="w-full max-w-md border-border">
+      <Card className="w-full max-w-md border-border card-gilded">
         <CardHeader className="text-center pb-2">
           {/* Logo Icon */}
           <div className="flex justify-center mb-4">
@@ -156,7 +156,7 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
               <GameController size={64} weight="duotone" />
             </div>
           </div>
-          <CardTitle className="text-4xl font-bold text-primary tracking-wider">
+          <CardTitle className="text-4xl font-bold tracking-wider game-logo" data-text="MONOPOLY">
             MONOPOLY
           </CardTitle>
           <CardDescription className="text-lg">

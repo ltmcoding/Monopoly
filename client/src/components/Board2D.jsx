@@ -177,7 +177,7 @@ export default function Board2D({
     const updateSize = () => {
       const container = document.querySelector('.game-center');
       if (container) {
-        const maxSize = Math.min(container.clientWidth - 20, container.clientHeight - 20, 1050);
+        const maxSize = Math.min(container.clientWidth - 20, container.clientHeight - 20, 900);
         setBoardSize(Math.max(maxSize, 750));
       }
     };
@@ -1079,6 +1079,22 @@ export default function Board2D({
             <stop offset="0%" stopColor="#ffffff" />
             <stop offset="100%" stopColor="#e8e8e8" />
           </linearGradient>
+          <linearGradient id="goldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#ffd700" />
+            <stop offset="30%" stopColor="#d4af37" />
+            <stop offset="50%" stopColor="#b8860b" />
+            <stop offset="70%" stopColor="#d4af37" />
+            <stop offset="100%" stopColor="#ffd700" />
+          </linearGradient>
+          <filter id="goldGlow">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feFlood floodColor="#d4af37" floodOpacity="0.5"/>
+            <feComposite in2="blur" operator="in"/>
+            <feMerge>
+              <feMergeNode/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
           <filter id="dropShadow">
             <feDropShadow dx="0" dy="3" stdDeviation="3" floodOpacity="0.4"/>
           </filter>
@@ -1090,7 +1106,7 @@ export default function Board2D({
         <rect x={innerBoardStart + woodBorderWidth} y={innerBoardStart + woodBorderWidth} width={innerBoardSize - 2 * woodBorderWidth} height={innerBoardSize - 2 * woodBorderWidth} fill="url(#boardBg)"/>
 
         <g transform={`translate(${boardSize/2}, ${boardSize/2})`}>
-          <text textAnchor="middle" y={-boardSize * 0.13} fontSize={boardSize * 0.06} fontWeight="bold" fill="#f59e0b" fontFamily="'Playfair Display', Georgia, serif" letterSpacing="6">MONOPOLY</text>
+          <text textAnchor="middle" y={-boardSize * 0.13} fontSize={boardSize * 0.06} fontWeight="bold" fill="url(#goldGradient)" fontFamily="'Cinzel', 'Playfair Display', Georgia, serif" letterSpacing="8" filter="url(#goldGlow)">MONOPOLY</text>
           <g transform="translate(0, 10)">
             <g transform="translate(-40, -30)"><DiceFace value={displayDice[0]} size={60} isRolling={isRolling} /></g>
             <g transform="translate(40, -30)"><DiceFace value={displayDice[1]} size={60} isRolling={isRolling} /></g>
