@@ -492,6 +492,7 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {/* Kick Confirmation Dialog */}
