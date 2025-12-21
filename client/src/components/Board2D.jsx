@@ -689,33 +689,67 @@ export default function Board2D({
     );
   };
 
-  // Simple player tokens
+  // Helper to create gradient ID from color
+  const colorToGradientId = (color) => `tokenGrad_${color.replace('#', '')}`;
+
+  // Helper to lighten/darken a hex color
+  const adjustColor = (hex, percent) => {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+    const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amt));
+    const B = Math.min(255, Math.max(0, (num & 0x0000FF) + amt));
+    return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
+  };
+
+  // Enhanced player tokens with gradients - bigger and more polished
   const renderPlayers = (position, pos) => {
     const players = getPlayersOnSpace(position);
     if (players.length === 0) return null;
-    const tokenSize = Math.min(pos.w, pos.h) * 0.18;
+    // Bigger token size
+    const tokenSize = Math.min(pos.w, pos.h) * 0.24;
     const centerX = pos.w / 2;
     const centerY = pos.h / 2;
 
     const getTokenPosition = (index, total) => {
       if (total === 1) return { x: centerX, y: centerY };
       const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
-      const radius = tokenSize * 0.9;
+      const radius = tokenSize * 1.1;
       return { x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
     };
 
     return players.map((player, idx) => {
       const tokenPos = getTokenPosition(idx, players.length);
       const playerIndex = gameState.players.findIndex(p => p.id === player.id);
+      const gradId = colorToGradientId(player.color);
+      const lightColor = adjustColor(player.color, 35);
+      const darkColor = adjustColor(player.color, -25);
 
       return (
         <g key={player.id} transform={`translate(${tokenPos.x}, ${tokenPos.y})`}>
-          <circle cx={1} cy={2} r={tokenSize/2} fill="rgba(0,0,0,0.3)"/>
-          <circle cx={0} cy={0} r={tokenSize/2} fill={player.color} stroke="#222" strokeWidth="1.5"/>
-          <circle cx={-tokenSize/5} cy={-tokenSize/5} r={tokenSize/4} fill="rgba(255,255,255,0.15)"/>
-          <text x={0} y={3} textAnchor="middle" fontSize={tokenSize*0.55} fill="#fff" fontWeight="bold">{playerIndex + 1}</text>
+          {/* Gradient definition for this token */}
+          <defs>
+            <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={lightColor}/>
+              <stop offset="50%" stopColor={player.color}/>
+              <stop offset="100%" stopColor={darkColor}/>
+            </linearGradient>
+            <filter id={`shadow_${gradId}`}>
+              <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.4"/>
+            </filter>
+          </defs>
+          {/* Drop shadow */}
+          <circle cx={2} cy={3} r={tokenSize/2} fill="rgba(0,0,0,0.35)"/>
+          {/* Main token with gradient */}
+          <circle cx={0} cy={0} r={tokenSize/2} fill={`url(#${gradId})`} stroke="rgba(255,255,255,0.25)" strokeWidth="2"/>
+          {/* Inner highlight for 3D effect */}
+          <circle cx={-tokenSize/4} cy={-tokenSize/4} r={tokenSize/3} fill="rgba(255,255,255,0.18)"/>
+          {/* Subtle rim light */}
+          <circle cx={0} cy={0} r={tokenSize/2 - 1} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
+          {/* Player number */}
+          <text x={0} y={4} textAnchor="middle" fontSize={tokenSize*0.5} fill="#fff" fontWeight="bold" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{playerIndex + 1}</text>
           {player.inJail && position === 10 && (
-            <text x={0} y={-tokenSize/2 - 3} textAnchor="middle" fontSize={fontSize * 0.7} fill="#ef4444" fontWeight="bold">JAIL</text>
+            <text x={0} y={-tokenSize/2 - 5} textAnchor="middle" fontSize={fontSize * 0.65} fill="#ef4444" fontWeight="bold" stroke="#000" strokeWidth="0.5">JAIL</text>
           )}
         </g>
       );
@@ -1121,9 +1155,20 @@ export default function Board2D({
             )}
           </g>
           <g transform="translate(0, 130)">
-            <rect x="-110" y="-18" width="220" height="36" fill="rgba(0, 0, 0, 0.4)" rx={18} stroke={TILE_COLORS.border} strokeWidth="1"/>
-            <circle cx="-80" cy="0" r="10" fill={currentPlayer?.color || '#666'}/>
-            <text x="5" textAnchor="middle" dominantBaseline="middle" fontSize="15" fill={TILE_COLORS.text} fontWeight="bold">{currentPlayer?.name}'s Turn</text>
+            <rect x="-120" y="-20" width="240" height="40" fill="rgba(0, 0, 0, 0.5)" rx={20} stroke={TILE_COLORS.border} strokeWidth="1.5"/>
+            {/* Player color indicator with gradient */}
+            <defs>
+              <linearGradient id="turnPlayerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={currentPlayer?.color || '#666'} stopOpacity="1"/>
+                <stop offset="100%" stopColor={currentPlayer?.color || '#666'} stopOpacity="0.6"/>
+              </linearGradient>
+            </defs>
+            <circle cx="-88" cy="0" r="12" fill="url(#turnPlayerGradient)" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
+            <circle cx="-92" cy="-4" r="4" fill="rgba(255,255,255,0.25)"/>
+            {/* Player name - properly positioned to avoid overlap */}
+            <text x="10" textAnchor="middle" dominantBaseline="middle" fontSize="14" fill={TILE_COLORS.text} fontWeight="bold" style={{ textOverflow: 'ellipsis' }}>
+              {currentPlayer?.name ? (currentPlayer.name.length > 12 ? currentPlayer.name.slice(0, 11) + '…' : currentPlayer.name) : 'Player'}'s Turn
+            </text>
           </g>
         </g>
 

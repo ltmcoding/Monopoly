@@ -30,12 +30,25 @@ import {
   DialogFooter
 } from './ui/dialog';
 
-// 16 player token colors
+// 16 player token colors - Sophisticated muted palette with gradients
+// Each color has a main color and will render with a gradient in-game
 const TOKEN_COLORS = [
-  '#e53e3e', '#dd6b20', '#d69e2e', '#38a169',
-  '#319795', '#3182ce', '#5a67d8', '#805ad5',
-  '#d53f8c', '#718096', '#4a5568', '#744210',
-  '#276749', '#2c5282', '#702459', '#553c9a',
+  '#c45c5c',  // Dusty Rose
+  '#d4896a',  // Terracotta
+  '#c9a855',  // Antique Gold
+  '#6b9b6b',  // Sage Green
+  '#5a9e9e',  // Seafoam Teal
+  '#6888a5',  // Slate Blue
+  '#7c7cb5',  // Periwinkle
+  '#9a7bb5',  // Lavender
+  '#b56e8a',  // Mauve
+  '#8b8b9a',  // Cool Gray
+  '#7a6b5a',  // Taupe
+  '#8a7355',  // Bronze
+  '#5a7a6a',  // Forest Mist
+  '#5a6a8a',  // Dusk Blue
+  '#8a5a6a',  // Burgundy Mist
+  '#6a5a7a',  // Plum
 ];
 
 // Game Edition data

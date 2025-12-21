@@ -8,7 +8,14 @@
       "Bash(git push:*)",
       "Bash(tree:*)",
       "Bash(cd:*)",
-      "Skill(frontend-design)"
+      "Skill(frontend-design)",
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebSearch",
+      "WebFetch(domain:www.shadcn.io)",
+      "Bash(npm install:*)",
+      "Bash(powershell -Command \"cd ''C:\\\\Users\\\\ltm14\\\\Desktop\\\\Monopoly\\\\client''; npm install tailwindcss @tailwindcss/postcss postcss autoprefixer @phosphor-icons/react\")",
+      "Bash(powershell -Command:*)",
+      "WebFetch(domain:monopoly.ltmcoding.dev)"
     ]
   }
 }

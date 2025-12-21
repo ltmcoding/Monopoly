@@ -247,15 +247,23 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
         </div>
       )}
 
-      {/* Header */}
-      <header className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-card border-b border-border">
-        <div className="flex items-center gap-3">
-          <GameController size={24} weight="duotone" className="text-primary" />
-          <span className="text-xl font-bold text-primary tracking-wider">MONOPOLY</span>
-        </div>
+      {/* Header - Solid background with Monopoly branding */}
+      <header className="flex-shrink-0 flex items-center justify-between px-5 py-3 bg-[#1a1f26] border-b-2 border-primary/30 shadow-lg">
         <div className="flex items-center gap-4">
+          {/* Monopoly Board SVG Icon */}
+          <svg width="32" height="32" viewBox="0 0 100 100" className="text-primary">
+            <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
+            <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
+            <rect x="70" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
+            <rect x="10" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
+            <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
+            <circle cx="50" cy="50" r="12" fill="currentColor"/>
+          </svg>
+          <span className="text-2xl font-bold tracking-wider game-logo" data-text="MONOPOLY">MONOPOLY</span>
+        </div>
+        <div className="flex items-center gap-5">
           <span className="text-sm text-muted-foreground font-mono">
-            Game: <span className="text-foreground font-bold">{gameId}</span>
+            Room: <span className="text-primary font-bold tracking-wider">{gameId}</span>
           </span>
           <Button variant="secondary" size="sm" onClick={handleLeaveGame} className="gap-2">
             <SignOut size={18} />

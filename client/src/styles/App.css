@@ -273,7 +273,7 @@ body {
   position: relative;
 }
 
-/* Art Deco Background Embellishments */
+/* Art Deco Background Embellishments - Darker, more subtle */
 .App::before {
   content: '';
   position: absolute;
@@ -282,21 +282,21 @@ body {
   right: 0;
   bottom: 0;
   background-image:
-    /* Gold spotlight from top center - more visible */
-    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(245, 158, 11, 0.12) 0%, transparent 60%),
-    /* Amber glow from corners - stronger */
-    radial-gradient(ellipse at 0% 0%, rgba(245, 158, 11, 0.1) 0%, transparent 45%),
-    radial-gradient(ellipse at 100% 0%, rgba(245, 158, 11, 0.1) 0%, transparent 45%),
-    radial-gradient(ellipse at 0% 100%, rgba(212, 175, 55, 0.08) 0%, transparent 45%),
-    radial-gradient(ellipse at 100% 100%, rgba(212, 175, 55, 0.08) 0%, transparent 45%),
-    /* Art deco fan pattern from bottom - more visible */
+    /* Subtle gold spotlight from top center */
+    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(245, 158, 11, 0.06) 0%, transparent 60%),
+    /* Subtle amber glow from corners */
+    radial-gradient(ellipse at 0% 0%, rgba(245, 158, 11, 0.05) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 0%, rgba(245, 158, 11, 0.05) 0%, transparent 45%),
+    radial-gradient(ellipse at 0% 100%, rgba(212, 175, 55, 0.04) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 100%, rgba(212, 175, 55, 0.04) 0%, transparent 45%),
+    /* Art deco fan pattern - darker, more subtle */
     repeating-conic-gradient(
       from 0deg at 50% 100%,
       transparent 0deg 15deg,
-      rgba(245, 158, 11, 0.03) 15deg 30deg
+      rgba(180, 140, 50, 0.018) 15deg 30deg
     ),
-    /* Subtle center vignette */
-    radial-gradient(ellipse at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.25) 100%);
+    /* Darker vignette for depth */
+    radial-gradient(ellipse at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 120px 60px, 100% 100%;
   pointer-events: none;
   z-index: 0;
@@ -375,31 +375,7 @@ body {
   box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
 }
 
-/* Corner accents for gilded cards */
-.card-gilded::after {
-  content: '';
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 24px;
-  height: 24px;
-  border-top: 2px solid var(--gold-500);
-  border-left: 2px solid var(--gold-500);
-  pointer-events: none;
-  z-index: 10;
-}
-
-/* Additional corner accent (bottom-right) via extra element */
-.card-gilded .corner-br {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 20px;
-  height: 20px;
-  border-bottom: 2px solid var(--border-gold);
-  border-right: 2px solid var(--border-gold);
-  pointer-events: none;
-}
+/* Corner accents removed for cleaner look */
 
 /* Gilded Divider - Decorative gold line */
 .divider-gilded {
