@@ -213,7 +213,7 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
       </header>
 
       {/* Main Content Grid */}
-      <div className="flex-1 flex items-start py-4">
+      <div className="flex-1 flex items-center justify-center py-4">
         <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-4 gap-4">
 
           {/* Left Panel - Chat */}
