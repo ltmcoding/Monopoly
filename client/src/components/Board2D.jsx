@@ -706,8 +706,8 @@ export default function Board2D({
   const renderPlayers = (position, pos) => {
     const players = getPlayersOnSpace(position);
     if (players.length === 0) return null;
-    // Bigger token size
-    const tokenSize = Math.min(pos.w, pos.h) * 0.24;
+    // Fixed token size for consistency across all tiles (22px)
+    const tokenSize = 22;
     const centerX = pos.w / 2;
     const centerY = pos.h / 2;
 

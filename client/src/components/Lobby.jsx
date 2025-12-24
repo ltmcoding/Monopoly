@@ -198,9 +198,9 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
   );
 
   return (
-    <div className="min-h-screen flex flex-col p-6">
+    <div className="min-h-screen flex flex-col">
       {/* Header Bar - Monopoly Branding */}
-      <header className="relative z-10 flex items-center gap-6 px-8 py-5 mb-6 bg-[#0f1419] rounded-xl border-b-4 border-primary shadow-xl">
+      <header className="relative z-10 flex items-center gap-6 px-8 py-5 bg-[#0f1419] border-b-4 border-primary shadow-xl">
         <svg width="48" height="48" viewBox="0 0 100 100" className="text-primary">
           <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
           <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
@@ -213,7 +213,7 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
       </header>
 
       {/* Main Content Grid */}
-      <div className="flex-1 flex items-center justify-center py-6">
+      <div className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-[1600px] mx-auto w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
 
           {/* Left Panel - Chat */}

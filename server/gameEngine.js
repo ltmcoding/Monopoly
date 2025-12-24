@@ -91,9 +91,34 @@ class MonopolyGame {
     return newPlayer;
   }
 
-  // Get player color based on index
+  // Get player color - randomly selected from sophisticated muted palette
   getPlayerColor(index) {
-    const colors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080'];
+    const colors = [
+      '#c45c5c',  // Dusty Rose
+      '#d4896a',  // Terracotta
+      '#c9a855',  // Antique Gold
+      '#6b9b6b',  // Sage Green
+      '#5a9e9e',  // Seafoam Teal
+      '#6888a5',  // Slate Blue
+      '#7c7cb5',  // Periwinkle
+      '#9a7bb5',  // Lavender
+      '#b56e8a',  // Mauve
+      '#8b8b9a',  // Cool Gray
+      '#7a6b5a',  // Taupe
+      '#8a7355',  // Bronze
+      '#5a7a6a',  // Forest Mist
+      '#5a6a8a',  // Dusk Blue
+      '#8a5a6a',  // Burgundy Mist
+      '#6a5a7a',  // Plum
+    ];
+    // Get colors already used by other players
+    const usedColors = this.players.map(p => p.color);
+    // Filter to available colors
+    const availableColors = colors.filter(c => !usedColors.includes(c));
+    // If colors available, pick random one; otherwise cycle through all
+    if (availableColors.length > 0) {
+      return availableColors[Math.floor(Math.random() * availableColors.length)];
+    }
     return colors[index % colors.length];
   }
 
