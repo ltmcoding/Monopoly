@@ -248,10 +248,10 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
       )}
 
       {/* Header - Solid background with Monopoly branding */}
-      <header className="flex-shrink-0 flex items-center justify-between px-5 py-3 bg-[#1a1f26] border-b-2 border-primary/30 shadow-lg">
-        <div className="flex items-center gap-4">
+      <header className="relative z-10 flex-shrink-0 flex items-center justify-between px-8 py-5 bg-[#0f1419] border-b-4 border-primary shadow-xl">
+        <div className="flex items-center gap-6">
           {/* Monopoly Board SVG Icon */}
-          <svg width="32" height="32" viewBox="0 0 100 100" className="text-primary">
+          <svg width="48" height="48" viewBox="0 0 100 100" className="text-primary">
             <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
             <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
             <rect x="70" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
@@ -259,14 +259,14 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
             <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
             <circle cx="50" cy="50" r="12" fill="currentColor"/>
           </svg>
-          <span className="text-2xl font-bold tracking-wider game-logo" data-text="MONOPOLY">MONOPOLY</span>
+          <span className="text-4xl font-bold tracking-wider game-logo" data-text="MONOPOLY">MONOPOLY</span>
         </div>
-        <div className="flex items-center gap-5">
-          <span className="text-sm text-muted-foreground font-mono">
+        <div className="flex items-center gap-6">
+          <span className="text-base text-muted-foreground font-mono">
             Room: <span className="text-primary font-bold tracking-wider">{gameId}</span>
           </span>
-          <Button variant="secondary" size="sm" onClick={handleLeaveGame} className="gap-2">
-            <SignOut size={18} />
+          <Button variant="secondary" size="default" onClick={handleLeaveGame} className="gap-2 text-base px-4">
+            <SignOut size={20} />
             Leave
           </Button>
         </div>
