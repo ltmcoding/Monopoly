@@ -159,8 +159,10 @@ const renderGoToJailCorner = (size) => (
 export default function Board2D({
   gameState,
   onRollDice,
+  onEndTurn,
   isMyTurn = false,
   canRoll = false,
+  canEndTurn = false,
   myPlayerId = null,
   socket = null,
   gameId = null
@@ -1140,23 +1142,37 @@ export default function Board2D({
         <rect x={innerBoardStart + woodBorderWidth} y={innerBoardStart + woodBorderWidth} width={innerBoardSize - 2 * woodBorderWidth} height={innerBoardSize - 2 * woodBorderWidth} fill="url(#boardBg)"/>
 
         <g transform={`translate(${boardSize/2}, ${boardSize/2})`}>
-          <text textAnchor="middle" y={-boardSize * 0.13} fontSize={boardSize * 0.06} fontWeight="bold" fill="url(#goldGradient)" fontFamily="'Cinzel', 'Playfair Display', Georgia, serif" letterSpacing="8" filter="url(#goldGlow)">MONOPOLY</text>
-          <g transform="translate(0, 10)">
-            <g transform="translate(-40, -30)"><DiceFace value={displayDice[0]} size={60} isRolling={isRolling} /></g>
-            <g transform="translate(40, -30)"><DiceFace value={displayDice[1]} size={60} isRolling={isRolling} /></g>
+          {/* Logo moved up */}
+          <text textAnchor="middle" y={-boardSize * 0.18} fontSize={boardSize * 0.055} fontWeight="bold" fill="url(#goldGradient)" fontFamily="'Cinzel', 'Playfair Display', Georgia, serif" letterSpacing="8" filter="url(#goldGlow)">MONOPOLY</text>
+
+          {/* Dice area - moved up */}
+          <g transform="translate(0, -50)">
+            <g transform="translate(-40, -30)"><DiceFace value={displayDice[0]} size={55} isRolling={isRolling} /></g>
+            <g transform="translate(40, -30)"><DiceFace value={displayDice[1]} size={55} isRolling={isRolling} /></g>
             {gameState.settings?.speedDie && gameState.speedDie && (
-              <g transform="translate(0, 50)"><SpeedDieFace value={gameState.speedDie} size={45} /></g>
+              <g transform="translate(0, 40)"><SpeedDieFace value={gameState.speedDie} size={40} /></g>
             )}
+          </g>
+
+          {/* Action buttons - Roll Dice / End Turn */}
+          <g transform="translate(0, 45)">
             {canRoll && isMyTurn && (
-              <g transform="translate(0, 70)" onClick={handleRollDice} style={{ cursor: 'pointer' }} className="roll-button">
-                <rect x="-60" y="-18" width="120" height="36" fill="#f59e0b" stroke="#d97706" strokeWidth="2" rx={18} filter="url(#dropShadow)"/>
+              <g transform="translate(0, 0)" onClick={handleRollDice} style={{ cursor: 'pointer' }} className="roll-button">
+                <rect x="-70" y="-20" width="140" height="40" fill="#f59e0b" stroke="#d97706" strokeWidth="2" rx={20} filter="url(#dropShadow)"/>
                 <text textAnchor="middle" dominantBaseline="middle" fontSize="16" fill="#1a1a1a" fontWeight="bold">{isRolling ? 'Rolling...' : 'Roll Dice'}</text>
               </g>
             )}
+            {canEndTurn && isMyTurn && !canRoll && (
+              <g transform="translate(0, 0)" onClick={onEndTurn} style={{ cursor: 'pointer' }} className="end-turn-button">
+                <rect x="-70" y="-20" width="140" height="40" fill="#3b82f6" stroke="#2563eb" strokeWidth="2" rx={20} filter="url(#dropShadow)"/>
+                <text textAnchor="middle" dominantBaseline="middle" fontSize="16" fill="#ffffff" fontWeight="bold">End Turn</text>
+              </g>
+            )}
           </g>
-          <g transform="translate(0, 130)">
+
+          {/* Current player indicator */}
+          <g transform="translate(0, 100)">
             <rect x="-120" y="-20" width="240" height="40" fill="rgba(0, 0, 0, 0.5)" rx={20} stroke={TILE_COLORS.border} strokeWidth="1.5"/>
-            {/* Player color indicator with gradient */}
             <defs>
               <linearGradient id="turnPlayerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor={currentPlayer?.color || '#666'} stopOpacity="1"/>
@@ -1165,11 +1181,28 @@ export default function Board2D({
             </defs>
             <circle cx="-88" cy="0" r="12" fill="url(#turnPlayerGradient)" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
             <circle cx="-92" cy="-4" r="4" fill="rgba(255,255,255,0.25)"/>
-            {/* Player name - properly positioned to avoid overlap */}
             <text x="10" textAnchor="middle" dominantBaseline="middle" fontSize="14" fill={TILE_COLORS.text} fontWeight="bold" style={{ textOverflow: 'ellipsis' }}>
               {currentPlayer?.name ? (currentPlayer.name.length > 12 ? currentPlayer.name.slice(0, 11) + '…' : currentPlayer.name) : 'Player'}'s Turn
             </text>
           </g>
+
+          {/* Available buildings display at bottom of center */}
+          {!gameState.settings?.unlimitedProperties && (
+            <g transform={`translate(0, ${boardSize * 0.22})`}>
+              <rect x="-100" y="-16" width="200" height="32" fill="rgba(0, 0, 0, 0.6)" rx={16} stroke={TILE_COLORS.border} strokeWidth="1"/>
+              {/* Houses */}
+              <g transform="translate(-55, 0)">
+                <rect x="-10" y="-8" width="20" height="16" fill="#22c55e" rx={3} stroke="#15803d" strokeWidth="1"/>
+                <text x="18" textAnchor="start" dominantBaseline="middle" fontSize="12" fill={TILE_COLORS.text} fontWeight="bold">{gameState.availableHouses}</text>
+              </g>
+              {/* Hotels */}
+              <g transform="translate(35, 0)">
+                <rect x="-10" y="-8" width="20" height="16" fill="#ef4444" rx={3} stroke="#b91c1c" strokeWidth="1"/>
+                <text x="-4" y="1" textAnchor="middle" dominantBaseline="middle" fontSize="10" fill="white" fontWeight="bold">H</text>
+                <text x="18" textAnchor="start" dominantBaseline="middle" fontSize="12" fill={TILE_COLORS.text} fontWeight="bold">{gameState.availableHotels}</text>
+              </g>
+            </g>
+          )}
         </g>
 
         {/* Render all tiles first */}

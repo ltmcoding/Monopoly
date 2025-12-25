@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   GameController,
   SignOut,
@@ -6,21 +6,34 @@ import {
   CheckCircle,
   WarningCircle,
   Info,
-  Trophy
+  Trophy,
+  Handshake,
+  Buildings,
+  CaretRight,
+  CurrencyDollar,
+  Key,
+  Check,
+  House as HouseIcon
 } from '@phosphor-icons/react';
 import Board2D from './Board2D';
 import PlayerPanel from './PlayerPanel';
-import ActionPanel from './ActionPanel';
 import TradeModal from './TradeModal';
 import AuctionModal from './AuctionModal';
 import GameLog from './GameLog';
+import { getSpaceById, COLOR_MAP } from '../utils/boardData';
+import { formatCurrency } from '../utils/formatters';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
 
 export default function Game({ socket, gameId, playerId, initialGameState, onExit }) {
   const [gameState, setGameState] = useState(initialGameState);
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [selectedTrade, setSelectedTrade] = useState(null);
+  const [tradeLoading, setTradeLoading] = useState(false);
+  const propertyRefs = useRef({});
 
   useEffect(() => {
     // Listen for game updates
@@ -211,6 +224,435 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
     }
   };
 
+  // Handle trade actions
+  const handleAcceptTrade = async (tradeId) => {
+    setTradeLoading(true);
+    try {
+      await socket.acceptTrade(gameId, tradeId);
+      setSelectedTrade(null);
+      showNotification('Trade accepted!', 'success');
+    } catch (err) {
+      showNotification(err.message || 'Failed to accept trade', 'error');
+    } finally {
+      setTradeLoading(false);
+    }
+  };
+
+  const handleRejectTrade = async (tradeId) => {
+    setTradeLoading(true);
+    try {
+      await socket.rejectTrade(gameId, tradeId);
+      setSelectedTrade(null);
+      showNotification('Trade rejected', 'info');
+    } catch (err) {
+      showNotification(err.message || 'Failed to reject trade', 'error');
+    } finally {
+      setTradeLoading(false);
+    }
+  };
+
+  // Render pending trades section
+  const renderPendingTrades = () => {
+    const myPlayer = getMyPlayer();
+    if (!myPlayer) return null;
+
+    // Get trades where I'm involved (either sender or receiver)
+    const pendingTrades = gameState.trades?.filter(
+      t => t.status === 'pending' && (t.toPlayerId === myPlayer.id || t.fromPlayerId === myPlayer.id)
+    ) || [];
+
+    if (pendingTrades.length === 0) {
+      return (
+        <div className="text-center py-4 text-muted-foreground text-sm">
+          No pending trades
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {pendingTrades.map(trade => {
+          const fromPlayer = gameState.players.find(p => p.id === trade.fromPlayerId);
+          const toPlayer = gameState.players.find(p => p.id === trade.toPlayerId);
+          const isIncoming = trade.toPlayerId === myPlayer.id;
+
+          return (
+            <div
+              key={trade.id}
+              className={`p-3 rounded-lg border cursor-pointer transition-all hover:bg-secondary/50 ${
+                isIncoming ? 'border-amber-500/30 bg-amber-500/5' : 'border-border bg-secondary/30'
+              }`}
+              onClick={() => setSelectedTrade(trade)}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                {isIncoming ? (
+                  <>
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: fromPlayer?.color }} />
+                    <span className="font-medium text-sm">{fromPlayer?.name}</span>
+                    <CaretRight size={12} className="text-muted-foreground" />
+                    <span className="text-muted-foreground text-sm">You</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-muted-foreground text-sm">You</span>
+                    <CaretRight size={12} className="text-muted-foreground" />
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: toPlayer?.color }} />
+                    <span className="font-medium text-sm">{toPlayer?.name}</span>
+                  </>
+                )}
+                {isIncoming && (
+                  <Badge variant="warning" className="ml-auto text-xs py-0 px-1.5">New</Badge>
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {trade.offer.properties.length} props + {formatCurrency(trade.offer.cash)} ↔ {trade.request.properties.length} props + {formatCurrency(trade.request.cash)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Render my properties section grouped by color
+  const renderMyProperties = () => {
+    const myPlayer = getMyPlayer();
+    if (!myPlayer || !myPlayer.properties || myPlayer.properties.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground text-sm">
+          No properties owned yet
+        </div>
+      );
+    }
+
+    // Group properties by color/type
+    const grouped = {};
+    myPlayer.properties.forEach(propId => {
+      const space = getSpaceById(propId);
+      if (space) {
+        const key = space.color || space.type;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push({ ...space, propId });
+      }
+    });
+
+    // Order for display
+    const colorOrder = ['brown', 'lightblue', 'pink', 'orange', 'red', 'yellow', 'green', 'darkblue', 'railroad', 'utility'];
+
+    return (
+      <div className="space-y-3">
+        {colorOrder.map(colorKey => {
+          const props = grouped[colorKey];
+          if (!props || props.length === 0) return null;
+
+          return (
+            <div key={colorKey} className="space-y-1">
+              <div className="flex items-center gap-2 mb-1">
+                <div
+                  className="w-3 h-3 rounded"
+                  style={{ backgroundColor: COLOR_MAP[colorKey] || '#666' }}
+                />
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                  {colorKey === 'railroad' ? 'Railroads' : colorKey === 'utility' ? 'Utilities' : colorKey}
+                </span>
+              </div>
+              {props.map(prop => {
+                const property = gameState.properties[prop.propId];
+                return (
+                  <div
+                    key={prop.propId}
+                    ref={el => propertyRefs.current[prop.propId] = el}
+                    className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-all hover:bg-secondary/50 ${
+                      property?.mortgaged ? 'opacity-50' : ''
+                    }`}
+                    onClick={() => setSelectedProperty(prop.propId)}
+                  >
+                    <span className="flex-1 text-sm truncate">{prop.name}</span>
+                    {property?.hotels > 0 && (
+                      <Badge variant="destructive" className="text-xs py-0 px-1.5">H</Badge>
+                    )}
+                    {property?.houses > 0 && !property?.hotels && (
+                      <Badge variant="success" className="text-xs py-0 px-1.5">{property.houses}</Badge>
+                    )}
+                    {property?.mortgaged && (
+                      <Badge variant="secondary" className="text-xs py-0 px-1.5">M</Badge>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Render property popup card
+  const renderPropertyPopup = () => {
+    const space = getSpaceById(selectedProperty);
+    if (!space) return null;
+
+    const property = gameState.properties[selectedProperty];
+    const owner = property?.ownerId ? gameState.players.find(p => p.id === property.ownerId) : null;
+    const myPlayer = getMyPlayer();
+    const isMyProperty = owner && myPlayer && owner.id === myPlayer.id;
+
+    // Get position of the property item in the list
+    const ref = propertyRefs.current[selectedProperty];
+    let popupStyle = {};
+    if (ref) {
+      const rect = ref.getBoundingClientRect();
+      popupStyle = {
+        position: 'fixed',
+        top: rect.top,
+        right: window.innerWidth - rect.left + 8,
+        zIndex: 100
+      };
+    }
+
+    return (
+      <>
+        <div className="fixed inset-0 z-50" onClick={() => setSelectedProperty(null)} />
+        <div
+          style={popupStyle}
+          className="z-[100] w-72 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Color bar */}
+          {space.color && (
+            <div className="h-6" style={{ backgroundColor: COLOR_MAP[space.color] }} />
+          )}
+
+          <div className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg">{space.name}</h3>
+              <button
+                className="p-1 rounded hover:bg-secondary"
+                onClick={() => setSelectedProperty(null)}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {owner && (
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: owner.color }} />
+                <span>Owner: <strong>{owner.name}</strong></span>
+              </div>
+            )}
+
+            {property?.mortgaged && (
+              <Badge variant="destructive" className="w-full justify-center">MORTGAGED</Badge>
+            )}
+
+            {/* Rent info */}
+            {space.type === 'property' && space.rent && (
+              <div className="space-y-1 text-sm border-t border-border pt-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Rent</span>
+                  <span className={property?.houses === 0 && !property?.hotels ? 'text-primary font-bold' : ''}>${space.rent[0]}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">With 1 House</span>
+                  <span className={property?.houses === 1 ? 'text-primary font-bold' : ''}>${space.rent[1]}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">With 2 Houses</span>
+                  <span className={property?.houses === 2 ? 'text-primary font-bold' : ''}>${space.rent[2]}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">With 3 Houses</span>
+                  <span className={property?.houses === 3 ? 'text-primary font-bold' : ''}>${space.rent[3]}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">With 4 Houses</span>
+                  <span className={property?.houses === 4 && !property?.hotels ? 'text-primary font-bold' : ''}>${space.rent[4]}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">With Hotel</span>
+                  <span className={property?.hotels > 0 ? 'text-primary font-bold' : ''}>${space.rent[5]}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Actions for my properties */}
+            {isMyProperty && isMyTurn() && (
+              <div className="flex flex-wrap gap-2 border-t border-border pt-3">
+                {space.type === 'property' && !property.mortgaged && property.houses < 4 && !property.hotels && (
+                  <Button
+                    size="sm"
+                    variant="success"
+                    className="flex-1 gap-1"
+                    onClick={() => socket.buildHouse(gameId, selectedProperty)}
+                  >
+                    <HouseIcon size={14} />
+                    House
+                  </Button>
+                )}
+                {space.type === 'property' && !property.mortgaged && property.houses === 4 && !property.hotels && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="flex-1 gap-1"
+                    onClick={() => socket.buildHotel(gameId, selectedProperty)}
+                  >
+                    <Buildings size={14} />
+                    Hotel
+                  </Button>
+                )}
+                {!property.mortgaged && property.houses === 0 && !property.hotels && (
+                  <Button
+                    size="sm"
+                    variant="warning"
+                    className="flex-1"
+                    onClick={() => socket.mortgage(gameId, selectedProperty)}
+                  >
+                    Mortgage
+                  </Button>
+                )}
+                {property.mortgaged && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="flex-1"
+                    onClick={() => socket.unmortgage(gameId, selectedProperty)}
+                  >
+                    Unmortgage
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  // Render trade detail popup
+  const renderTradePopup = () => {
+    if (!selectedTrade) return null;
+
+    const trade = selectedTrade;
+    const fromPlayer = gameState.players.find(p => p.id === trade.fromPlayerId);
+    const toPlayer = gameState.players.find(p => p.id === trade.toPlayerId);
+    const myPlayer = getMyPlayer();
+    const isIncoming = trade.toPlayerId === myPlayer?.id;
+
+    return (
+      <>
+        <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setSelectedTrade(null)} />
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-96 bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
+          <div className="p-4 border-b border-border flex items-center justify-between">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Handshake size={20} className="text-primary" />
+              Trade Offer
+            </h3>
+            <button
+              className="p-1 rounded hover:bg-secondary"
+              onClick={() => setSelectedTrade(null)}
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="p-4 space-y-4">
+            {/* From player offering */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: fromPlayer?.color }} />
+                <span className="font-medium">{fromPlayer?.name} offers:</span>
+              </div>
+              <div className="pl-5 space-y-1 text-sm">
+                <div className="flex items-center gap-1">
+                  <CurrencyDollar size={14} className="text-primary" />
+                  {formatCurrency(trade.offer.cash)}
+                </div>
+                {trade.offer.properties.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Buildings size={14} />
+                    {trade.offer.properties.map(id => getSpaceById(id)?.name).join(', ')}
+                  </div>
+                )}
+                {trade.offer.jailCards > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Key size={14} />
+                    {trade.offer.jailCards} Get Out of Jail card(s)
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="text-center text-muted-foreground">↕ for ↕</div>
+
+            {/* To player requesting */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: toPlayer?.color }} />
+                <span className="font-medium">{toPlayer?.name}'s:</span>
+              </div>
+              <div className="pl-5 space-y-1 text-sm">
+                <div className="flex items-center gap-1">
+                  <CurrencyDollar size={14} className="text-primary" />
+                  {formatCurrency(trade.request.cash)}
+                </div>
+                {trade.request.properties.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Buildings size={14} />
+                    {trade.request.properties.map(id => getSpaceById(id)?.name).join(', ')}
+                  </div>
+                )}
+                {trade.request.jailCards > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Key size={14} />
+                    {trade.request.jailCards} Get Out of Jail card(s)
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {isIncoming && (
+            <div className="p-4 border-t border-border flex gap-2">
+              <Button
+                variant="success"
+                className="flex-1 gap-1"
+                onClick={() => handleAcceptTrade(trade.id)}
+                disabled={tradeLoading}
+              >
+                <Check size={16} />
+                Accept
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1 gap-1"
+                onClick={() => handleRejectTrade(trade.id)}
+                disabled={tradeLoading}
+              >
+                <X size={16} />
+                Reject
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedTrade(null);
+                  setShowTradeModal(true);
+                }}
+                disabled={tradeLoading}
+              >
+                Counter
+              </Button>
+            </div>
+          )}
+          {!isIncoming && (
+            <div className="p-4 border-t border-border text-center text-muted-foreground text-sm">
+              Waiting for {toPlayer?.name} to respond...
+            </div>
+          )}
+        </div>
+      </>
+    );
+  };
+
   if (gameState.phase === 'ended') {
     const winner = gameState.players.find(p => !p.isBankrupt);
     return (
@@ -274,15 +716,21 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
 
       {/* Main Game Layout */}
       <main className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Players & Log */}
-        <aside className="w-[420px] flex-shrink-0 flex flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden">
+        {/* Left Panel - Players & Log/Chat */}
+        <aside className="w-[480px] flex-shrink-0 flex flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden">
           <PlayerPanel
             players={gameState.players}
             currentPlayerIndex={gameState.currentPlayerIndex}
             myPlayerId={playerId}
             gameState={gameState}
           />
-          <GameLog actionLog={gameState.actionLog || []} />
+          <GameLog
+            actionLog={gameState.actionLog || []}
+            socket={socket}
+            gameId={gameId}
+            playerId={playerId}
+            players={gameState.players}
+          />
         </aside>
 
         {/* Center - Board */}
@@ -290,26 +738,63 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           <Board2D
             gameState={gameState}
             onRollDice={handleRollDice}
+            onEndTurn={() => socket.endTurn(gameId)}
             isMyTurn={isMyTurn()}
             canRoll={canRollDice()}
+            canEndTurn={gameState.phase === 'rolling' && isMyTurn() && gameState.hasRolledThisTurn}
             myPlayerId={playerId}
             socket={socket}
             gameId={gameId}
           />
         </section>
 
-        {/* Right Panel - Actions */}
-        <aside className="w-[420px] flex-shrink-0 p-3 bg-card/50 border-l border-border overflow-auto">
-          <ActionPanel
-            socket={socket}
-            gameId={gameId}
-            gameState={gameState}
-            myPlayer={getMyPlayer()}
-            isMyTurn={isMyTurn()}
-            onOpenTrade={() => setShowTradeModal(true)}
-          />
+        {/* Right Panel - Trades & Properties */}
+        <aside className="w-[480px] flex-shrink-0 flex flex-col gap-3 p-3 bg-card/50 border-l border-border overflow-hidden">
+          {/* Pending Trades Section */}
+          <Card className="card-gilded flex-shrink-0">
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-base flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Handshake size={20} className="text-primary" weight="duotone" />
+                  Trades
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowTradeModal(true)}
+                  disabled={getMyPlayer()?.isBankrupt}
+                  className="gap-1.5 text-xs"
+                >
+                  <Handshake size={14} />
+                  Propose
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-0 max-h-[200px] overflow-y-auto">
+              {renderPendingTrades()}
+            </CardContent>
+          </Card>
+
+          {/* My Properties Section */}
+          <Card className="card-gilded flex-1 min-h-0 flex flex-col">
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Buildings size={20} className="text-primary" weight="duotone" />
+                My Properties
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-0 flex-1 overflow-y-auto">
+              {renderMyProperties()}
+            </CardContent>
+          </Card>
         </aside>
       </main>
+
+      {/* Property Card Popup */}
+      {selectedProperty && renderPropertyPopup()}
+
+      {/* Trade Detail Popup */}
+      {selectedTrade && renderTradePopup()}
 
       {/* Trade Modal */}
       {showTradeModal && (
