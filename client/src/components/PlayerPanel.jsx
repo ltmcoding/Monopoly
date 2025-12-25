@@ -8,7 +8,7 @@ import { formatCurrency } from '../utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 
-export default function PlayerPanel({ players, currentPlayerIndex, myPlayerId }) {
+export default function PlayerPanel({ players, currentPlayerIndex, myPlayerId, onPlayerClick }) {
   return (
     <Card className="flex-shrink-0 card-gilded">
       <CardHeader className="py-2 px-4">
@@ -26,13 +26,14 @@ export default function PlayerPanel({ players, currentPlayerIndex, myPlayerId })
           return (
             <div
               key={player.id}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors cursor-pointer hover:bg-secondary/50 ${
                 isCurrentPlayer && !isBankrupt
                   ? 'bg-primary/15 ring-1 ring-primary/50'
                   : isBankrupt
                   ? 'bg-muted/20 opacity-50'
                   : 'bg-secondary/30'
               }`}
+              onClick={() => onPlayerClick?.(player.id)}
             >
               {/* Color dot */}
               <div

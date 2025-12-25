@@ -13,7 +13,9 @@ import {
   CurrencyDollar,
   Key,
   Check,
-  House as HouseIcon
+  House as HouseIcon,
+  Gear,
+  Users
 } from '@phosphor-icons/react';
 import Board2D from './Board2D';
 import PlayerPanel from './PlayerPanel';
@@ -33,6 +35,9 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [selectedTrade, setSelectedTrade] = useState(null);
   const [tradeLoading, setTradeLoading] = useState(false);
+  const [selectedColorSet, setSelectedColorSet] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
   const propertyRefs = useRef({});
 
   useEffect(() => {
@@ -346,8 +351,12 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           if (!props || props.length === 0) return null;
 
           return (
-            <div key={colorKey} className="space-y-1">
-              <div className="flex items-center gap-2 mb-1">
+            <div key={colorKey} className="space-y-1.5">
+              {/* Clickable color set header */}
+              <button
+                className="flex items-center gap-2 w-full p-1.5 rounded hover:bg-secondary/50 transition-colors"
+                onClick={() => setSelectedColorSet(colorKey)}
+              >
                 <div
                   className="w-3 h-3 rounded"
                   style={{ backgroundColor: COLOR_MAP[colorKey] || '#666' }}
@@ -355,31 +364,40 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">
                   {colorKey === 'railroad' ? 'Railroads' : colorKey === 'utility' ? 'Utilities' : colorKey}
                 </span>
+                <span className="text-xs text-muted-foreground ml-auto">({props.length})</span>
+              </button>
+              {/* 2-column grid of properties */}
+              <div className="grid grid-cols-2 gap-1.5">
+                {props.map(prop => {
+                  const property = gameState.properties[prop.propId];
+                  return (
+                    <div
+                      key={prop.propId}
+                      ref={el => propertyRefs.current[prop.propId] = el}
+                      className={`flex items-center gap-1.5 p-1.5 rounded cursor-pointer transition-all hover:bg-secondary/50 bg-secondary/20 ${
+                        property?.mortgaged ? 'opacity-50' : ''
+                      }`}
+                      onClick={() => setSelectedProperty(prop.propId)}
+                    >
+                      {/* Color bar */}
+                      <div
+                        className="w-1 h-6 rounded-sm flex-shrink-0"
+                        style={{ backgroundColor: COLOR_MAP[colorKey] || '#666' }}
+                      />
+                      <span className="flex-1 text-xs truncate">{prop.name}</span>
+                      {property?.hotels > 0 && (
+                        <Badge variant="destructive" className="text-[10px] py-0 px-1 h-4">H</Badge>
+                      )}
+                      {property?.houses > 0 && !property?.hotels && (
+                        <Badge variant="success" className="text-[10px] py-0 px-1 h-4">{property.houses}</Badge>
+                      )}
+                      {property?.mortgaged && (
+                        <Badge variant="secondary" className="text-[10px] py-0 px-1 h-4">M</Badge>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              {props.map(prop => {
-                const property = gameState.properties[prop.propId];
-                return (
-                  <div
-                    key={prop.propId}
-                    ref={el => propertyRefs.current[prop.propId] = el}
-                    className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-all hover:bg-secondary/50 ${
-                      property?.mortgaged ? 'opacity-50' : ''
-                    }`}
-                    onClick={() => setSelectedProperty(prop.propId)}
-                  >
-                    <span className="flex-1 text-sm truncate">{prop.name}</span>
-                    {property?.hotels > 0 && (
-                      <Badge variant="destructive" className="text-xs py-0 px-1.5">H</Badge>
-                    )}
-                    {property?.houses > 0 && !property?.hotels && (
-                      <Badge variant="success" className="text-xs py-0 px-1.5">{property.houses}</Badge>
-                    )}
-                    {property?.mortgaged && (
-                      <Badge variant="secondary" className="text-xs py-0 px-1.5">M</Badge>
-                    )}
-                  </div>
-                );
-              })}
             </div>
           );
         })}
@@ -703,10 +721,14 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           </svg>
           <span className="text-4xl font-bold tracking-wider game-logo" data-text="MONOPOLY">MONOPOLY</span>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <span className="text-base text-muted-foreground font-mono">
             Room: <span className="text-primary font-bold tracking-wider">{gameId}</span>
           </span>
+          <Button variant="outline" size="default" onClick={() => setShowSettings(true)} className="gap-2 text-base px-4">
+            <Gear size={20} />
+            Settings
+          </Button>
           <Button variant="secondary" size="default" onClick={handleLeaveGame} className="gap-2 text-base px-4">
             <SignOut size={20} />
             Leave
@@ -716,8 +738,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
 
       {/* Main Game Layout */}
       <main className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Game Log */}
-        <aside className="w-[400px] flex-shrink-0 flex flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden">
+        {/* Left Panel - Game Log (can shrink if needed) */}
+        <aside className="w-[480px] flex-shrink flex flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden">
           <GameLog
             actionLog={gameState.actionLog || []}
             socket={socket}
@@ -727,8 +749,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           />
         </aside>
 
-        {/* Center - Board */}
-        <section className="flex-1 flex items-center justify-center p-2 overflow-hidden game-center">
+        {/* Center - Board (never shrinks, minimum size preserved) */}
+        <section className="flex-1 flex-shrink-0 min-w-[770px] flex items-center justify-center p-2 overflow-hidden game-center">
           <Board2D
             gameState={gameState}
             onRollDice={handleRollDice}
@@ -742,14 +764,14 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           />
         </section>
 
-        {/* Right Panel - Players, Trades & Properties */}
-        <aside className="w-[400px] flex-shrink-0 flex flex-col gap-3 p-3 bg-card/50 border-l border-border overflow-hidden">
+        {/* Right Panel - Players, Trades & Properties (can shrink if needed) */}
+        <aside className="w-[480px] flex-shrink flex flex-col gap-3 p-3 bg-card/50 border-l border-border overflow-hidden">
           {/* Players Section - Compact */}
           <PlayerPanel
             players={gameState.players}
             currentPlayerIndex={gameState.currentPlayerIndex}
             myPlayerId={playerId}
-            gameState={gameState}
+            onPlayerClick={(id) => setSelectedPlayer(id)}
           />
 
           {/* Pending Trades Section */}
@@ -819,6 +841,218 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           gameState={gameState}
         />
       )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setShowSettings(false)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-[420px] bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <Gear size={20} className="text-primary" />
+                Room Settings
+              </h3>
+              <button className="p-1 rounded hover:bg-secondary" onClick={() => setShowSettings(false)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Starting Cash</span>
+                <span className="font-medium">{formatCurrency(gameState.settings?.startingCash || 1500)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Max Players</span>
+                <span className="font-medium">{gameState.settings?.maxPlayers || 6}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Auction Mode</span>
+                <Badge variant={gameState.settings?.auctionMode ? 'default' : 'secondary'}>
+                  {gameState.settings?.auctionMode ? 'ON' : 'OFF'}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Double GO Bonus</span>
+                <Badge variant={gameState.settings?.doubleGoBonus ? 'default' : 'secondary'}>
+                  {gameState.settings?.doubleGoBonus ? 'ON' : 'OFF'}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">No Rent in Jail</span>
+                <Badge variant={gameState.settings?.noRentInJail ? 'default' : 'secondary'}>
+                  {gameState.settings?.noRentInJail ? 'ON' : 'OFF'}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Mortgage Mode</span>
+                <Badge variant={gameState.settings?.mortgageMode ? 'default' : 'secondary'}>
+                  {gameState.settings?.mortgageMode ? 'ON' : 'OFF'}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Even Build</span>
+                <Badge variant={gameState.settings?.evenBuild ? 'default' : 'secondary'}>
+                  {gameState.settings?.evenBuild ? 'ON' : 'OFF'}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-muted-foreground">Free Parking Jackpot</span>
+                <Badge variant={gameState.settings?.freeParking ? 'default' : 'secondary'}>
+                  {gameState.settings?.freeParking ? 'ON' : 'OFF'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Color Set Modal */}
+      {selectedColorSet && (() => {
+        const myPlayer = getMyPlayer();
+        const props = myPlayer?.properties
+          ?.map(propId => ({ ...getSpaceById(propId), propId }))
+          ?.filter(p => (p.color || p.type) === selectedColorSet) || [];
+
+        return (
+          <>
+            <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setSelectedColorSet(null)} />
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-[600px] max-w-[90vw] bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
+              <div className="p-4 border-b border-border flex items-center justify-between">
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  <div className="w-4 h-4 rounded" style={{ backgroundColor: COLOR_MAP[selectedColorSet] || '#666' }} />
+                  {selectedColorSet === 'railroad' ? 'Railroads' : selectedColorSet === 'utility' ? 'Utilities' : selectedColorSet.charAt(0).toUpperCase() + selectedColorSet.slice(1)} Properties
+                </h3>
+                <button className="p-1 rounded hover:bg-secondary" onClick={() => setSelectedColorSet(null)}>
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto">
+                {props.map(prop => {
+                  const property = gameState.properties[prop.propId];
+                  const canBuildHouse = prop.type === 'property' && !property?.mortgaged && property?.houses < 4 && !property?.hotels && isMyTurn();
+                  const canBuildHotel = prop.type === 'property' && !property?.mortgaged && property?.houses === 4 && !property?.hotels && isMyTurn();
+
+                  return (
+                    <div key={prop.propId} className="bg-secondary/30 rounded-lg overflow-hidden border border-border">
+                      {prop.color && (
+                        <div className="h-4" style={{ backgroundColor: COLOR_MAP[prop.color] }} />
+                      )}
+                      <div className="p-3 space-y-2">
+                        <div className="font-medium text-sm">{prop.name}</div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          {property?.hotels > 0 && <Badge variant="destructive" className="text-[10px] py-0 px-1">Hotel</Badge>}
+                          {property?.houses > 0 && !property?.hotels && <Badge variant="success" className="text-[10px] py-0 px-1">{property.houses} House{property.houses > 1 ? 's' : ''}</Badge>}
+                          {property?.mortgaged && <Badge variant="secondary" className="text-[10px] py-0 px-1">Mortgaged</Badge>}
+                          {!property?.hotels && property?.houses === 0 && !property?.mortgaged && <span>No buildings</span>}
+                        </div>
+                        {(canBuildHouse || canBuildHotel) && (
+                          <Button
+                            size="sm"
+                            variant={canBuildHotel ? 'destructive' : 'success'}
+                            className="w-full gap-1 text-xs"
+                            onClick={() => {
+                              if (canBuildHotel) {
+                                socket.buildHotel(gameId, prop.propId);
+                              } else {
+                                socket.buildHouse(gameId, prop.propId);
+                              }
+                            }}
+                          >
+                            {canBuildHotel ? <Buildings size={12} /> : <HouseIcon size={12} />}
+                            Build {canBuildHotel ? 'Hotel' : 'House'}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        );
+      })()}
+
+      {/* Player Properties Modal */}
+      {selectedPlayer && (() => {
+        const player = gameState.players.find(p => p.id === selectedPlayer);
+        if (!player) return null;
+
+        // Group player's properties by color
+        const grouped = {};
+        player.properties?.forEach(propId => {
+          const space = getSpaceById(propId);
+          if (space) {
+            const key = space.color || space.type;
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push({ ...space, propId });
+          }
+        });
+
+        const colorOrder = ['brown', 'lightblue', 'pink', 'orange', 'red', 'yellow', 'green', 'darkblue', 'railroad', 'utility'];
+
+        return (
+          <>
+            <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setSelectedPlayer(null)} />
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-[500px] max-w-[90vw] bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
+              <div className="p-4 border-b border-border flex items-center justify-between">
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: player.color }} />
+                  {player.name}'s Properties
+                </h3>
+                <button className="p-1 rounded hover:bg-secondary" onClick={() => setSelectedPlayer(null)}>
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="p-4 max-h-[60vh] overflow-y-auto">
+                {player.properties?.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">No properties owned</div>
+                ) : (
+                  <div className="space-y-3">
+                    {colorOrder.map(colorKey => {
+                      const props = grouped[colorKey];
+                      if (!props || props.length === 0) return null;
+
+                      return (
+                        <div key={colorKey}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-3 h-3 rounded" style={{ backgroundColor: COLOR_MAP[colorKey] || '#666' }} />
+                            <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                              {colorKey === 'railroad' ? 'Railroads' : colorKey === 'utility' ? 'Utilities' : colorKey}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {props.map(prop => {
+                              const property = gameState.properties[prop.propId];
+                              return (
+                                <div key={prop.propId} className="flex items-center gap-2 p-2 bg-secondary/30 rounded text-sm">
+                                  <div className="w-1 h-5 rounded-sm" style={{ backgroundColor: COLOR_MAP[colorKey] || '#666' }} />
+                                  <span className="flex-1 truncate">{prop.name}</span>
+                                  {property?.hotels > 0 && <Badge variant="destructive" className="text-[10px] py-0 px-1">H</Badge>}
+                                  {property?.houses > 0 && !property?.hotels && <Badge variant="success" className="text-[10px] py-0 px-1">{property.houses}</Badge>}
+                                  {property?.mortgaged && <Badge variant="secondary" className="text-[10px] py-0 px-1">M</Badge>}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              <div className="p-4 border-t border-border flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <CurrencyDollar size={16} className="text-primary" />
+                  <span className="font-medium">{formatCurrency(player.cash)}</span>
+                </div>
+                <div className="text-muted-foreground">
+                  {player.properties?.length || 0} properties
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

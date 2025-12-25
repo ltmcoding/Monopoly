@@ -173,7 +173,9 @@ export default function Board2D({
   const [displayDice, setDisplayDice] = useState(gameState?.dice || [1, 1]);
   const [showDebugMenu, setShowDebugMenu] = useState(false);
   const [hoveredSpace, setHoveredSpace] = useState(null);
+  const [clickedSpace, setClickedSpace] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [buyingLoading, setBuyingLoading] = useState(false);
 
   useEffect(() => {
     const updateSize = () => {
@@ -271,6 +273,58 @@ export default function Board2D({
 
   const handleMouseLeave = () => {
     // Don't clear immediately - let renderHoverCard handle it
+  };
+
+  // Handle tile click to toggle card display
+  const handleTileClick = (spaceId) => {
+    setClickedSpace(prev => prev === spaceId ? null : spaceId);
+  };
+
+  // Handle buy property action
+  const handleBuyProperty = async () => {
+    if (!socket || buyingLoading) return;
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    if (!currentPlayer) return;
+    const currentSpace = getSpaceById(BOARD_SPACES.find(s => s.position === currentPlayer.position)?.id);
+    if (!currentSpace) return;
+
+    setBuyingLoading(true);
+    try {
+      await socket.buyProperty(gameId, currentSpace.id);
+    } catch (err) {
+      console.error('Buy failed:', err);
+    } finally {
+      setBuyingLoading(false);
+    }
+  };
+
+  // Handle decline/auction property action
+  const handleDeclineProperty = async () => {
+    if (!socket || buyingLoading) return;
+    setBuyingLoading(true);
+    try {
+      await socket.declareProperty(gameId);
+    } catch (err) {
+      console.error('Decline failed:', err);
+    } finally {
+      setBuyingLoading(false);
+    }
+  };
+
+  // Get current space for buying phase
+  const getCurrentSpaceForBuying = () => {
+    if (gameState.phase !== 'buying' || !isMyTurn) return null;
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    if (!currentPlayer) return null;
+    const boardSpace = BOARD_SPACES.find(s => s.position === currentPlayer.position);
+    if (!boardSpace) return null;
+    const space = getSpaceById(boardSpace.id);
+    if (!space || !space.price) return null;
+    const propertyState = gameState.properties[space.id];
+    if (propertyState?.ownerId) return null; // Already owned
+    const myPlayer = gameState.players.find(p => p.id === myPlayerId);
+    const canAfford = myPlayer && myPlayer.cash >= space.price;
+    return { space, canAfford };
   };
 
   // Handle property actions from hover card
@@ -797,8 +851,10 @@ export default function Board2D({
 
   // Larger property hover card with full rent info and actions - no gap
   const renderHoverCard = () => {
-    if (!hoveredSpace) return null;
-    const space = getSpaceById(hoveredSpace);
+    // Show card for either hovered or clicked space (clicked takes priority)
+    const activeSpaceId = clickedSpace || hoveredSpace;
+    if (!activeSpaceId) return null;
+    const space = getSpaceById(activeSpaceId);
     if (!space || !space.price) return null;
 
     const propertyState = getPropertyState(space);
@@ -1154,20 +1210,72 @@ export default function Board2D({
             )}
           </g>
 
-          {/* Action buttons - Roll Dice / End Turn */}
+          {/* Action buttons - Roll Dice / End Turn / Buy Property */}
           <g transform="translate(0, 45)">
-            {canRoll && isMyTurn && (
+            {/* Roll Dice button */}
+            {canRoll && isMyTurn && gameState.phase !== 'buying' && (
               <g transform="translate(0, 0)" onClick={handleRollDice} style={{ cursor: 'pointer' }} className="roll-button">
                 <rect x="-70" y="-20" width="140" height="40" fill="#f59e0b" stroke="#d97706" strokeWidth="2" rx={20} filter="url(#dropShadow)"/>
                 <text textAnchor="middle" dominantBaseline="middle" fontSize="16" fill="#1a1a1a" fontWeight="bold">{isRolling ? 'Rolling...' : 'Roll Dice'}</text>
               </g>
             )}
-            {canEndTurn && isMyTurn && !canRoll && (
+            {/* End Turn button */}
+            {canEndTurn && isMyTurn && !canRoll && gameState.phase !== 'buying' && (
               <g transform="translate(0, 0)" onClick={onEndTurn} style={{ cursor: 'pointer' }} className="end-turn-button">
                 <rect x="-70" y="-20" width="140" height="40" fill="#3b82f6" stroke="#2563eb" strokeWidth="2" rx={20} filter="url(#dropShadow)"/>
                 <text textAnchor="middle" dominantBaseline="middle" fontSize="16" fill="#ffffff" fontWeight="bold">End Turn</text>
               </g>
             )}
+            {/* Buy/Auction/Pass buttons when in buying phase */}
+            {(() => {
+              const buyingInfo = getCurrentSpaceForBuying();
+              if (!buyingInfo) return null;
+              const { space, canAfford } = buyingInfo;
+              const hasAuctionMode = gameState.settings?.auctionMode;
+
+              return (
+                <g>
+                  {/* Property name */}
+                  <text textAnchor="middle" y="-45" fontSize="14" fill={TILE_COLORS.text} fontWeight="bold">
+                    {space.name}
+                  </text>
+
+                  {/* Buy button */}
+                  {canAfford && (
+                    <g transform="translate(0, 0)" onClick={handleBuyProperty} style={{ cursor: buyingLoading ? 'wait' : 'pointer' }}>
+                      <rect x="-100" y="-20" width="200" height="40" fill="#22c55e" stroke="#15803d" strokeWidth="2" rx={20} filter="url(#dropShadow)"/>
+                      <text textAnchor="middle" dominantBaseline="middle" fontSize="15" fill="#ffffff" fontWeight="bold">
+                        {buyingLoading ? 'Buying...' : `Buy for $${space.price}`}
+                      </text>
+                    </g>
+                  )}
+
+                  {/* Can't afford message */}
+                  {!canAfford && (
+                    <g transform="translate(0, 0)">
+                      <rect x="-100" y="-20" width="200" height="40" fill="#6b7280" stroke="#4b5563" strokeWidth="2" rx={20}/>
+                      <text textAnchor="middle" dominantBaseline="middle" fontSize="14" fill="#ffffff" fontWeight="bold">
+                        Can't afford (${space.price})
+                      </text>
+                    </g>
+                  )}
+
+                  {/* Auction button */}
+                  {hasAuctionMode && (
+                    <g transform="translate(-55, 50)" onClick={handleDeclineProperty} style={{ cursor: buyingLoading ? 'wait' : 'pointer' }}>
+                      <rect x="-45" y="-18" width="90" height="36" fill="#8b5cf6" stroke="#7c3aed" strokeWidth="2" rx={18} filter="url(#dropShadow)"/>
+                      <text textAnchor="middle" dominantBaseline="middle" fontSize="13" fill="#ffffff" fontWeight="bold">Auction</text>
+                    </g>
+                  )}
+
+                  {/* Pass button */}
+                  <g transform={`translate(${hasAuctionMode ? 55 : 0}, 50)`} onClick={handleDeclineProperty} style={{ cursor: buyingLoading ? 'wait' : 'pointer' }}>
+                    <rect x="-45" y="-18" width="90" height="36" fill="#ef4444" stroke="#dc2626" strokeWidth="2" rx={18} filter="url(#dropShadow)"/>
+                    <text textAnchor="middle" dominantBaseline="middle" fontSize="13" fill="#ffffff" fontWeight="bold">Pass</text>
+                  </g>
+                </g>
+              );
+            })()}
           </g>
 
           {/* Current player indicator */}
@@ -1186,9 +1294,9 @@ export default function Board2D({
             </text>
           </g>
 
-          {/* Available buildings display at bottom of center */}
+          {/* Available buildings display anchored to bottom of center */}
           {!gameState.settings?.unlimitedProperties && (
-            <g transform={`translate(0, ${boardSize * 0.22})`}>
+            <g transform={`translate(0, ${boardSize * 0.34})`}>
               <rect x="-100" y="-16" width="200" height="32" fill="rgba(0, 0, 0, 0.6)" rx={16} stroke={TILE_COLORS.border} strokeWidth="1"/>
               {/* Houses */}
               <g transform="translate(-55, 0)">
@@ -1213,6 +1321,7 @@ export default function Board2D({
               key={space.id}
               transform={`translate(${pos.x}, ${pos.y})`}
               onMouseEnter={() => handleMouseEnter(space.id)}
+              onClick={() => handleTileClick(space.id)}
               style={{ cursor: 'pointer' }}
             >
               {renderSpace(space, pos)}
