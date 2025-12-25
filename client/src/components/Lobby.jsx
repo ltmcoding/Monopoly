@@ -15,7 +15,8 @@ import {
   X,
   Pencil,
   Palette,
-  Package
+  Package,
+  Robot
 } from '@phosphor-icons/react';
 import { formatCurrency } from '../utils/formatters';
 import { Button } from './ui/button';
@@ -167,6 +168,10 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
     try { await socket.kickPlayer(gameId, targetSocketId); setKickConfirm(null); } catch (err) { alert(err.message || 'Failed to kick player'); }
   };
 
+  const handleAddBot = async () => {
+    try { await socket.addBot(gameId); } catch (err) { alert(err.message || 'Failed to add bot'); }
+  };
+
   const handleStartingCashChange = (value) => {
     if (value === 'custom') { setShowCustomCash(true); return; }
     handleSettingChange('startingCash', parseInt(value));
@@ -306,10 +311,18 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
 
             {/* Players */}
             <div>
-              <h3 className="flex items-center gap-3 text-lg font-semibold mb-4 text-muted-foreground">
-                <Users size={28} />
-                Players ({gameState.players.length})
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="flex items-center gap-3 text-lg font-semibold text-muted-foreground">
+                  <Users size={28} />
+                  Players ({gameState.players.length}/{settings.maxPlayers || 6})
+                </h3>
+                {isHost && gameState.players.length < (settings.maxPlayers || 6) && (
+                  <Button variant="outline" size="sm" onClick={handleAddBot} className="gap-2">
+                    <Robot size={16} />
+                    Add Bot
+                  </Button>
+                )}
+              </div>
               <div className="space-y-3">
                 {gameState.players.map((player, index) => (
                   <div
@@ -324,7 +337,10 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
                     >
                       {player.id === playerId && <Pencil size={16} className="text-white" />}
                     </button>
-                    <span className="font-medium flex-1 text-lg">{player.name}</span>
+                    <span className="font-medium flex-1 text-lg flex items-center gap-2">
+                      {player.name}
+                      {player.isBot && <Robot size={16} className="text-muted-foreground" />}
+                    </span>
                     {index === 0 && <Badge className="text-sm px-3 py-1">HOST</Badge>}
                     {player.id === playerId && <Badge variant="outline" className="text-sm px-3 py-1">YOU</Badge>}
                     {isHost && player.id !== playerId && (

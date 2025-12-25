@@ -77,6 +77,7 @@ class MonopolyGame {
       jailTurns: 0,
       getOutOfJailCards: 0,
       isBankrupt: false,
+      isBot: player.isBot || false,
       color: player.color || this.getPlayerColor(this.players.length)
     };
 

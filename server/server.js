@@ -395,6 +395,37 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Add bot to lobby (host only)
+  socket.on('addBot', ({ gameId }, callback) => {
+    try {
+      const gameRoom = games.get(gameId);
+      if (!gameRoom) throw new Error('Game not found');
+      if (!gameRoom.isHost(socket.id)) throw new Error('Only host can add bots');
+      if (gameRoom.isStarted) throw new Error('Cannot add bots after game started');
+
+      const bot = gameRoom.addBot();
+
+      // Add system message
+      const systemMessage = gameRoom.addSystemMessage(`${bot.name} joined the lobby`);
+
+      // Broadcast to all players
+      gameRoom.broadcast(io, 'playerJoined', {
+        player: bot,
+        systemMessage,
+        gameState: gameRoom.getGameState()
+      });
+
+      if (callback) {
+        callback({ success: true, bot, gameState: gameRoom.getGameState() });
+      }
+    } catch (error) {
+      console.error('Error adding bot:', error);
+      if (callback) {
+        callback({ success: false, error: error.message });
+      }
+    }
+  });
+
   // Create new game
   socket.on('createGame', (settings, callback) => {
     try {

@@ -716,14 +716,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
 
       {/* Main Game Layout */}
       <main className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Players & Log/Chat */}
-        <aside className="w-[480px] flex-shrink-0 flex flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden">
-          <PlayerPanel
-            players={gameState.players}
-            currentPlayerIndex={gameState.currentPlayerIndex}
-            myPlayerId={playerId}
-            gameState={gameState}
-          />
+        {/* Left Panel - Game Log */}
+        <aside className="w-[400px] flex-shrink-0 flex flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden">
           <GameLog
             actionLog={gameState.actionLog || []}
             socket={socket}
@@ -748,8 +742,16 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           />
         </section>
 
-        {/* Right Panel - Trades & Properties */}
-        <aside className="w-[480px] flex-shrink-0 flex flex-col gap-3 p-3 bg-card/50 border-l border-border overflow-hidden">
+        {/* Right Panel - Players, Trades & Properties */}
+        <aside className="w-[400px] flex-shrink-0 flex flex-col gap-3 p-3 bg-card/50 border-l border-border overflow-hidden">
+          {/* Players Section - Compact */}
+          <PlayerPanel
+            players={gameState.players}
+            currentPlayerIndex={gameState.currentPlayerIndex}
+            myPlayerId={playerId}
+            gameState={gameState}
+          />
+
           {/* Pending Trades Section */}
           <Card className="card-gilded flex-shrink-0">
             <CardHeader className="py-3 px-4">

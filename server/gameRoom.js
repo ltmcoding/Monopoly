@@ -89,6 +89,35 @@ class GameRoom {
     return { player, sessionId };
   }
 
+  // Add bot to room
+  addBot() {
+    if (this.isStarted) {
+      throw new Error("Game already started");
+    }
+
+    const maxPlayers = this.game.settings?.maxPlayers || 6;
+    if (this.game.players.length >= maxPlayers) {
+      throw new Error(`Game is full (max ${maxPlayers} players)`);
+    }
+
+    // Count existing bots to generate unique name
+    const existingBots = this.game.players.filter(p => p.isBot).length;
+    const botNumber = existingBots + 1;
+    const botNames = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta'];
+    const botName = `Bot ${botNames[existingBots] || botNumber}`;
+
+    // Generate unique bot ID
+    const botId = `bot_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+
+    const bot = this.game.addPlayer({
+      id: botId,
+      name: botName,
+      isBot: true
+    });
+
+    return bot;
+  }
+
   // Reconnect existing player with new socket
   reconnectPlayer(socket, sessionId) {
     const player = this.sessionToPlayer.get(sessionId);

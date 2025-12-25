@@ -155,6 +155,10 @@ export function useSocket() {
     return emit('kickPlayer', { gameId, targetSocketId });
   };
 
+  const addBot = async (gameId) => {
+    return emit('addBot', { gameId });
+  };
+
   const changePlayerColor = async (gameId, color) => {
     return emit('changePlayerColor', { gameId, color });
   };
@@ -256,6 +260,7 @@ export function useSocket() {
     sendChatMessage,
     togglePrivacy,
     kickPlayer,
+    addBot,
     changePlayerColor,
     leaveGame,
     startGame,
