@@ -1,7 +1,7 @@
 {
   "name": "monopoly-client",
   "version": "1.0.0",
-  "description": "Multiplayer Monopoly game client with 2D graphics",
+  "description": "Tycoon - multiplayer property trading game client with 2D graphics",
   "private": true,
   "dependencies": {
     "@phosphor-icons/react": "^2.1.7",

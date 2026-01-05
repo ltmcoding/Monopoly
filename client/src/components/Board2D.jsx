@@ -1199,7 +1199,7 @@ export default function Board2D({
 
         <g transform={`translate(${boardSize/2}, ${boardSize/2})`}>
           {/* Logo moved up */}
-          <text textAnchor="middle" y={-boardSize * 0.18} fontSize={boardSize * 0.055} fontWeight="bold" fill="url(#goldGradient)" fontFamily="'Cinzel', 'Playfair Display', Georgia, serif" letterSpacing="8" filter="url(#goldGlow)">MONOPOLY</text>
+          <text textAnchor="middle" y={-boardSize * 0.18} fontSize={boardSize * 0.055} fontWeight="bold" fill="url(#goldGradient)" fontFamily="'Cinzel', 'Playfair Display', Georgia, serif" letterSpacing="8" filter="url(#goldGlow)">TYCOON</text>
 
           {/* Dice area - moved up */}
           <g transform="translate(0, -50)">

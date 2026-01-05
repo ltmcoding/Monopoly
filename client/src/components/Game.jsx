@@ -707,10 +707,10 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
         </div>
       )}
 
-      {/* Header - Solid background with Monopoly branding */}
+      {/* Header - Solid background with Tycoon branding */}
       <header className="relative z-10 flex-shrink-0 flex items-center justify-between px-8 py-5 bg-[#0f1419] border-b-4 border-primary shadow-xl">
         <div className="flex items-center gap-6">
-          {/* Monopoly Board SVG Icon */}
+          {/* Game Board SVG Icon */}
           <svg width="48" height="48" viewBox="0 0 100 100" className="text-primary">
             <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
             <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
@@ -719,7 +719,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
             <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
             <circle cx="50" cy="50" r="12" fill="currentColor"/>
           </svg>
-          <span className="text-4xl font-bold tracking-wider game-logo" data-text="MONOPOLY">MONOPOLY</span>
+          <span className="text-4xl font-bold tracking-wider game-logo" data-text="TYCOON">TYCOON</span>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-base text-muted-foreground font-mono">

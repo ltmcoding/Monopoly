@@ -149,7 +149,7 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
     <div className="min-h-screen flex items-center justify-center p-8">
       <Card className="w-full max-w-xl border-border card-gilded">
         <CardHeader className="text-center pb-4 pt-8">
-          {/* Logo Icon - Monopoly Board */}
+          {/* Logo Icon - Game Board */}
           <div className="flex justify-center mb-6">
             <svg width="88" height="88" viewBox="0 0 100 100" className="text-primary">
               <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
@@ -160,11 +160,11 @@ export default function Home({ socket, onGameCreated, onGameJoined, urlGameCode,
               <circle cx="50" cy="50" r="12" fill="currentColor"/>
             </svg>
           </div>
-          <CardTitle className="text-5xl font-bold tracking-wider game-logo" data-text="MONOPOLY">
-            MONOPOLY
+          <CardTitle className="text-5xl font-bold tracking-wider game-logo" data-text="TYCOON">
+            TYCOON
           </CardTitle>
           <CardDescription className="text-xl mt-2">
-            Multiplayer Edition
+            Build Your Empire
           </CardDescription>
         </CardHeader>
 

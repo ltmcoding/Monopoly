@@ -54,9 +54,9 @@ const TOKEN_COLORS = [
 
 // Game Edition data
 const GAME_EDITIONS = [
-  { id: 'classic', name: 'Classic', description: 'The original Monopoly experience', available: true, gradient: 'linear-gradient(135deg, #c41e3a 0%, #8b0000 25%, #1a1a2e 50%, #006400 75%, #004d00 100%)' },
+  { id: 'classic', name: 'Classic', description: 'The original Tycoon experience', available: true, gradient: 'linear-gradient(135deg, #c41e3a 0%, #8b0000 25%, #1a1a2e 50%, #006400 75%, #004d00 100%)' },
   { id: 'speed-die', name: 'Speed Die', description: 'Faster gameplay with the speed die', available: false, gradient: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffd700 100%)' },
-  { id: 'mega-monopoly', name: 'Mega Monopoly', description: 'Larger board, more properties', available: false, gradient: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #4776e6 100%)' },
+  { id: 'mega-tycoon', name: 'Mega Tycoon', description: 'Larger board, more properties', available: false, gradient: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #4776e6 100%)' },
   { id: 'buy-everything', name: 'Buy Everything', description: 'Purchase any space on the board', available: false, gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 50%, #00d084 100%)' }
 ];
 
@@ -204,7 +204,7 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header Bar - Monopoly Branding */}
+      {/* Header Bar - Tycoon Branding */}
       <header className="relative z-10 flex items-center gap-6 px-8 py-5 bg-[#0f1419] border-b-4 border-primary shadow-xl">
         <svg width="48" height="48" viewBox="0 0 100 100" className="text-primary">
           <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
@@ -214,7 +214,7 @@ export default function Lobby({ socket, gameId, playerId, gameState, isHost, onG
           <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
           <circle cx="50" cy="50" r="12" fill="currentColor"/>
         </svg>
-        <span className="text-4xl font-bold tracking-wider game-logo" data-text="MONOPOLY">MONOPOLY</span>
+        <span className="text-4xl font-bold tracking-wider game-logo" data-text="TYCOON">TYCOON</span>
       </header>
 
       {/* Main Content Grid */}
