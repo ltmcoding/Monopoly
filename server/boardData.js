@@ -1,4 +1,4 @@
-// Complete Monopoly board data with all 40 spaces
+// Complete Tycoon board data with all 40 spaces
 
 const BOARD_SPACES = [
   {
@@ -9,7 +9,7 @@ const BOARD_SPACES = [
   },
   {
     id: 1,
-    name: "Mediterranean Avenue",
+    name: "Lowell Cotton Mill",
     type: "property",
     color: "brown",
     price: 60,
@@ -27,7 +27,7 @@ const BOARD_SPACES = [
   },
   {
     id: 3,
-    name: "Baltic Avenue",
+    name: "Manchester Weaving Works",
     type: "property",
     color: "brown",
     price: 60,
@@ -46,7 +46,7 @@ const BOARD_SPACES = [
   },
   {
     id: 5,
-    name: "Reading Railroad",
+    name: "Great Northern Railroad",
     type: "railroad",
     price: 200,
     rent: [25, 50, 100, 200],
@@ -55,7 +55,7 @@ const BOARD_SPACES = [
   },
   {
     id: 6,
-    name: "Oriental Avenue",
+    name: "Appalachian Coal Co.",
     type: "property",
     color: "lightblue",
     price: 100,
@@ -73,7 +73,7 @@ const BOARD_SPACES = [
   },
   {
     id: 8,
-    name: "Vermont Avenue",
+    name: "Anthracite Ridge Mine",
     type: "property",
     color: "lightblue",
     price: 100,
@@ -85,7 +85,7 @@ const BOARD_SPACES = [
   },
   {
     id: 9,
-    name: "Connecticut Avenue",
+    name: "Bituminous Valley Pit",
     type: "property",
     color: "lightblue",
     price: 120,
@@ -103,7 +103,7 @@ const BOARD_SPACES = [
   },
   {
     id: 11,
-    name: "St. Charles Place",
+    name: "Carnegie Steel Works",
     type: "property",
     color: "pink",
     price: 140,
@@ -115,7 +115,7 @@ const BOARD_SPACES = [
   },
   {
     id: 12,
-    name: "Electric Company",
+    name: "Municipal Water Works",
     type: "utility",
     price: 150,
     mortgageValue: 75,
@@ -123,7 +123,7 @@ const BOARD_SPACES = [
   },
   {
     id: 13,
-    name: "States Avenue",
+    name: "Bethlehem Forge",
     type: "property",
     color: "pink",
     price: 140,
@@ -135,7 +135,7 @@ const BOARD_SPACES = [
   },
   {
     id: 14,
-    name: "Virginia Avenue",
+    name: "Pittsburgh Iron Foundry",
     type: "property",
     color: "pink",
     price: 160,
@@ -147,7 +147,7 @@ const BOARD_SPACES = [
   },
   {
     id: 15,
-    name: "Pennsylvania Railroad",
+    name: "Southern Pacific Railroad",
     type: "railroad",
     price: 200,
     rent: [25, 50, 100, 200],
@@ -156,7 +156,7 @@ const BOARD_SPACES = [
   },
   {
     id: 16,
-    name: "St. James Place",
+    name: "Standard Oil Refinery",
     type: "property",
     color: "orange",
     price: 180,
@@ -174,7 +174,7 @@ const BOARD_SPACES = [
   },
   {
     id: 18,
-    name: "Tennessee Avenue",
+    name: "Gulf Coast Petroleum",
     type: "property",
     color: "orange",
     price: 180,
@@ -186,7 +186,7 @@ const BOARD_SPACES = [
   },
   {
     id: 19,
-    name: "New York Avenue",
+    name: "Spindletop Crude Works",
     type: "property",
     color: "orange",
     price: 200,
@@ -204,7 +204,7 @@ const BOARD_SPACES = [
   },
   {
     id: 21,
-    name: "Kentucky Avenue",
+    name: "Ford Assembly Plant",
     type: "property",
     color: "red",
     price: 220,
@@ -222,7 +222,7 @@ const BOARD_SPACES = [
   },
   {
     id: 23,
-    name: "Indiana Avenue",
+    name: "General Motors Works",
     type: "property",
     color: "red",
     price: 220,
@@ -234,7 +234,7 @@ const BOARD_SPACES = [
   },
   {
     id: 24,
-    name: "Illinois Avenue",
+    name: "Chrysler Production Line",
     type: "property",
     color: "red",
     price: 240,
@@ -246,7 +246,7 @@ const BOARD_SPACES = [
   },
   {
     id: 25,
-    name: "B&O Railroad",
+    name: "Baltimore & Ohio Railroad",
     type: "railroad",
     price: 200,
     rent: [25, 50, 100, 200],
@@ -255,7 +255,7 @@ const BOARD_SPACES = [
   },
   {
     id: 26,
-    name: "Atlantic Avenue",
+    name: "Atlantic Trade Harbor",
     type: "property",
     color: "yellow",
     price: 260,
@@ -267,7 +267,7 @@ const BOARD_SPACES = [
   },
   {
     id: 27,
-    name: "Ventnor Avenue",
+    name: "Pacific Gateway Port",
     type: "property",
     color: "yellow",
     price: 260,
@@ -279,7 +279,7 @@ const BOARD_SPACES = [
   },
   {
     id: 28,
-    name: "Water Works",
+    name: "City Gas Company",
     type: "utility",
     price: 150,
     mortgageValue: 75,
@@ -287,7 +287,7 @@ const BOARD_SPACES = [
   },
   {
     id: 29,
-    name: "Marvin Gardens",
+    name: "Great Lakes Shipping Dock",
     type: "property",
     color: "yellow",
     price: 280,
@@ -305,7 +305,7 @@ const BOARD_SPACES = [
   },
   {
     id: 31,
-    name: "Pacific Avenue",
+    name: "Edison Power Station",
     type: "property",
     color: "green",
     price: 300,
@@ -317,7 +317,7 @@ const BOARD_SPACES = [
   },
   {
     id: 32,
-    name: "North Carolina Avenue",
+    name: "Westinghouse Electric",
     type: "property",
     color: "green",
     price: 300,
@@ -335,7 +335,7 @@ const BOARD_SPACES = [
   },
   {
     id: 34,
-    name: "Pennsylvania Avenue",
+    name: "Tesla Generator Works",
     type: "property",
     color: "green",
     price: 320,
@@ -347,7 +347,7 @@ const BOARD_SPACES = [
   },
   {
     id: 35,
-    name: "Short Line Railroad",
+    name: "Union Pacific Railroad",
     type: "railroad",
     price: 200,
     rent: [25, 50, 100, 200],
@@ -362,7 +362,7 @@ const BOARD_SPACES = [
   },
   {
     id: 37,
-    name: "Park Place",
+    name: "Bell Telephone Exchange",
     type: "property",
     color: "darkblue",
     price: 350,
@@ -381,7 +381,7 @@ const BOARD_SPACES = [
   },
   {
     id: 39,
-    name: "Boardwalk",
+    name: "Marconi Wireless Telegraph",
     type: "property",
     color: "darkblue",
     price: 400,
@@ -403,13 +403,13 @@ const CHANCE_CARDS = [
   },
   {
     id: "chance_2",
-    text: "Advance to Illinois Avenue. If you pass GO, collect $200.",
+    text: "Advance to Chrysler Production Line. If you pass GO, collect $200.",
     action: "moveToSpace",
     data: { space: 24, collectGo: true }
   },
   {
     id: "chance_3",
-    text: "Advance to St. Charles Place. If you pass GO, collect $200.",
+    text: "Advance to Carnegie Steel Works. If you pass GO, collect $200.",
     action: "moveToSpace",
     data: { space: 11, collectGo: true }
   },
@@ -469,13 +469,13 @@ const CHANCE_CARDS = [
   },
   {
     id: "chance_13",
-    text: "Take a trip to Reading Railroad. If you pass GO, collect $200.",
+    text: "Take a trip to Great Northern Railroad. If you pass GO, collect $200.",
     action: "moveToSpace",
     data: { space: 5, collectGo: true }
   },
   {
     id: "chance_14",
-    text: "Take a walk on the Boardwalk. Advance token to Boardwalk.",
+    text: "Visit Marconi Wireless Telegraph. Advance token to Marconi.",
     action: "moveToSpace",
     data: { space: 39, collectGo: true }
   },
