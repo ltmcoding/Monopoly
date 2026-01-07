@@ -16,7 +16,7 @@ import {
   House as HouseIcon,
   Gear,
   Users,
-  Dice
+  DiceFive
 } from '@phosphor-icons/react';
 import Board2D from './Board2D';
 import PlayerPanel from './PlayerPanel';
@@ -1170,7 +1170,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
               onClick={handleRollDice}
               aria-label="Roll Dice"
             >
-              <Dice size={28} className="fab-dice-icon" weight="fill" />
+              <DiceFive size={28} className="fab-dice-icon" weight="fill" />
             </button>
           )}
         </>
