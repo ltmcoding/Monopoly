@@ -15,18 +15,22 @@ import {
   Check,
   House as HouseIcon,
   Gear,
-  Users
+  Users,
+  Dice
 } from '@phosphor-icons/react';
 import Board2D from './Board2D';
 import PlayerPanel from './PlayerPanel';
 import TradeModal from './TradeModal';
 import AuctionModal from './AuctionModal';
 import GameLog from './GameLog';
+import MobileNav from './MobileNav';
+import SlidePanel from './SlidePanel';
 import { getSpaceById, COLOR_MAP } from '../utils/boardData';
 import { formatCurrency } from '../utils/formatters';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
+import { useBreakpoint } from '../hooks/useMediaQuery';
 
 export default function Game({ socket, gameId, playerId, initialGameState, onExit }) {
   const [gameState, setGameState] = useState(initialGameState);
@@ -39,6 +43,36 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const propertyRefs = useRef({});
+
+  // Responsive state
+  const { isMobile, isTablet } = useBreakpoint();
+  const [mobileTab, setMobileTab] = useState('board');
+  const [activePanelId, setActivePanelId] = useState(null);
+
+  // Handle mobile tab changes
+  const handleMobileTabChange = (tabId) => {
+    if (tabId === 'board') {
+      setMobileTab('board');
+      setActivePanelId(null);
+    } else {
+      setMobileTab(tabId);
+      setActivePanelId(tabId);
+    }
+  };
+
+  // Close panel
+  const handleClosePanel = () => {
+    setActivePanelId(null);
+    setMobileTab('board');
+  };
+
+  // Count unread messages (placeholder - implement based on your chat system)
+  const unreadMessages = 0;
+
+  // Count pending trades for current player
+  const pendingTrades = (gameState.pendingTrades || []).filter(
+    t => t.toPlayerId === playerId || t.fromPlayerId === playerId
+  ).length;
 
   useEffect(() => {
     // Listen for game updates
@@ -698,7 +732,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="game-container h-screen flex flex-col bg-background overflow-hidden">
       {/* Notification */}
       {notification && (
         <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-3 rounded-lg border shadow-lg ${getNotificationStyles(notification.type)}`}>
@@ -707,11 +741,11 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
         </div>
       )}
 
-      {/* Header - Solid background with Tycoon branding */}
-      <header className="relative z-10 flex-shrink-0 flex items-center justify-between px-8 py-5 bg-[#0f1419] border-b-4 border-primary shadow-xl">
-        <div className="flex items-center gap-6">
-          {/* Game Board SVG Icon */}
-          <svg width="48" height="48" viewBox="0 0 100 100" className="text-primary">
+      {/* Header - Responsive */}
+      <header className="game-header relative z-10 flex-shrink-0 flex items-center justify-between px-8 py-5 bg-[#0f1419] border-b-4 border-primary shadow-xl">
+        <div className="flex items-center gap-4 md:gap-6">
+          {/* Game Board SVG Icon - smaller on mobile */}
+          <svg width="32" height="32" viewBox="0 0 100 100" className="text-primary md:w-12 md:h-12">
             <rect x="10" y="10" width="80" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="4"/>
             <rect x="10" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
             <rect x="70" y="10" width="20" height="20" fill="currentColor" opacity="0.3"/>
@@ -719,27 +753,27 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
             <rect x="70" y="70" width="20" height="20" fill="currentColor" opacity="0.3"/>
             <circle cx="50" cy="50" r="12" fill="currentColor"/>
           </svg>
-          <span className="text-4xl font-bold tracking-wider game-logo" data-text="TYCOON">TYCOON</span>
+          <span className="game-title-small text-2xl md:text-4xl font-bold tracking-wider game-logo" data-text="TYCOON">TYCOON</span>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-base text-muted-foreground font-mono">
+        <div className="header-actions flex items-center gap-2 md:gap-4">
+          <span className="game-code-small hidden sm:inline text-base text-muted-foreground font-mono">
             Room: <span className="text-primary font-bold tracking-wider">{gameId}</span>
           </span>
-          <Button variant="outline" size="default" onClick={() => setShowSettings(true)} className="gap-2 text-base px-4">
+          <Button variant="outline" size="default" onClick={() => setShowSettings(true)} className="header-btn gap-2 text-base px-2 md:px-4">
             <Gear size={20} />
-            Settings
+            <span className="header-btn-text hidden md:inline">Settings</span>
           </Button>
-          <Button variant="secondary" size="default" onClick={handleLeaveGame} className="gap-2 text-base px-4">
+          <Button variant="secondary" size="default" onClick={handleLeaveGame} className="header-btn gap-2 text-base px-2 md:px-4">
             <SignOut size={20} />
-            Leave
+            <span className="header-btn-text hidden md:inline">Leave</span>
           </Button>
         </div>
       </header>
 
-      {/* Main Game Layout */}
-      <main className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Game Log (can shrink if needed) */}
-        <aside className="w-[480px] flex-shrink flex flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden">
+      {/* Main Game Layout - Responsive */}
+      <main className="game-main flex-1 flex overflow-hidden">
+        {/* Left Panel - Game Log (hidden on mobile/tablet) */}
+        <aside className="game-left w-[480px] flex-shrink flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden hidden lg:flex">
           <GameLog
             actionLog={gameState.actionLog || []}
             socket={socket}
@@ -749,8 +783,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           />
         </aside>
 
-        {/* Center - Board (never shrinks, minimum size preserved) */}
-        <section className="flex-1 flex-shrink-0 min-w-[770px] flex items-center justify-center p-2 overflow-hidden game-center">
+        {/* Center - Board */}
+        <section className="game-center flex-1 flex items-center justify-center p-2 overflow-hidden">
           <Board2D
             gameState={gameState}
             onRollDice={handleRollDice}
@@ -764,8 +798,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           />
         </section>
 
-        {/* Right Panel - Players, Trades & Properties (can shrink if needed) */}
-        <aside className="w-[480px] flex-shrink flex flex-col gap-3 p-3 bg-card/50 border-l border-border overflow-hidden">
+        {/* Right Panel - Players, Trades & Properties (hidden on mobile) */}
+        <aside className="game-right w-[480px] flex-shrink flex-col gap-3 p-3 bg-card/50 border-l border-border overflow-hidden hidden md:flex">
           {/* Players Section - Compact */}
           <PlayerPanel
             players={gameState.players}
@@ -1053,6 +1087,94 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           </>
         );
       })()}
+
+      {/* Mobile Navigation - Only shown on mobile */}
+      {isMobile && (
+        <MobileNav
+          activeTab={mobileTab}
+          onTabChange={handleMobileTabChange}
+          unreadMessages={unreadMessages}
+          pendingTrades={pendingTrades}
+        />
+      )}
+
+      {/* Mobile Slide-Up Panels */}
+      {isMobile && (
+        <>
+          {/* Players Panel */}
+          <SlidePanel
+            isOpen={activePanelId === 'players'}
+            onClose={handleClosePanel}
+            title="Players"
+          >
+            <PlayerPanel
+              players={gameState.players}
+              currentPlayerIndex={gameState.currentPlayerIndex}
+              myPlayerId={playerId}
+              onPlayerClick={(id) => setSelectedPlayer(id)}
+            />
+          </SlidePanel>
+
+          {/* Properties Panel */}
+          <SlidePanel
+            isOpen={activePanelId === 'properties'}
+            onClose={handleClosePanel}
+            title="My Properties"
+          >
+            {renderMyProperties()}
+          </SlidePanel>
+
+          {/* Chat Panel */}
+          <SlidePanel
+            isOpen={activePanelId === 'chat'}
+            onClose={handleClosePanel}
+            title="Chat & Log"
+          >
+            <GameLog
+              actionLog={gameState.actionLog || []}
+              socket={socket}
+              gameId={gameId}
+              playerId={playerId}
+              players={gameState.players}
+            />
+          </SlidePanel>
+
+          {/* Trades Panel */}
+          <SlidePanel
+            isOpen={activePanelId === 'trades'}
+            onClose={handleClosePanel}
+            title="Trades"
+          >
+            <div className="space-y-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  handleClosePanel();
+                  setShowTradeModal(true);
+                }}
+                disabled={getMyPlayer()?.isBankrupt}
+                className="w-full gap-2"
+              >
+                <Handshake size={16} />
+                Propose New Trade
+              </Button>
+              {renderPendingTrades()}
+            </div>
+          </SlidePanel>
+
+          {/* Floating Dice Button - shown when not on board tab and it's your turn */}
+          {mobileTab !== 'board' && isMyTurn() && canRollDice() && gameState.phase !== 'buying' && (
+            <button
+              className="fab-dice"
+              onClick={handleRollDice}
+              aria-label="Roll Dice"
+            >
+              <Dice size={28} className="fab-dice-icon" weight="fill" />
+            </button>
+          )}
+        </>
+      )}
     </div>
   );
 }

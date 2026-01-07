@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { BOARD_SPACES, COLOR_MAP, getSpaceById } from '../utils/boardData';
+import { useBoardSize } from '../hooks/useBoardSize';
+import { usePinchZoom } from '../hooks/usePinchZoom';
+import { useBreakpoint } from '../hooks/useMediaQuery';
 
 // Enhanced property colors (vibrant for dark mode)
 const ENHANCED_COLORS = {
@@ -167,8 +170,27 @@ export default function Board2D({
   socket = null,
   gameId = null
 }) {
+  // Responsive hooks
+  const { isMobile, isTablet } = useBreakpoint();
+  const { size: boardSize, containerRef: boardContainerRef } = useBoardSize({
+    minSize: 280,
+    maxSize: 950,
+    padding: isMobile ? 8 : 16
+  });
+
+  // Pinch-to-zoom for mobile
+  const {
+    transform: zoomTransform,
+    handlers: zoomHandlers,
+    resetZoom,
+    isZoomed,
+    isZooming
+  } = usePinchZoom({
+    minScale: 0.8,
+    maxScale: 3,
+  });
+
   const containerRef = useRef(null);
-  const [boardSize, setBoardSize] = useState(950);
   const [isRolling, setIsRolling] = useState(false);
   const [displayDice, setDisplayDice] = useState(gameState?.dice || [1, 1]);
   const [showDebugMenu, setShowDebugMenu] = useState(false);
@@ -176,19 +198,6 @@ export default function Board2D({
   const [clickedSpace, setClickedSpace] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [buyingLoading, setBuyingLoading] = useState(false);
-
-  useEffect(() => {
-    const updateSize = () => {
-      const container = document.querySelector('.game-center');
-      if (container) {
-        const maxSize = Math.min(container.clientWidth - 20, container.clientHeight - 20, 1050);
-        setBoardSize(Math.max(maxSize, 750));
-      }
-    };
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
 
   useEffect(() => {
     if (gameState?.dice && !isRolling) {
@@ -1150,9 +1159,71 @@ export default function Board2D({
     setHoveredSpace(null);
   };
 
+  // Zoom transform style
+  const zoomStyle = isMobile ? {
+    transform: `scale(${zoomTransform.scale}) translate(${zoomTransform.x}%, ${zoomTransform.y}%)`,
+    transformOrigin: 'center center',
+    transition: isZooming ? 'none' : 'transform 0.2s ease-out',
+  } : {};
+
   return (
-    <div className="relative" ref={containerRef} onMouseLeave={handleBoardMouseLeave}>
-      <svg width={boardSize} height={boardSize} viewBox={`0 0 ${boardSize} ${boardSize}`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px' }}>
+    <div
+      className="board-viewport"
+      ref={boardContainerRef}
+      onMouseLeave={handleBoardMouseLeave}
+      {...(isMobile ? zoomHandlers : {})}
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        touchAction: isMobile ? 'none' : 'auto',
+        position: 'relative',
+      }}
+    >
+      {/* Zoom reset button for mobile */}
+      {isMobile && isZoomed && (
+        <button
+          onClick={resetZoom}
+          className="zoom-reset-btn"
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            zIndex: 10,
+            padding: '8px 12px',
+            background: 'rgba(245, 158, 11, 0.9)',
+            border: 'none',
+            borderRadius: '8px',
+            color: '#1a1a1a',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          }}
+        >
+          Reset Zoom
+        </button>
+      )}
+
+      <div
+        className={`board-transform-layer ${isZooming ? 'zooming' : ''}`}
+        style={zoomStyle}
+        ref={containerRef}
+      >
+        <svg
+          width={boardSize}
+          height={boardSize}
+          viewBox={`0 0 ${boardSize} ${boardSize}`}
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+            borderRadius: '8px',
+            display: 'block',
+          }}
+        >
         <defs>
           <pattern id="woodGrain" patternUnits="userSpaceOnUse" width="100" height="100">
             <rect width="100" height="100" fill={WOOD_COLORS.medium}/>
@@ -1346,11 +1417,14 @@ export default function Board2D({
         })}
 
         {renderHoverCard()}
-      </svg>
+        </svg>
+      </div>
 
+      {/* Debug button */}
       <button
         className="absolute bottom-2 right-2 px-3 py-1.5 text-xs font-medium rounded bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
         onClick={() => setShowDebugMenu(!showDebugMenu)}
+        style={{ zIndex: 5 }}
       >
         Debug
       </button>
