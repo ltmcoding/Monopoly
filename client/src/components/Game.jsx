@@ -1131,7 +1131,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
             <div className="p-4 border-b border-border flex items-center justify-between">
               <h3 className="font-bold text-lg flex items-center gap-2">
                 <Chat size={20} className="text-primary" />
-                Chat & Log
+                Chat
               </h3>
               <button className="p-1 rounded hover:bg-secondary" onClick={() => setShowChatPanel(false)}>
                 <X size={16} />
@@ -1144,6 +1144,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
                 gameId={gameId}
                 playerId={playerId}
                 players={gameState.players}
+                hideHeader
               />
             </div>
           </div>
@@ -1180,7 +1181,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           <SlidePanel
             isOpen={activePanelId === 'chat'}
             onClose={handleClosePanel}
-            title="Chat & Log"
+            title="Chat"
           >
             <GameLog
               actionLog={gameState.actionLog || []}
@@ -1188,6 +1189,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
               gameId={gameId}
               playerId={playerId}
               players={gameState.players}
+              hideHeader
             />
           </SlidePanel>
 

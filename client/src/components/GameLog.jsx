@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 
-export default function GameLog({ actionLog, socket, gameId, playerId, players }) {
+export default function GameLog({ actionLog, socket, gameId, playerId, players, hideHeader = false }) {
   const logEndRef = useRef(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
@@ -48,14 +48,16 @@ export default function GameLog({ actionLog, socket, gameId, playerId, players }
   ].sort((a, b) => a.timestamp - b.timestamp);
 
   return (
-    <Card className="flex-1 min-h-0 flex flex-col card-gilded">
-      <CardHeader className="py-3 px-4">
-        <CardTitle className="text-base flex items-center gap-2">
-          <ChatCircle size={20} className="text-primary" weight="duotone" />
-          Log & Chat
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col min-h-0 p-3 pt-0 gap-2">
+    <Card className="flex-1 min-h-0 flex flex-col card-gilded h-full">
+      {!hideHeader && (
+        <CardHeader className="py-3 px-4 flex-shrink-0">
+          <CardTitle className="text-base flex items-center gap-2">
+            <ChatCircle size={20} className="text-primary" weight="duotone" />
+            Chat
+          </CardTitle>
+        </CardHeader>
+      )}
+      <CardContent className={`flex-1 flex flex-col min-h-0 gap-2 ${hideHeader ? 'p-3' : 'p-3 pt-0'}`}>
         {/* Combined messages area */}
         <div className="flex-1 overflow-y-auto space-y-1.5">
           {combinedMessages.length > 0 ? (

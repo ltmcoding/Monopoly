@@ -771,16 +771,44 @@ export default function Board2D({
   const renderPlayers = (position, pos) => {
     const players = getPlayersOnSpace(position);
     if (players.length === 0) return null;
-    // Fixed token size for consistency across all tiles (22px)
-    const tokenSize = 22;
+
+    // Scale token size based on tile dimensions for non-corner tiles
+    const isCorner = pos.side === 'corner';
+    const minDimension = Math.min(pos.w, pos.h);
+    // Token size scales with tile, but capped between 14-22px
+    const tokenSize = isCorner ? 22 : Math.max(14, Math.min(22, minDimension * 0.28));
     const centerX = pos.w / 2;
     const centerY = pos.h / 2;
 
+    // Calculate safe bounds to keep tokens inside tile
+    const padding = tokenSize / 2 + 2;
+    const safeWidth = pos.w - padding * 2;
+    const safeHeight = pos.h - padding * 2;
+
     const getTokenPosition = (index, total) => {
       if (total === 1) return { x: centerX, y: centerY };
-      const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
-      const radius = tokenSize * 1.1;
-      return { x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
+
+      if (isCorner) {
+        // Corners are square - use circular arrangement
+        const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
+        const radius = Math.min(tokenSize * 1.1, minDimension / 3);
+        return { x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
+      } else {
+        // Non-corner tiles are rectangular - arrange in a grid/line
+        const maxPerRow = Math.floor(safeWidth / (tokenSize + 2)) || 1;
+        const rows = Math.ceil(total / maxPerRow);
+        const row = Math.floor(index / maxPerRow);
+        const col = index % maxPerRow;
+        const itemsInRow = row < rows - 1 ? maxPerRow : total - row * maxPerRow;
+
+        const xSpacing = safeWidth / Math.max(itemsInRow, 1);
+        const ySpacing = safeHeight / Math.max(rows, 1);
+
+        const x = padding + xSpacing / 2 + col * xSpacing;
+        const y = padding + ySpacing / 2 + row * ySpacing;
+
+        return { x, y };
+      }
     };
 
     return players.map((player, idx) => {
@@ -1306,8 +1334,8 @@ export default function Board2D({
 
               return (
                 <g>
-                  {/* Property name */}
-                  <text textAnchor="middle" y={boardSize * -0.07} fontSize={boardSize * 0.022} fill={TILE_COLORS.text} fontWeight="bold">
+                  {/* Property name - positioned further below dice */}
+                  <text textAnchor="middle" y={boardSize * -0.045} fontSize={boardSize * 0.022} fill={TILE_COLORS.text} fontWeight="bold">
                     {space.name}
                   </text>
 
@@ -1350,8 +1378,8 @@ export default function Board2D({
             })()}
           </g>
 
-          {/* Current player indicator - positioned lower */}
-          <g transform={`translate(0, ${boardSize * 0.22})`}>
+          {/* Current player indicator - positioned lower to avoid overlapping buttons */}
+          <g transform={`translate(0, ${boardSize * 0.26})`}>
             <rect x={boardSize * -0.18} y={boardSize * -0.03} width={boardSize * 0.36} height={boardSize * 0.06} fill="rgba(0, 0, 0, 0.5)" rx={boardSize * 0.03} stroke={TILE_COLORS.border} strokeWidth="1.5"/>
             <defs>
               <linearGradient id="turnPlayerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
