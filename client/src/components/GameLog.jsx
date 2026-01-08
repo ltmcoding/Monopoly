@@ -41,11 +41,46 @@ export default function GameLog({ actionLog, socket, gameId, playerId, players, 
     }
   };
 
-  // Combine and sort action log and chat messages by timestamp
+  // Filter action log to only show important messages
+  const isImportantMessage = (message) => {
+    if (!message) return false;
+    const msg = message.toLowerCase();
+
+    // Rent payments (player pays another)
+    if (msg.includes('paid') && msg.includes('rent')) return true;
+    if (msg.includes('pays') && msg.includes('$')) return true;
+
+    // Community Chest / Chance cards
+    if (msg.includes('community chest') || msg.includes('chance')) return true;
+    if (msg.includes('drew a card') || msg.includes('card:')) return true;
+
+    // Tax payments
+    if (msg.includes('income tax') || msg.includes('luxury tax')) return true;
+    if (msg.includes('tax') && msg.includes('$')) return true;
+
+    // Free Parking
+    if (msg.includes('free parking')) return true;
+
+    // Go to Jail
+    if (msg.includes('go to jail') || msg.includes('sent to jail') || msg.includes('went to jail')) return true;
+    if (msg.includes('in jail')) return true;
+
+    // Passing GO
+    if (msg.includes('passed go') || msg.includes('passing go') || msg.includes('collected $200')) return true;
+
+    // Bankruptcy
+    if (msg.includes('bankrupt')) return true;
+
+    return false;
+  };
+
+  // Combine and sort action log (filtered) and chat messages by timestamp
+  const filteredActionLog = (actionLog || []).filter(entry => isImportantMessage(entry.message));
+
   const combinedMessages = [
-    ...(actionLog || []).map(entry => ({ ...entry, type: 'action' })),
+    ...filteredActionLog.map(entry => ({ ...entry, type: 'action' })),
     ...chatMessages.map(msg => ({ ...msg, type: msg.type === 'system' ? 'system' : 'chat', timestamp: msg.timestamp || Date.now() }))
-  ].sort((a, b) => a.timestamp - b.timestamp);
+  ].sort((a, b) => a.timestamp - b.timestamp).slice(-50); // Limit to last 50 messages
 
   return (
     <Card className="flex-1 min-h-0 flex flex-col card-gilded h-full">

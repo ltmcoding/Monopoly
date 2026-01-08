@@ -12,10 +12,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
  */
 export const useBoardSize = ({
   minSize = 280,
-  maxSize = 700,
-  padding = 32
+  maxSize = 1200,
+  padding = 16
 } = {}) => {
-  const [size, setSize] = useState(maxSize);
+  const [size, setSize] = useState(600);
   const containerRef = useRef(null);
   const observerRef = useRef(null);
 
@@ -25,10 +25,9 @@ export const useBoardSize = ({
     const container = containerRef.current;
     const rect = container.getBoundingClientRect();
 
-    // On mobile (< 768px width), use minimal padding to maximize board size
+    // Use minimal padding to maximize board size
     const isMobile = window.innerWidth < 768;
-    const effectivePadding = isMobile ? 8 : padding;
-    const effectiveMaxSize = isMobile ? 900 : maxSize;
+    const effectivePadding = isMobile ? 4 : padding;
 
     // Get the actual available space
     const availableWidth = rect.width - effectivePadding;
@@ -37,8 +36,8 @@ export const useBoardSize = ({
     // Board is square, so use the smaller dimension
     const availableSize = Math.min(availableWidth, availableHeight);
 
-    // Clamp to min/max bounds
-    const clampedSize = Math.max(minSize, Math.min(effectiveMaxSize, availableSize));
+    // Clamp to min/max bounds - allow board to be as big as possible
+    const clampedSize = Math.max(minSize, Math.min(maxSize, availableSize));
 
     // Only update if size actually changed (avoid unnecessary re-renders)
     setSize(prev => {
