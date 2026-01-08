@@ -1272,17 +1272,17 @@ export default function Board2D({
           {/* Logo moved up */}
           <text textAnchor="middle" y={-boardSize * 0.18} fontSize={boardSize * 0.055} fontWeight="bold" fill="url(#goldGradient)" fontFamily="'Cinzel', 'Playfair Display', Georgia, serif" letterSpacing="8" filter="url(#goldGlow)">TYCOON</text>
 
-          {/* Dice area - moved up */}
-          <g transform="translate(0, -50)">
-            <g transform="translate(-40, -30)"><DiceFace value={displayDice[0]} size={55} isRolling={isRolling} /></g>
-            <g transform="translate(40, -30)"><DiceFace value={displayDice[1]} size={55} isRolling={isRolling} /></g>
+          {/* Dice area - positioned below logo */}
+          <g transform="translate(0, -20)">
+            <g transform="translate(-40, 0)"><DiceFace value={displayDice[0]} size={55} isRolling={isRolling} /></g>
+            <g transform="translate(40, 0)"><DiceFace value={displayDice[1]} size={55} isRolling={isRolling} /></g>
             {gameState.settings?.speedDie && gameState.speedDie && (
               <g transform="translate(0, 40)"><SpeedDieFace value={gameState.speedDie} size={40} /></g>
             )}
           </g>
 
           {/* Action buttons - Roll Dice / End Turn / Buy Property */}
-          <g transform="translate(0, 45)">
+          <g transform="translate(0, 65)">
             {/* Roll Dice button */}
             {canRoll && isMyTurn && gameState.phase !== 'buying' && (
               <g transform="translate(0, 0)" onClick={handleRollDice} style={{ cursor: 'pointer' }} className="roll-button">
@@ -1350,7 +1350,7 @@ export default function Board2D({
           </g>
 
           {/* Current player indicator */}
-          <g transform="translate(0, 100)">
+          <g transform="translate(0, 120)">
             <rect x="-120" y="-20" width="240" height="40" fill="rgba(0, 0, 0, 0.5)" rx={20} stroke={TILE_COLORS.border} strokeWidth="1.5"/>
             <defs>
               <linearGradient id="turnPlayerGradient" x1="0%" y1="0%" x2="100%" y2="100%">

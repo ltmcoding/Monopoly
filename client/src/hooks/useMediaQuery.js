@@ -93,8 +93,8 @@ function getBreakpointState() {
   else if (width < breakpoints.lg) breakpoint = 'lg';
   else if (width < breakpoints.xl) breakpoint = 'xl';
 
-  // Mobile: < 480px OR (< 768px AND landscape with height < 500px)
-  const isMobile = width < breakpoints.sm || (width < breakpoints.md && isLandscape && height < 500);
+  // Mobile: < 768px (includes all phones and small tablets in portrait)
+  const isMobile = width < breakpoints.md;
 
   // Tablet: 768px - 1024px
   const isTablet = width >= breakpoints.md && width < breakpoints.lg;

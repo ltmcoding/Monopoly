@@ -16,7 +16,8 @@ import {
   House as HouseIcon,
   Gear,
   Users,
-  DiceFive
+  DiceFive,
+  Chat
 } from '@phosphor-icons/react';
 import Board2D from './Board2D';
 import PlayerPanel from './PlayerPanel';
@@ -45,9 +46,10 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
   const propertyRefs = useRef({});
 
   // Responsive state
-  const { isMobile, isTablet } = useBreakpoint();
+  const { isMobile, isTablet, isDesktop } = useBreakpoint();
   const [mobileTab, setMobileTab] = useState('board');
   const [activePanelId, setActivePanelId] = useState(null);
+  const [showChatPanel, setShowChatPanel] = useState(false);
 
   // Handle mobile tab changes
   const handleMobileTabChange = (tabId) => {
@@ -1096,6 +1098,44 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           unreadMessages={unreadMessages}
           pendingTrades={pendingTrades}
         />
+      )}
+
+      {/* Floating Chat Button - shown on tablet when chat panel is hidden */}
+      {isTablet && !showChatPanel && (
+        <button
+          className="fab-chat"
+          onClick={() => setShowChatPanel(true)}
+          aria-label="Open Chat"
+        >
+          <Chat size={24} weight="fill" />
+        </button>
+      )}
+
+      {/* Chat Panel Overlay for Tablet */}
+      {isTablet && showChatPanel && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setShowChatPanel(false)} />
+          <div className="fixed left-4 top-20 bottom-4 w-[350px] z-50 bg-card border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <Chat size={20} className="text-primary" />
+                Chat & Log
+              </h3>
+              <button className="p-1 rounded hover:bg-secondary" onClick={() => setShowChatPanel(false)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <GameLog
+                actionLog={gameState.actionLog || []}
+                socket={socket}
+                gameId={gameId}
+                playerId={playerId}
+                players={gameState.players}
+              />
+            </div>
+          </div>
+        </>
       )}
 
       {/* Mobile Slide-Up Panels */}

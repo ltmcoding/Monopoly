@@ -1829,11 +1829,15 @@ body {
    ============================================ */
 .game-container {
   min-height: 100vh;
+  height: 100vh;
   padding: var(--space-3);
   color: var(--color-text-primary);
   position: relative;
   z-index: 1;
   background: var(--panel-bg-base);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .game-header {
@@ -1871,7 +1875,9 @@ body {
   display: grid;
   grid-template-columns: 280px 1fr 320px;
   gap: var(--space-3);
-  height: calc(100vh - 100px);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .game-left,
@@ -1902,6 +1908,8 @@ body {
   justify-content: center;
   background: linear-gradient(135deg, var(--panel-bg-secondary) 0%, var(--panel-bg-elevated) 100%);
   box-shadow: var(--shadow-glass-sm);
+  overflow: auto;
+  min-height: 0;
 }
 
 /* ============================================
@@ -2835,23 +2843,27 @@ body {
 @media (min-width: 768px) and (max-width: 1024px) {
   .game-main {
     display: grid;
-    grid-template-columns: 1fr 300px;
+    grid-template-columns: 1fr 280px;
     gap: var(--space-3);
-    height: calc(100vh - 80px);
+    flex: 1;
+    min-height: 0;
   }
 
   .game-left {
-    display: none; /* Chat moves to sidebar tabs on tablet */
+    display: none; /* Chat available via floating button on tablet */
   }
 
   .game-center {
     min-height: 0;
+    overflow: auto;
   }
 
   .game-right {
     display: flex;
     flex-direction: column;
     position: relative;
+    min-width: 0; /* Allow text to wrap/truncate */
+    overflow: hidden;
   }
 
   /* Sidebar tabs for tablet */
@@ -2933,14 +2945,16 @@ body {
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
     min-height: 100vh;
     min-height: 100dvh;
+    height: auto;
   }
 
   .game-main {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 56px - 64px - env(safe-area-inset-bottom, 0px));
-    height: calc(100dvh - 56px - 64px - env(safe-area-inset-bottom, 0px));
+    min-height: calc(100vh - 56px - 64px - env(safe-area-inset-bottom, 0px));
+    min-height: calc(100dvh - 56px - 64px - env(safe-area-inset-bottom, 0px));
     gap: 0;
+    overflow: visible;
   }
 
   .game-left,
@@ -2953,6 +2967,7 @@ body {
     min-height: 0;
     padding: var(--space-2);
     border-radius: 0;
+    overflow: auto;
   }
 
   /* Compact header on mobile */
@@ -3031,12 +3046,30 @@ body {
   }
 
   .game-main {
-    height: calc(100vh - 44px - 56px);
-    height: calc(100dvh - 44px - 56px);
+    min-height: calc(100vh - 44px - 56px);
+    min-height: calc(100dvh - 44px - 56px);
+    overflow: auto;
   }
 
   .game-center {
     padding: var(--space-1);
+    overflow: auto;
+    min-height: auto;
+    height: auto;
+  }
+
+  /* Hide mobile nav in landscape to give more space */
+  .mobile-nav {
+    height: 48px;
+    padding: 4px 0;
+  }
+
+  .mobile-nav-tab {
+    padding: 4px 8px;
+  }
+
+  .mobile-nav-label {
+    font-size: 9px;
   }
 }
 
@@ -3344,11 +3377,62 @@ body {
   pointer-events: none;
 }
 
+/* Floating Chat Button for Tablet */
+.fab-chat {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 95;
+
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    #3b82f6 0%,
+    #2563eb 100%
+  );
+
+  border: none;
+  box-shadow:
+    0 8px 24px rgba(59, 130, 246, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: fab-entrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fab-chat:hover {
+  transform: scale(1.1);
+  box-shadow:
+    0 12px 32px rgba(59, 130, 246, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.fab-chat:active {
+  transform: scale(0.95);
+}
+
 /* Hide mobile nav and panels on desktop */
 @media (min-width: 768px) {
   .mobile-nav,
   .slide-panel,
   .fab-dice {
+    display: none;
+  }
+}
+
+/* Hide fab-chat on mobile and desktop (only show on tablet) */
+@media (max-width: 767px), (min-width: 1024px) {
+  .fab-chat {
     display: none;
   }
 }
