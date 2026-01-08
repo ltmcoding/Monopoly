@@ -39,8 +39,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
   const [notification, setNotification] = useState(null);
   const [selectedTrade, setSelectedTrade] = useState(null);
   const [tradeLoading, setTradeLoading] = useState(false);
-  const [selectedColorSet, setSelectedColorSet] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [highlightedPropertyId, setHighlightedPropertyId] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
 
   // Responsive state
@@ -386,11 +386,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
 
           return (
             <div key={colorKey} className="space-y-1.5">
-              {/* Clickable color set header */}
-              <button
-                className="flex items-center gap-2 w-full p-1.5 rounded hover:bg-secondary/50 transition-colors"
-                onClick={() => setSelectedColorSet(colorKey)}
-              >
+              {/* Color set header (non-clickable) */}
+              <div className="flex items-center gap-2 w-full p-1.5">
                 <div
                   className="w-3 h-3 rounded"
                   style={{ backgroundColor: COLOR_MAP[colorKey] || '#666' }}
@@ -399,17 +396,19 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
                   {colorKey === 'railroad' ? 'Railroads' : colorKey === 'utility' ? 'Utilities' : colorKey}
                 </span>
                 <span className="text-xs text-muted-foreground ml-auto">({props.length})</span>
-              </button>
-              {/* Single column list of properties */}
+              </div>
+              {/* Single column list of properties - clickable */}
               <div className="flex flex-col gap-1.5">
                 {props.map(prop => {
                   const property = gameState.properties[prop.propId];
+                  const isHighlighted = highlightedPropertyId === prop.propId;
                   return (
                     <div
                       key={prop.propId}
-                      className={`flex items-center gap-1.5 p-1.5 rounded transition-all bg-secondary/20 ${
-                        property?.mortgaged ? 'opacity-50' : ''
-                      }`}
+                      className={`flex items-center gap-1.5 p-1.5 rounded transition-all cursor-pointer hover:bg-secondary/50 ${
+                        isHighlighted ? 'bg-primary/20 ring-1 ring-primary' : 'bg-secondary/20'
+                      } ${property?.mortgaged ? 'opacity-50' : ''}`}
+                      onClick={() => setHighlightedPropertyId(prop.propId)}
                     >
                       {/* Color bar */}
                       <div
@@ -664,6 +663,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
               myPlayerId={playerId}
               socket={socket}
               gameId={gameId}
+              highlightedPropertyId={highlightedPropertyId}
+              onPropertyHighlightChange={setHighlightedPropertyId}
             />
           </div>
         </section>
@@ -819,72 +820,6 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           </div>
         </>
       )}
-
-      {/* Color Set Modal */}
-      {selectedColorSet && (() => {
-        const myPlayer = getMyPlayer();
-        const props = myPlayer?.properties
-          ?.map(propId => ({ ...getSpaceById(propId), propId }))
-          ?.filter(p => (p.color || p.type) === selectedColorSet) || [];
-
-        return (
-          <>
-            <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setSelectedColorSet(null)} />
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-[600px] max-w-[90vw] bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
-              <div className="p-4 border-b border-border flex items-center justify-between">
-                <h3 className="font-bold text-lg flex items-center gap-2">
-                  <div className="w-4 h-4 rounded" style={{ backgroundColor: COLOR_MAP[selectedColorSet] || '#666' }} />
-                  {selectedColorSet === 'railroad' ? 'Railroads' : selectedColorSet === 'utility' ? 'Utilities' : selectedColorSet.charAt(0).toUpperCase() + selectedColorSet.slice(1)} Properties
-                </h3>
-                <button className="p-1 rounded hover:bg-secondary" onClick={() => setSelectedColorSet(null)}>
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto">
-                {props.map(prop => {
-                  const property = gameState.properties[prop.propId];
-                  const canBuildHouse = prop.type === 'property' && !property?.mortgaged && property?.houses < 4 && !property?.hotels && isMyTurn();
-                  const canBuildHotel = prop.type === 'property' && !property?.mortgaged && property?.houses === 4 && !property?.hotels && isMyTurn();
-
-                  return (
-                    <div key={prop.propId} className="bg-secondary/30 rounded-lg overflow-hidden border border-border">
-                      {prop.color && (
-                        <div className="h-4" style={{ backgroundColor: COLOR_MAP[prop.color] }} />
-                      )}
-                      <div className="p-3 space-y-2">
-                        <div className="font-medium text-sm">{prop.name}</div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          {property?.hotels > 0 && <Badge variant="destructive" className="text-[10px] py-0 px-1">Hotel</Badge>}
-                          {property?.houses > 0 && !property?.hotels && <Badge variant="success" className="text-[10px] py-0 px-1">{property.houses} House{property.houses > 1 ? 's' : ''}</Badge>}
-                          {property?.mortgaged && <Badge variant="secondary" className="text-[10px] py-0 px-1">Mortgaged</Badge>}
-                          {!property?.hotels && property?.houses === 0 && !property?.mortgaged && <span>No buildings</span>}
-                        </div>
-                        {(canBuildHouse || canBuildHotel) && (
-                          <Button
-                            size="sm"
-                            variant={canBuildHotel ? 'destructive' : 'success'}
-                            className="w-full gap-1 text-xs"
-                            onClick={() => {
-                              if (canBuildHotel) {
-                                socket.buildHotel(gameId, prop.propId);
-                              } else {
-                                socket.buildHouse(gameId, prop.propId);
-                              }
-                            }}
-                          >
-                            {canBuildHotel ? <Buildings size={12} /> : <HouseIcon size={12} />}
-                            Build {canBuildHotel ? 'Hotel' : 'House'}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        );
-      })()}
 
       {/* Player Properties Modal */}
       {selectedPlayer && (() => {

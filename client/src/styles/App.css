@@ -1873,7 +1873,8 @@ body {
 
 .game-main {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr) 300px;
+  /* Center is sized by content (square board), side panels fill remaining */
+  grid-template-columns: 1fr auto 1fr;
   gap: var(--space-3);
   flex: 1;
   min-height: 0;
@@ -1894,6 +1895,8 @@ body {
   background: var(--panel-bg-secondary);
   box-shadow: var(--shadow-glass-sm);
   overflow-y: auto;
+  /* Content scaling in side panels */
+  font-size: clamp(0.75rem, 0.7rem + 0.25vw, 0.9375rem);
 }
 
 .game-right {
@@ -1902,6 +1905,8 @@ body {
   -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: var(--shadow-glass), var(--shadow-inset-highlight);
   overflow-y: auto;
+  /* Content scaling in side panels */
+  font-size: clamp(0.75rem, 0.7rem + 0.25vw, 0.9375rem);
 }
 
 .game-center {
@@ -1912,6 +1917,12 @@ body {
   background: linear-gradient(135deg, var(--panel-bg-secondary) 0%, var(--panel-bg-elevated) 100%);
   box-shadow: var(--shadow-glass-sm);
   overflow: auto;
+  /* Square aspect ratio - board is always square */
+  aspect-ratio: 1;
+  /* Size based on available height, up to full height */
+  height: 100%;
+  max-height: 100%;
+  width: auto;
 }
 
 /* ============================================
@@ -2829,7 +2840,8 @@ body {
 @media (min-width: 1280px) {
   .game-main {
     display: grid;
-    grid-template-columns: 320px minmax(0, 1fr) 320px;
+    /* Center is square (auto-sized), side panels fill remaining space equally */
+    grid-template-columns: 1fr auto 1fr;
     gap: var(--space-3);
   }
 
@@ -2837,21 +2849,36 @@ body {
   .game-right {
     display: flex;
     flex-direction: column;
-    max-width: 320px;
+    min-width: 280px;
+    max-width: 400px;
+  }
+
+  .game-center {
+    aspect-ratio: 1;
+    height: 100%;
+    max-height: 100%;
+    width: auto;
   }
 }
 
-/* Extra Wide Desktop: Wider panels (>= 1536px) */
+/* Extra Wide Desktop: Larger content (>= 1536px) */
 @media (min-width: 1536px) {
   .game-main {
-    grid-template-columns: 380px minmax(0, 1fr) 380px;
+    grid-template-columns: 1fr auto 1fr;
     gap: var(--space-4);
   }
 
   .game-left,
   .game-right {
-    max-width: 380px;
+    min-width: 320px;
+    max-width: 500px;
     padding: var(--space-5);
+  }
+
+  /* Scale up text in side panels on larger screens */
+  .game-left,
+  .game-right {
+    font-size: 0.9375rem;
   }
 
   .game-left .text-sm,
@@ -2865,11 +2892,32 @@ body {
   }
 }
 
+/* Ultra Wide Desktop (>= 1920px) */
+@media (min-width: 1920px) {
+  .game-left,
+  .game-right {
+    min-width: 380px;
+    max-width: 600px;
+    font-size: 1rem;
+  }
+
+  .game-left .text-sm,
+  .game-right .text-sm {
+    font-size: 1rem;
+  }
+
+  .game-left .text-xs,
+  .game-right .text-xs {
+    font-size: 0.875rem;
+  }
+}
+
 /* Tablet: 2-column with collapsible sidebar (768-1279px) */
 @media (min-width: 768px) and (max-width: 1279px) {
   .game-main {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 280px;
+    /* Square board in center, right panel fills remaining */
+    grid-template-columns: auto 1fr;
     gap: var(--space-3);
   }
 
@@ -2878,6 +2926,10 @@ body {
   }
 
   .game-center {
+    aspect-ratio: 1;
+    height: 100%;
+    max-height: 100%;
+    width: auto;
     min-height: 0;
     min-width: 0;
     overflow: auto;
@@ -2887,9 +2939,10 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-    min-width: 0;
-    max-width: 280px;
+    min-width: 200px;
+    max-width: 320px;
     overflow-y: auto;
+    font-size: clamp(0.75rem, 0.7rem + 0.3vw, 0.875rem);
   }
 
   /* Sidebar tabs for tablet */
@@ -3702,13 +3755,7 @@ body {
 }
 
 /* Game center responsive sizing */
-.game-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 600px;
-  padding: var(--space-4);
-}
+/* Note: .game-center is defined in the main layout section above */
 
 /* ============================================
    DEBUG MENU

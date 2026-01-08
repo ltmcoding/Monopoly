@@ -168,7 +168,9 @@ export default function Board2D({
   canEndTurn = false,
   myPlayerId = null,
   socket = null,
-  gameId = null
+  gameId = null,
+  highlightedPropertyId = null,
+  onPropertyHighlightChange = null
 }) {
   // Responsive hooks
   const { isMobile, isTablet } = useBreakpoint();
@@ -286,7 +288,65 @@ export default function Board2D({
 
   // Handle tile click to toggle card display
   const handleTileClick = (spaceId) => {
+    // Clear highlighted property from properties list when clicking on board
+    if (onPropertyHighlightChange) {
+      onPropertyHighlightChange(null);
+    }
     setClickedSpace(prev => prev === spaceId ? null : spaceId);
+  };
+
+  // Check if player owns complete color set and can build on all
+  const canBuildOnSet = (space) => {
+    if (space.type !== 'property' || !space.color) return false;
+    const myPlayer = gameState.players.find(p => p.id === myPlayerId);
+    if (!myPlayer) return false;
+
+    // Get all properties in this color set
+    const colorSetProps = BOARD_SPACES.filter(s => s.color === space.color);
+
+    // Check if player owns all of them
+    const ownsAll = colorSetProps.every(prop => {
+      const state = gameState.properties[prop.id];
+      return state?.ownerId === myPlayerId;
+    });
+    if (!ownsAll) return false;
+
+    // Check if any can have houses built (not mortgaged, houses < 4, no hotels)
+    const canBuildOnAny = colorSetProps.some(prop => {
+      const state = gameState.properties[prop.id];
+      return state && !state.mortgaged && state.houses < 4 && !state.hotels;
+    });
+
+    return canBuildOnAny;
+  };
+
+  // Build one house on each property in set (evenly)
+  const handleBuildOnSet = async (space) => {
+    if (!socket || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const colorSetProps = BOARD_SPACES.filter(s => s.color === space.color);
+      // Find the property with minimum houses that can be built on
+      const buildable = colorSetProps
+        .filter(prop => {
+          const state = gameState.properties[prop.id];
+          return state && !state.mortgaged && state.houses < 4 && !state.hotels;
+        })
+        .sort((a, b) => {
+          const aHouses = gameState.properties[a.id]?.houses || 0;
+          const bHouses = gameState.properties[b.id]?.houses || 0;
+          return aHouses - bHouses;
+        });
+
+      // Build on each property one at a time (for even build rule)
+      for (const prop of buildable) {
+        await socket.buildHouse(gameId, prop.id);
+      }
+    } catch (err) {
+      console.error('Build on set failed:', err);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // Handle buy property action
@@ -890,8 +950,8 @@ export default function Board2D({
 
   // Larger property hover card with full rent info and actions - no gap
   const renderHoverCard = () => {
-    // Show card for either hovered or clicked space (clicked takes priority)
-    const activeSpaceId = clickedSpace || hoveredSpace;
+    // Show card for highlighted (from properties list), clicked, or hovered space
+    const activeSpaceId = highlightedPropertyId || clickedSpace || hoveredSpace;
     if (!activeSpaceId) return null;
     const space = getSpaceById(activeSpaceId);
     if (!space || !space.price) return null;
@@ -901,10 +961,12 @@ export default function Board2D({
     const owner = propertyState?.ownerId ? gameState.players.find(p => p.id === propertyState.ownerId) : null;
     const myPlayer = gameState.players.find(p => p.id === myPlayerId);
     const isMyProperty = owner && myPlayer && owner.id === myPlayer.id;
+    const showBuildOnSet = isMyProperty && isMyTurn && canBuildOnSet(space);
 
-    // Larger card dimensions
+    // Larger card dimensions - extra height for Build on Set button
     const cardWidth = 220;
-    const cardHeight = space.type === 'property' ? (isMyProperty ? 380 : 310) : (isMyProperty ? 240 : 180);
+    const baseHeight = space.type === 'property' ? (isMyProperty ? 380 : 310) : (isMyProperty ? 240 : 180);
+    const cardHeight = showBuildOnSet ? baseHeight + 55 : baseHeight;
 
     // Position card TOUCHING the tile (no gap) - aligned with the side facing inside
     let cardX, cardY;
@@ -1118,6 +1180,19 @@ export default function Board2D({
                 <text x={98} y={28} textAnchor="middle" fontSize={11} fill="white" fontWeight="bold">Unmortgage (${Math.floor(space.mortgageValue * 1.1)})</text>
               </g>
             )}
+          </g>
+        )}
+
+        {/* Build on Set button - shown when player owns complete set */}
+        {showBuildOnSet && (
+          <g transform={`translate(12, ${cardHeight - 50})`}>
+            <g
+              style={{cursor: actionLoading ? 'wait' : 'pointer'}}
+              onClick={() => !actionLoading && handleBuildOnSet(space)}
+            >
+              <rect width={196} height={38} fill="#8b5cf6" rx={4}/>
+              <text x={98} y={24} textAnchor="middle" fontSize={11} fill="white" fontWeight="bold">⬆ Build on Entire Set</text>
+            </g>
           </g>
         )}
       </g>
