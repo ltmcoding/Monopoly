@@ -773,9 +773,9 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
       </header>
 
       {/* Main Game Layout - Responsive */}
-      <main className="game-main flex-1 flex overflow-hidden">
+      <main className="game-main flex-1 overflow-hidden">
         {/* Left Panel - Game Log (hidden on mobile/tablet) */}
-        <aside className="game-left w-[480px] flex-shrink flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden hidden lg:flex">
+        <aside className="game-left flex-shrink-0 flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden hidden lg:flex">
           <GameLog
             actionLog={gameState.actionLog || []}
             socket={socket}
@@ -786,7 +786,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
         </aside>
 
         {/* Center - Board */}
-        <section className="game-center flex-1 flex items-center justify-center p-2 overflow-hidden">
+        <section className="game-center flex-1 min-w-0 flex items-center justify-center p-2 overflow-auto">
           <Board2D
             gameState={gameState}
             onRollDice={handleRollDice}
@@ -801,7 +801,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
         </section>
 
         {/* Right Panel - Players, Trades & Properties (hidden on mobile) */}
-        <aside className="game-right w-[480px] flex-shrink flex-col gap-3 p-3 bg-card/50 border-l border-border overflow-hidden hidden md:flex">
+        <aside className="game-right flex-shrink-0 flex-col gap-3 p-3 bg-card/50 border-l border-border overflow-y-auto hidden md:flex">
           {/* Players Section - Compact */}
           <PlayerPanel
             players={gameState.players}

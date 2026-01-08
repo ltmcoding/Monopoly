@@ -1873,7 +1873,7 @@ body {
 
 .game-main {
   display: grid;
-  grid-template-columns: 280px 1fr 320px;
+  grid-template-columns: 300px minmax(0, 1fr) 300px;
   gap: var(--space-3);
   flex: 1;
   min-height: 0;
@@ -1885,13 +1885,15 @@ body {
 .game-right {
   border-radius: var(--radius-lg);
   padding: var(--space-4);
-  overflow-y: auto;
   border: 1px solid var(--glass-border);
+  min-width: 0;
+  min-height: 0;
 }
 
 .game-left {
   background: var(--panel-bg-secondary);
   box-shadow: var(--shadow-glass-sm);
+  overflow-y: auto;
 }
 
 .game-right {
@@ -1899,6 +1901,7 @@ body {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: var(--shadow-glass), var(--shadow-inset-highlight);
+  overflow-y: auto;
 }
 
 .game-center {
@@ -1909,7 +1912,6 @@ body {
   background: linear-gradient(135deg, var(--panel-bg-secondary) 0%, var(--panel-bg-elevated) 100%);
   box-shadow: var(--shadow-glass-sm);
   overflow: auto;
-  min-height: 0;
 }
 
 /* ============================================
@@ -2827,15 +2829,15 @@ body {
 @media (min-width: 1025px) {
   .game-main {
     display: grid;
-    grid-template-columns: 280px 1fr 320px;
+    grid-template-columns: 300px minmax(0, 1fr) 300px;
     gap: var(--space-3);
-    height: calc(100vh - 100px);
   }
 
   .game-left,
   .game-right {
     display: flex;
     flex-direction: column;
+    max-width: 300px;
   }
 }
 
@@ -2843,10 +2845,8 @@ body {
 @media (min-width: 768px) and (max-width: 1024px) {
   .game-main {
     display: grid;
-    grid-template-columns: 1fr 280px;
+    grid-template-columns: minmax(0, 1fr) 280px;
     gap: var(--space-3);
-    flex: 1;
-    min-height: 0;
   }
 
   .game-left {
@@ -2855,6 +2855,7 @@ body {
 
   .game-center {
     min-height: 0;
+    min-width: 0;
     overflow: auto;
   }
 
@@ -2862,8 +2863,9 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-    min-width: 0; /* Allow text to wrap/truncate */
-    overflow: hidden;
+    min-width: 0;
+    max-width: 280px;
+    overflow-y: auto;
   }
 
   /* Sidebar tabs for tablet */

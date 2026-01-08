@@ -12,8 +12,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
  */
 export const useBoardSize = ({
   minSize = 280,
-  maxSize = 950,
-  padding = 16
+  maxSize = 700,
+  padding = 32
 } = {}) => {
   const [size, setSize] = useState(maxSize);
   const containerRef = useRef(null);
