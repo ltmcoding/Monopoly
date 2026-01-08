@@ -37,13 +37,11 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
   const [gameState, setGameState] = useState(initialGameState);
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [notification, setNotification] = useState(null);
-  const [selectedProperty, setSelectedProperty] = useState(null);
   const [selectedTrade, setSelectedTrade] = useState(null);
   const [tradeLoading, setTradeLoading] = useState(false);
   const [selectedColorSet, setSelectedColorSet] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
-  const propertyRefs = useRef({});
 
   // Responsive state
   const { isMobile, isTablet, isDesktop } = useBreakpoint();
@@ -409,11 +407,9 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
                   return (
                     <div
                       key={prop.propId}
-                      ref={el => propertyRefs.current[prop.propId] = el}
-                      className={`flex items-center gap-1.5 p-1.5 rounded cursor-pointer transition-all hover:bg-secondary/50 bg-secondary/20 ${
+                      className={`flex items-center gap-1.5 p-1.5 rounded transition-all bg-secondary/20 ${
                         property?.mortgaged ? 'opacity-50' : ''
                       }`}
-                      onClick={() => setSelectedProperty(prop.propId)}
                     >
                       {/* Color bar */}
                       <div
@@ -438,147 +434,6 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           );
         })}
       </div>
-    );
-  };
-
-  // Render property popup card
-  const renderPropertyPopup = () => {
-    const space = getSpaceById(selectedProperty);
-    if (!space) return null;
-
-    const property = gameState.properties[selectedProperty];
-    const owner = property?.ownerId ? gameState.players.find(p => p.id === property.ownerId) : null;
-    const myPlayer = getMyPlayer();
-    const isMyProperty = owner && myPlayer && owner.id === myPlayer.id;
-
-    // Get position of the property item in the list
-    const ref = propertyRefs.current[selectedProperty];
-    let popupStyle = {};
-    if (ref) {
-      const rect = ref.getBoundingClientRect();
-      popupStyle = {
-        position: 'fixed',
-        top: rect.top,
-        right: window.innerWidth - rect.left + 8,
-        zIndex: 100
-      };
-    }
-
-    return (
-      <>
-        <div className="fixed inset-0 z-50" onClick={() => setSelectedProperty(null)} />
-        <div
-          style={popupStyle}
-          className="z-[100] w-72 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
-          onClick={e => e.stopPropagation()}
-        >
-          {/* Color bar */}
-          {space.color && (
-            <div className="h-6" style={{ backgroundColor: COLOR_MAP[space.color] }} />
-          )}
-
-          <div className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-lg">{space.name}</h3>
-              <button
-                className="p-1 rounded hover:bg-secondary"
-                onClick={() => setSelectedProperty(null)}
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            {owner && (
-              <div className="flex items-center gap-2 text-sm">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: owner.color }} />
-                <span>Owner: <strong>{owner.name}</strong></span>
-              </div>
-            )}
-
-            {property?.mortgaged && (
-              <Badge variant="destructive" className="w-full justify-center">MORTGAGED</Badge>
-            )}
-
-            {/* Rent info */}
-            {space.type === 'property' && space.rent && (
-              <div className="space-y-1 text-sm border-t border-border pt-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Rent</span>
-                  <span className={property?.houses === 0 && !property?.hotels ? 'text-primary font-bold' : ''}>${space.rent[0]}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">With 1 House</span>
-                  <span className={property?.houses === 1 ? 'text-primary font-bold' : ''}>${space.rent[1]}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">With 2 Houses</span>
-                  <span className={property?.houses === 2 ? 'text-primary font-bold' : ''}>${space.rent[2]}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">With 3 Houses</span>
-                  <span className={property?.houses === 3 ? 'text-primary font-bold' : ''}>${space.rent[3]}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">With 4 Houses</span>
-                  <span className={property?.houses === 4 && !property?.hotels ? 'text-primary font-bold' : ''}>${space.rent[4]}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">With Hotel</span>
-                  <span className={property?.hotels > 0 ? 'text-primary font-bold' : ''}>${space.rent[5]}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Actions for my properties */}
-            {isMyProperty && isMyTurn() && (
-              <div className="flex flex-wrap gap-2 border-t border-border pt-3">
-                {space.type === 'property' && !property.mortgaged && property.houses < 4 && !property.hotels && (
-                  <Button
-                    size="sm"
-                    variant="success"
-                    className="flex-1 gap-1"
-                    onClick={() => socket.buildHouse(gameId, selectedProperty)}
-                  >
-                    <HouseIcon size={14} />
-                    House
-                  </Button>
-                )}
-                {space.type === 'property' && !property.mortgaged && property.houses === 4 && !property.hotels && (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    className="flex-1 gap-1"
-                    onClick={() => socket.buildHotel(gameId, selectedProperty)}
-                  >
-                    <Buildings size={14} />
-                    Hotel
-                  </Button>
-                )}
-                {!property.mortgaged && property.houses === 0 && !property.hotels && (
-                  <Button
-                    size="sm"
-                    variant="warning"
-                    className="flex-1"
-                    onClick={() => socket.mortgage(gameId, selectedProperty)}
-                  >
-                    Mortgage
-                  </Button>
-                )}
-                {property.mortgaged && (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => socket.unmortgage(gameId, selectedProperty)}
-                  >
-                    Unmortgage
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </>
     );
   };
 
@@ -787,31 +642,15 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
 
         {/* Center - Board */}
         <section className="game-center flex-1 min-w-0 flex flex-col p-2 overflow-auto">
-          {/* Compact Player Bar - Mobile Only */}
+          {/* Player Panel - Mobile Only */}
           {isMobile && (
-            <div className="mobile-player-bar flex gap-1 p-2 mb-2 bg-card/80 rounded-lg border border-border overflow-x-auto flex-shrink-0">
-              {gameState.players.map((player, idx) => {
-                const isCurrentTurn = idx === gameState.currentPlayerIndex;
-                const isMe = player.id === playerId;
-                return (
-                  <div
-                    key={player.id}
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-md flex-shrink-0 ${
-                      isCurrentTurn ? 'bg-primary/20 ring-1 ring-primary' : 'bg-secondary/30'
-                    } ${player.isBankrupt ? 'opacity-40' : ''}`}
-                    onClick={() => setSelectedPlayer(player.id)}
-                  >
-                    <div
-                      className="w-3 h-3 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: player.color }}
-                    />
-                    <span className={`text-xs font-medium truncate max-w-[60px] ${isMe ? 'text-primary' : ''}`}>
-                      {player.name.length > 8 ? player.name.slice(0, 7) + '…' : player.name}
-                    </span>
-                    <span className="text-xs text-muted-foreground">${player.cash}</span>
-                  </div>
-                );
-              })}
+            <div className="mb-2 flex-shrink-0">
+              <PlayerPanel
+                players={gameState.players}
+                currentPlayerIndex={gameState.currentPlayerIndex}
+                myPlayerId={playerId}
+                onPlayerClick={(id) => setSelectedPlayer(id)}
+              />
             </div>
           )}
           <div className="flex-1 flex items-center justify-center min-h-0">
@@ -891,8 +730,6 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
         </aside>
       </main>
 
-      {/* Property Card Popup */}
-      {selectedProperty && renderPropertyPopup()}
 
       {/* Trade Detail Popup */}
       {selectedTrade && renderTradePopup()}

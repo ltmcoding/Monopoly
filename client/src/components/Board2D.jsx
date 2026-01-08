@@ -174,8 +174,8 @@ export default function Board2D({
   const { isMobile, isTablet } = useBreakpoint();
   const { size: boardSize, containerRef: boardContainerRef } = useBoardSize({
     minSize: 280,
-    maxSize: 950,
-    padding: isMobile ? 8 : 16
+    maxSize: 1200,
+    padding: isMobile ? 4 : 16
   });
 
   // Pinch-to-zoom for mobile
@@ -1195,6 +1195,24 @@ export default function Board2D({
     transformOrigin: 'center center',
     transition: isZooming ? 'none' : 'transform 0.2s ease-out',
   } : {};
+
+  // Show loading placeholder while board size is being calculated
+  if (boardSize === null) {
+    return (
+      <div
+        ref={boardContainerRef}
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div className="text-muted-foreground">Loading board...</div>
+      </div>
+    );
+  }
 
   return (
     <div

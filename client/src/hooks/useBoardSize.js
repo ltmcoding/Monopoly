@@ -15,7 +15,8 @@ export const useBoardSize = ({
   maxSize = 1200,
   padding = 16
 } = {}) => {
-  const [size, setSize] = useState(600);
+  // Start with null to indicate "not yet calculated"
+  const [size, setSize] = useState(null);
   const containerRef = useRef(null);
   const observerRef = useRef(null);
 
@@ -24,6 +25,9 @@ export const useBoardSize = ({
 
     const container = containerRef.current;
     const rect = container.getBoundingClientRect();
+
+    // Skip if container has no dimensions yet
+    if (rect.width === 0 || rect.height === 0) return;
 
     // Use minimal padding to maximize board size
     const isMobile = window.innerWidth < 768;
@@ -38,12 +42,10 @@ export const useBoardSize = ({
 
     // Clamp to min/max bounds - allow board to be as big as possible
     const clampedSize = Math.max(minSize, Math.min(maxSize, availableSize));
+    const rounded = Math.round(clampedSize);
 
-    // Only update if size actually changed (avoid unnecessary re-renders)
-    setSize(prev => {
-      const rounded = Math.round(clampedSize);
-      return prev === rounded ? prev : rounded;
-    });
+    // Always set the size (first calculation) or only update if changed
+    setSize(prev => (prev === null || prev !== rounded) ? rounded : prev);
   }, [minSize, maxSize, padding]);
 
   useEffect(() => {
