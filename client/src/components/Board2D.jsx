@@ -205,16 +205,16 @@ export default function Board2D({
     }
   }, [gameState?.dice, isRolling]);
 
-  // Sizing calculations
-  const woodBorderWidth = Math.round(boardSize * 0.022);
-  const cornerSize = Math.round(boardSize * 0.135);
-  const colorBarHeight = Math.round(boardSize * 0.028);
+  // Sizing calculations - use fractional pixels for accurate positioning (SVG handles them fine)
+  const woodBorderWidth = boardSize * 0.022;
+  const cornerSize = boardSize * 0.135;
+  const colorBarHeight = boardSize * 0.028;
   const sideSpaces = 9;
-  const spaceWidth = Math.floor((boardSize - 2 * cornerSize - 2 * woodBorderWidth) / sideSpaces);
+  const spaceWidth = (boardSize - 2 * cornerSize - 2 * woodBorderWidth) / sideSpaces;
   const innerBoardStart = cornerSize + woodBorderWidth;
   const innerBoardSize = boardSize - 2 * cornerSize - 2 * woodBorderWidth;
-  const fontSize = Math.round(boardSize * 0.009);
-  const priceFontSize = Math.round(boardSize * 0.01);
+  const fontSize = boardSize * 0.009;
+  const priceFontSize = boardSize * 0.01;
 
   // Consistent spacing for all tile orientations
   const textGap = fontSize * 1.8;        // Gap from color bar to first line of text
@@ -1272,29 +1272,29 @@ export default function Board2D({
           {/* Logo moved up */}
           <text textAnchor="middle" y={-boardSize * 0.18} fontSize={boardSize * 0.055} fontWeight="bold" fill="url(#goldGradient)" fontFamily="'Cinzel', 'Playfair Display', Georgia, serif" letterSpacing="8" filter="url(#goldGlow)">TYCOON</text>
 
-          {/* Dice area - positioned below logo */}
-          <g transform="translate(0, -20)">
-            <g transform="translate(-40, 0)"><DiceFace value={displayDice[0]} size={55} isRolling={isRolling} /></g>
-            <g transform="translate(40, 0)"><DiceFace value={displayDice[1]} size={55} isRolling={isRolling} /></g>
+          {/* Dice area - positioned below logo, scales with board */}
+          <g transform={`translate(0, ${boardSize * -0.03})`}>
+            <g transform={`translate(${boardSize * -0.06}, 0)`}><DiceFace value={displayDice[0]} size={boardSize * 0.08} isRolling={isRolling} /></g>
+            <g transform={`translate(${boardSize * 0.06}, 0)`}><DiceFace value={displayDice[1]} size={boardSize * 0.08} isRolling={isRolling} /></g>
             {gameState.settings?.speedDie && gameState.speedDie && (
-              <g transform="translate(0, 40)"><SpeedDieFace value={gameState.speedDie} size={40} /></g>
+              <g transform={`translate(0, ${boardSize * 0.06})`}><SpeedDieFace value={gameState.speedDie} size={boardSize * 0.06} /></g>
             )}
           </g>
 
           {/* Action buttons - Roll Dice / End Turn / Buy Property */}
-          <g transform="translate(0, 65)">
+          <g transform={`translate(0, ${boardSize * 0.1})`}>
             {/* Roll Dice button */}
             {canRoll && isMyTurn && gameState.phase !== 'buying' && (
               <g transform="translate(0, 0)" onClick={handleRollDice} style={{ cursor: 'pointer' }} className="roll-button">
-                <rect x="-70" y="-20" width="140" height="40" fill="#f59e0b" stroke="#d97706" strokeWidth="2" rx={20} filter="url(#dropShadow)"/>
-                <text textAnchor="middle" dominantBaseline="middle" fontSize="16" fill="#1a1a1a" fontWeight="bold">{isRolling ? 'Rolling...' : 'Roll Dice'}</text>
+                <rect x={boardSize * -0.12} y={boardSize * -0.03} width={boardSize * 0.24} height={boardSize * 0.06} fill="#f59e0b" stroke="#d97706" strokeWidth="2" rx={boardSize * 0.03} filter="url(#dropShadow)"/>
+                <text textAnchor="middle" dominantBaseline="middle" fontSize={boardSize * 0.025} fill="#1a1a1a" fontWeight="bold">{isRolling ? 'Rolling...' : 'Roll Dice'}</text>
               </g>
             )}
             {/* End Turn button */}
             {canEndTurn && isMyTurn && !canRoll && gameState.phase !== 'buying' && (
               <g transform="translate(0, 0)" onClick={onEndTurn} style={{ cursor: 'pointer' }} className="end-turn-button">
-                <rect x="-70" y="-20" width="140" height="40" fill="#3b82f6" stroke="#2563eb" strokeWidth="2" rx={20} filter="url(#dropShadow)"/>
-                <text textAnchor="middle" dominantBaseline="middle" fontSize="16" fill="#ffffff" fontWeight="bold">End Turn</text>
+                <rect x={boardSize * -0.12} y={boardSize * -0.03} width={boardSize * 0.24} height={boardSize * 0.06} fill="#f59e0b" stroke="#d97706" strokeWidth="2" rx={boardSize * 0.03} filter="url(#dropShadow)"/>
+                <text textAnchor="middle" dominantBaseline="middle" fontSize={boardSize * 0.025} fill="#1a1a1a" fontWeight="bold">End Turn</text>
               </g>
             )}
             {/* Buy/Auction/Pass buttons when in buying phase */}
@@ -1307,15 +1307,15 @@ export default function Board2D({
               return (
                 <g>
                   {/* Property name */}
-                  <text textAnchor="middle" y="-45" fontSize="14" fill={TILE_COLORS.text} fontWeight="bold">
+                  <text textAnchor="middle" y={boardSize * -0.07} fontSize={boardSize * 0.022} fill={TILE_COLORS.text} fontWeight="bold">
                     {space.name}
                   </text>
 
                   {/* Buy button */}
                   {canAfford && (
                     <g transform="translate(0, 0)" onClick={handleBuyProperty} style={{ cursor: buyingLoading ? 'wait' : 'pointer' }}>
-                      <rect x="-100" y="-20" width="200" height="40" fill="#22c55e" stroke="#15803d" strokeWidth="2" rx={20} filter="url(#dropShadow)"/>
-                      <text textAnchor="middle" dominantBaseline="middle" fontSize="15" fill="#ffffff" fontWeight="bold">
+                      <rect x={boardSize * -0.16} y={boardSize * -0.03} width={boardSize * 0.32} height={boardSize * 0.06} fill="#22c55e" stroke="#15803d" strokeWidth="2" rx={boardSize * 0.03} filter="url(#dropShadow)"/>
+                      <text textAnchor="middle" dominantBaseline="middle" fontSize={boardSize * 0.022} fill="#ffffff" fontWeight="bold">
                         {buyingLoading ? 'Buying...' : `Buy for $${space.price}`}
                       </text>
                     </g>
@@ -1324,64 +1324,47 @@ export default function Board2D({
                   {/* Can't afford message */}
                   {!canAfford && (
                     <g transform="translate(0, 0)">
-                      <rect x="-100" y="-20" width="200" height="40" fill="#6b7280" stroke="#4b5563" strokeWidth="2" rx={20}/>
-                      <text textAnchor="middle" dominantBaseline="middle" fontSize="14" fill="#ffffff" fontWeight="bold">
+                      <rect x={boardSize * -0.16} y={boardSize * -0.03} width={boardSize * 0.32} height={boardSize * 0.06} fill="#6b7280" stroke="#4b5563" strokeWidth="2" rx={boardSize * 0.03}/>
+                      <text textAnchor="middle" dominantBaseline="middle" fontSize={boardSize * 0.02} fill="#ffffff" fontWeight="bold">
                         Can't afford (${space.price})
                       </text>
                     </g>
                   )}
 
-                  {/* Auction button */}
-                  {hasAuctionMode && (
-                    <g transform="translate(-55, 50)" onClick={handleDeclineProperty} style={{ cursor: buyingLoading ? 'wait' : 'pointer' }}>
-                      <rect x="-45" y="-18" width="90" height="36" fill="#8b5cf6" stroke="#7c3aed" strokeWidth="2" rx={18} filter="url(#dropShadow)"/>
-                      <text textAnchor="middle" dominantBaseline="middle" fontSize="13" fill="#ffffff" fontWeight="bold">Auction</text>
-                    </g>
-                  )}
-
-                  {/* Pass button */}
-                  <g transform={`translate(${hasAuctionMode ? 55 : 0}, 50)`} onClick={handleDeclineProperty} style={{ cursor: buyingLoading ? 'wait' : 'pointer' }}>
-                    <rect x="-45" y="-18" width="90" height="36" fill="#ef4444" stroke="#dc2626" strokeWidth="2" rx={18} filter="url(#dropShadow)"/>
-                    <text textAnchor="middle" dominantBaseline="middle" fontSize="13" fill="#ffffff" fontWeight="bold">Pass</text>
+                  {/* Auction button (only if auction mode ON) OR Pass button (only if auction mode OFF) */}
+                  <g transform={`translate(0, ${boardSize * 0.075})`} onClick={handleDeclineProperty} style={{ cursor: buyingLoading ? 'wait' : 'pointer' }}>
+                    {hasAuctionMode ? (
+                      <>
+                        <rect x={boardSize * -0.1} y={boardSize * -0.025} width={boardSize * 0.2} height={boardSize * 0.05} fill="#8b5cf6" stroke="#7c3aed" strokeWidth="2" rx={boardSize * 0.025} filter="url(#dropShadow)"/>
+                        <text textAnchor="middle" dominantBaseline="middle" fontSize={boardSize * 0.02} fill="#ffffff" fontWeight="bold">Auction</text>
+                      </>
+                    ) : (
+                      <>
+                        <rect x={boardSize * -0.1} y={boardSize * -0.025} width={boardSize * 0.2} height={boardSize * 0.05} fill="#ef4444" stroke="#dc2626" strokeWidth="2" rx={boardSize * 0.025} filter="url(#dropShadow)"/>
+                        <text textAnchor="middle" dominantBaseline="middle" fontSize={boardSize * 0.02} fill="#ffffff" fontWeight="bold">Pass</text>
+                      </>
+                    )}
                   </g>
                 </g>
               );
             })()}
           </g>
 
-          {/* Current player indicator */}
-          <g transform="translate(0, 120)">
-            <rect x="-120" y="-20" width="240" height="40" fill="rgba(0, 0, 0, 0.5)" rx={20} stroke={TILE_COLORS.border} strokeWidth="1.5"/>
+          {/* Current player indicator - positioned lower */}
+          <g transform={`translate(0, ${boardSize * 0.22})`}>
+            <rect x={boardSize * -0.18} y={boardSize * -0.03} width={boardSize * 0.36} height={boardSize * 0.06} fill="rgba(0, 0, 0, 0.5)" rx={boardSize * 0.03} stroke={TILE_COLORS.border} strokeWidth="1.5"/>
             <defs>
               <linearGradient id="turnPlayerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor={currentPlayer?.color || '#666'} stopOpacity="1"/>
                 <stop offset="100%" stopColor={currentPlayer?.color || '#666'} stopOpacity="0.6"/>
               </linearGradient>
             </defs>
-            <circle cx="-88" cy="0" r="12" fill="url(#turnPlayerGradient)" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
-            <circle cx="-92" cy="-4" r="4" fill="rgba(255,255,255,0.25)"/>
-            <text x="10" textAnchor="middle" dominantBaseline="middle" fontSize="14" fill={TILE_COLORS.text} fontWeight="bold" style={{ textOverflow: 'ellipsis' }}>
+            <circle cx={boardSize * -0.13} cy="0" r={boardSize * 0.018} fill="url(#turnPlayerGradient)" stroke="rgba(255,255,255,0.3)" strokeWidth="2"/>
+            <circle cx={boardSize * -0.136} cy={boardSize * -0.006} r={boardSize * 0.006} fill="rgba(255,255,255,0.25)"/>
+            <text x={boardSize * 0.015} textAnchor="middle" dominantBaseline="middle" fontSize={boardSize * 0.02} fill={TILE_COLORS.text} fontWeight="bold" style={{ textOverflow: 'ellipsis' }}>
               {currentPlayer?.name ? (currentPlayer.name.length > 12 ? currentPlayer.name.slice(0, 11) + '…' : currentPlayer.name) : 'Player'}'s Turn
             </text>
           </g>
-
-          {/* Available buildings display anchored to bottom of center */}
-          {!gameState.settings?.unlimitedProperties && (
-            <g transform={`translate(0, ${boardSize * 0.34})`}>
-              <rect x="-100" y="-16" width="200" height="32" fill="rgba(0, 0, 0, 0.6)" rx={16} stroke={TILE_COLORS.border} strokeWidth="1"/>
-              {/* Houses */}
-              <g transform="translate(-55, 0)">
-                <rect x="-10" y="-8" width="20" height="16" fill="#22c55e" rx={3} stroke="#15803d" strokeWidth="1"/>
-                <text x="18" textAnchor="start" dominantBaseline="middle" fontSize="12" fill={TILE_COLORS.text} fontWeight="bold">{gameState.availableHouses}</text>
-              </g>
-              {/* Hotels */}
-              <g transform="translate(35, 0)">
-                <rect x="-10" y="-8" width="20" height="16" fill="#ef4444" rx={3} stroke="#b91c1c" strokeWidth="1"/>
-                <text x="-4" y="1" textAnchor="middle" dominantBaseline="middle" fontSize="10" fill="white" fontWeight="bold">H</text>
-                <text x="18" textAnchor="start" dominantBaseline="middle" fontSize="12" fill={TILE_COLORS.text} fontWeight="bold">{gameState.availableHotels}</text>
-              </g>
-            </g>
-          )}
         </g>
 
         {/* Render all tiles first */}

@@ -2825,8 +2825,8 @@ body {
   transition: none;
 }
 
-/* Desktop: Full 3-column layout (> 1024px) */
-@media (min-width: 1025px) {
+/* Desktop: Full 3-column layout (>= 1280px) */
+@media (min-width: 1280px) {
   .game-main {
     display: grid;
     grid-template-columns: 300px minmax(0, 1fr) 300px;
@@ -2841,8 +2841,8 @@ body {
   }
 }
 
-/* Tablet: 2-column with collapsible sidebar (768-1024px) */
-@media (min-width: 768px) and (max-width: 1024px) {
+/* Tablet: 2-column with collapsible sidebar (768-1279px) */
+@media (min-width: 768px) and (max-width: 1279px) {
   .game-main {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 280px;
@@ -3392,13 +3392,13 @@ body {
 
   background: linear-gradient(
     135deg,
-    #3b82f6 0%,
-    #2563eb 100%
+    #fbbf24 0%,
+    #d97706 100%
   );
 
   border: none;
   box-shadow:
-    0 8px 24px rgba(59, 130, 246, 0.4),
+    0 8px 24px rgba(245, 158, 11, 0.4),
     0 2px 8px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 
@@ -3415,7 +3415,7 @@ body {
 .fab-chat:hover {
   transform: scale(1.1);
   box-shadow:
-    0 12px 32px rgba(59, 130, 246, 0.5),
+    0 12px 32px rgba(245, 158, 11, 0.5),
     0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -3432,8 +3432,8 @@ body {
   }
 }
 
-/* Hide fab-chat on mobile and desktop (only show on tablet) */
-@media (max-width: 767px), (min-width: 1024px) {
+/* Hide fab-chat on mobile and desktop (only show on tablet: 768px-1279px) */
+@media (max-width: 767px), (min-width: 1280px) {
   .fab-chat {
     display: none;
   }

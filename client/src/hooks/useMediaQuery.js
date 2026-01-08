@@ -96,11 +96,11 @@ function getBreakpointState() {
   // Mobile: < 768px (includes all phones and small tablets in portrait)
   const isMobile = width < breakpoints.md;
 
-  // Tablet: 768px - 1024px
-  const isTablet = width >= breakpoints.md && width < breakpoints.lg;
+  // Tablet: 768px - 1280px
+  const isTablet = width >= breakpoints.md && width < breakpoints.xl;
 
-  // Desktop: >= 1024px
-  const isDesktop = width >= breakpoints.lg;
+  // Desktop: >= 1280px
+  const isDesktop = width >= breakpoints.xl;
 
   return {
     breakpoint,

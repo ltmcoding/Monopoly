@@ -774,8 +774,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
 
       {/* Main Game Layout - Responsive */}
       <main className="game-main flex-1 overflow-hidden">
-        {/* Left Panel - Game Log (hidden on mobile/tablet) */}
-        <aside className="game-left flex-shrink-0 flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden hidden lg:flex">
+        {/* Left Panel - Game Log (hidden on mobile/tablet, show on xl+) */}
+        <aside className="game-left flex-shrink-0 flex-col gap-3 p-3 bg-card/50 border-r border-border overflow-hidden hidden xl:flex">
           <GameLog
             actionLog={gameState.actionLog || []}
             socket={socket}
@@ -835,12 +835,24 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
             </CardContent>
           </Card>
 
-          {/* My Properties Section */}
+          {/* Properties Section */}
           <Card className="card-gilded flex-1 min-h-0 flex flex-col">
             <CardHeader className="py-3 px-4">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Buildings size={20} className="text-primary" weight="duotone" />
-                My Properties
+              <CardTitle className="text-base flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Buildings size={20} className="text-primary" weight="duotone" />
+                  Properties
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <HouseIcon size={12} className="text-green-500" />
+                    {32 - Object.values(gameState.properties || {}).reduce((sum, p) => sum + (p.houses || 0), 0)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Buildings size={12} className="text-red-500" />
+                    {12 - Object.values(gameState.properties || {}).reduce((sum, p) => sum + (p.hotels || 0), 0)}
+                  </span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-0 flex-1 overflow-y-auto">
@@ -1159,7 +1171,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           <SlidePanel
             isOpen={activePanelId === 'properties'}
             onClose={handleClosePanel}
-            title="My Properties"
+            title="Properties"
           >
             {renderMyProperties()}
           </SlidePanel>
