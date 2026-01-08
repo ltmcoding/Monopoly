@@ -9,7 +9,6 @@ import {
 
 const tabs = [
   { id: 'board', icon: GameController, label: 'Board' },
-  { id: 'players', icon: Users, label: 'Players' },
   { id: 'properties', icon: Buildings, label: 'Props' },
   { id: 'chat', icon: ChatCircle, label: 'Chat' },
   { id: 'trades', icon: ArrowsLeftRight, label: 'Trades' },

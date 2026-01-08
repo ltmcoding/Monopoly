@@ -402,8 +402,8 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
                 </span>
                 <span className="text-xs text-muted-foreground ml-auto">({props.length})</span>
               </button>
-              {/* 2-column grid of properties */}
-              <div className="grid grid-cols-2 gap-1.5">
+              {/* Single column list of properties */}
+              <div className="flex flex-col gap-1.5">
                 {props.map(prop => {
                   const property = gameState.properties[prop.propId];
                   return (
@@ -763,7 +763,7 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
           </span>
           <Button variant="outline" size="default" onClick={() => setShowSettings(true)} className="header-btn gap-2 text-base px-2 md:px-4">
             <Gear size={20} />
-            <span className="header-btn-text hidden md:inline">Settings</span>
+            <span className="header-btn-text hidden md:inline">View Settings</span>
           </Button>
           <Button variant="secondary" size="default" onClick={handleLeaveGame} className="header-btn gap-2 text-base px-2 md:px-4">
             <SignOut size={20} />
@@ -786,18 +786,47 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
         </aside>
 
         {/* Center - Board */}
-        <section className="game-center flex-1 min-w-0 flex items-center justify-center p-2 overflow-auto">
-          <Board2D
-            gameState={gameState}
-            onRollDice={handleRollDice}
-            onEndTurn={() => socket.endTurn(gameId)}
-            isMyTurn={isMyTurn()}
-            canRoll={canRollDice()}
-            canEndTurn={gameState.phase === 'rolling' && isMyTurn() && gameState.hasRolledThisTurn}
-            myPlayerId={playerId}
-            socket={socket}
-            gameId={gameId}
-          />
+        <section className="game-center flex-1 min-w-0 flex flex-col p-2 overflow-auto">
+          {/* Compact Player Bar - Mobile Only */}
+          {isMobile && (
+            <div className="mobile-player-bar flex gap-1 p-2 mb-2 bg-card/80 rounded-lg border border-border overflow-x-auto flex-shrink-0">
+              {gameState.players.map((player, idx) => {
+                const isCurrentTurn = idx === gameState.currentPlayerIndex;
+                const isMe = player.id === playerId;
+                return (
+                  <div
+                    key={player.id}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-md flex-shrink-0 ${
+                      isCurrentTurn ? 'bg-primary/20 ring-1 ring-primary' : 'bg-secondary/30'
+                    } ${player.isBankrupt ? 'opacity-40' : ''}`}
+                    onClick={() => setSelectedPlayer(player.id)}
+                  >
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: player.color }}
+                    />
+                    <span className={`text-xs font-medium truncate max-w-[60px] ${isMe ? 'text-primary' : ''}`}>
+                      {player.name.length > 8 ? player.name.slice(0, 7) + '…' : player.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">${player.cash}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div className="flex-1 flex items-center justify-center min-h-0">
+            <Board2D
+              gameState={gameState}
+              onRollDice={handleRollDice}
+              onEndTurn={() => socket.endTurn(gameId)}
+              isMyTurn={isMyTurn()}
+              canRoll={canRollDice()}
+              canEndTurn={gameState.phase === 'rolling' && isMyTurn() && gameState.hasRolledThisTurn}
+              myPlayerId={playerId}
+              socket={socket}
+              gameId={gameId}
+            />
+          </div>
         </section>
 
         {/* Right Panel - Players, Trades & Properties (hidden on mobile) */}
@@ -1154,20 +1183,6 @@ export default function Game({ socket, gameId, playerId, initialGameState, onExi
       {/* Mobile Slide-Up Panels */}
       {isMobile && (
         <>
-          {/* Players Panel */}
-          <SlidePanel
-            isOpen={activePanelId === 'players'}
-            onClose={handleClosePanel}
-            title="Players"
-          >
-            <PlayerPanel
-              players={gameState.players}
-              currentPlayerIndex={gameState.currentPlayerIndex}
-              myPlayerId={playerId}
-              onPlayerClick={(id) => setSelectedPlayer(id)}
-            />
-          </SlidePanel>
-
           {/* Properties Panel */}
           <SlidePanel
             isOpen={activePanelId === 'properties'}

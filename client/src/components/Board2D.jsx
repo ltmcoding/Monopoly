@@ -772,11 +772,13 @@ export default function Board2D({
     const players = getPlayersOnSpace(position);
     if (players.length === 0) return null;
 
-    // Scale token size based on tile dimensions for non-corner tiles
+    // Scale token size based on tile dimensions and board size
     const isCorner = pos.side === 'corner';
     const minDimension = Math.min(pos.w, pos.h);
-    // Token size scales with tile, but capped between 14-22px
-    const tokenSize = isCorner ? 22 : Math.max(14, Math.min(22, minDimension * 0.28));
+    // Base token size scales with board size (smaller on mobile where board is larger)
+    const baseTokenSize = Math.max(12, Math.min(22, boardSize * 0.028));
+    // Token size for non-corners scales with tile, capped at base size
+    const tokenSize = isCorner ? baseTokenSize : Math.max(10, Math.min(baseTokenSize, minDimension * 0.28));
     const centerX = pos.w / 2;
     const centerY = pos.h / 2;
 

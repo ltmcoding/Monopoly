@@ -25,15 +25,20 @@ export const useBoardSize = ({
     const container = containerRef.current;
     const rect = container.getBoundingClientRect();
 
+    // On mobile (< 768px width), use minimal padding to maximize board size
+    const isMobile = window.innerWidth < 768;
+    const effectivePadding = isMobile ? 8 : padding;
+    const effectiveMaxSize = isMobile ? 900 : maxSize;
+
     // Get the actual available space
-    const availableWidth = rect.width - padding;
-    const availableHeight = rect.height - padding;
+    const availableWidth = rect.width - effectivePadding;
+    const availableHeight = rect.height - effectivePadding;
 
     // Board is square, so use the smaller dimension
     const availableSize = Math.min(availableWidth, availableHeight);
 
     // Clamp to min/max bounds
-    const clampedSize = Math.max(minSize, Math.min(maxSize, availableSize));
+    const clampedSize = Math.max(minSize, Math.min(effectiveMaxSize, availableSize));
 
     // Only update if size actually changed (avoid unnecessary re-renders)
     setSize(prev => {
